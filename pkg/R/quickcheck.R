@@ -13,19 +13,46 @@
 # limitations under the License.
 
 ##main function
-unit.test = function(predicate, generators = list(), sample.size = 10, precondition = function(...) TRUE, stop = TRUE) {
+unit.test = 
+	function(
+		predicate, 
+		generators = list(), 
+		sample.size = 10, 
+		precondition = function(...) TRUE, 
+		stop = TRUE) {
   set.seed(0)
   options(warning.length = 8125) #as big as allowed
-  results = sapply(1:sample.size, function(i) {
-    args = lapply(generators, function(a) a())
-    if(do.call(precondition, args) && !do.call(function(...){tryCatch(predicate(...), error = function(e){traceback(); print(e); FALSE})}, args)){
-      print(paste("FAIL: predicate:",
-                 paste(deparse(predicate), collapse = " ")))
-      list(predicate = predicate, args = args)
-      }}, simplify = TRUE)
-  if(is.null(unlist(results)))
-    print(paste ("Pass ", paste(deparse(predicate), "\n", collapse = " ")))
-  else {if (stop) stop(results) else results}}
+  test.cases = 
+  	list(
+  		predicate = predicate, 
+  		cases = lapply(
+  			1:sample.size, 
+  			function(i) {
+  				args = lapply(generators, function(a) a())
+  				if(do.call(precondition, args) && 
+  					 	!do.call(
+  					 		function(...){
+  					 			tryCatch(
+  					 				predicate(...), 
+  					 				error = 
+  					 					function(e){
+  					 						traceback() 
+  					 						print(e) 
+  					 						FALSE})}, 
+  					 		args)){
+  					print(
+  						paste(
+  							"FAIL: predicate:",
+  							paste(deparse(predicate), collapse = " ")))
+  					args}}))
+  if(is.null(unlist(test.cases$cases)))
+  	print(paste ("Pass ", paste(deparse(predicate), "\n", collapse = " ")))
+  else {
+  	if (stop) {
+  		tf = tempfile(tmpdir=".", pattern = "quickcheck")
+  		save(test.cases, file = tf)
+  		stop(tf)}
+  	else test.cases}}
 
 ## for short
 catch.out = function(...) capture.output(invisible(...))
