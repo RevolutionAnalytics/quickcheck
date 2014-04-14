@@ -20,108 +20,114 @@ unit.test =
 		sample.size = 10, 
 		precondition = function(...) TRUE, 
 		stop = TRUE) {
-  set.seed(0)
-  options(warning.length = 8125) #as big as allowed
-  test.cases = 
-  	list(
-  		predicate = predicate, 
-  		cases = lapply(
-  			1:sample.size, 
-  			function(i) {
-  				args = lapply(generators, function(a) a())
-  				if(do.call(precondition, args) && 
-  					 	!do.call(
-  					 		function(...){
-  					 			tryCatch(
-  					 				predicate(...), 
-  					 				error = 
-  					 					function(e){
-  					 						traceback() 
-  					 						print(e) 
-  					 						FALSE})}, 
-  					 		args)){
-  					print(
-  						paste(
-  							"FAIL: predicate:",
-  							paste(deparse(predicate), collapse = " ")))
-  					args}}))
-  if(is.null(unlist(test.cases$cases)))
-  	print(paste ("Pass ", paste(deparse(predicate), "\n", collapse = " ")))
-  else {
-  	if (stop) {
-  		tf = tempfile(tmpdir=".", pattern = "quickcheck")
-  		save(test.cases, file = tf)
-  		stop(tf)}
-  	else test.cases}}
+		set.seed(0)
+		test.cases = 
+			list(
+				predicate = predicate, 
+				cases = lapply(
+					1:sample.size, 
+					function(i) {
+						args = lapply(generators, function(a) a())
+						if(do.call(precondition, args) && 
+							 	!do.call(
+							 		function(...){
+							 			tryCatch(
+							 				predicate(...), 
+							 				error = 
+							 					function(e){
+							 						traceback() 
+							 						print(e) 
+							 						FALSE})}, 
+							 		args)){
+							print(
+								paste(
+									"FAIL: predicate:",
+									paste(deparse(predicate), collapse = " ")))
+							args}}))
+		if(is.null(unlist(test.cases$cases)))
+			print(paste ("Pass ", paste(deparse(predicate), "\n", collapse = " ")))
+		else {
+			if (stop) {
+				tf = tempfile(tmpdir=".", pattern = "quickcheck")
+				save(test.cases, file = tf)
+				stop(tf)}
+			else test.cases}}
 
 ## for short
 catch.out = function(...) capture.output(invisible(...))
 ## test data  generators generators, 
 
 ## basic types
-tdgg.logical = function(p.true = .5, lambda = 8) function() rbinom(1 + rpois(1, lambda),1,p.true) == 1
+rlogical = function(p.true = .5, lambda = 8) rbinom(1 + rpois(1, lambda),1,p.true) == 1
 
-tdgg.integer = 
-  function(elem.lambda = 100, len.lambda = 8) 
-    function() as.integer(rpois(1 + rpois(1, len.lambda), elem.lambda)) #why poisson? Why not? Why 100?
+rinteger = 
+	function(elem.lambda = 100, len.lambda = 8) 
+		as.integer(rpois(1 + rpois(1, len.lambda), elem.lambda)) #why poisson? Why not? Why 100?
 
-tdgg.double = function(min = -1, max = 1, lambda = 8)  function() runif(1 + rpois(1, lambda), min, max)
+rdouble = function(min = -1, max = 1, lambda = 8) runif(1 + rpois(1, lambda), min, max)
 
-##tdgg.complex NAY
+##rcomplex NAY
 
-library(digest)
-tdgg.character = 
-  function(str.lambda = 8, len.lambda = 8) 
-    function() 
-      sapply(runif(1 + rpois(1, len.lambda)), function(x) substr(digest(x), 1, rpois(1, str.lambda)))
+rcharacter = 
+	function(str.lambda = 8, len.lambda = 8)  
+		sapply(runif(1 + rpois(1, len.lambda)), function(x) substr(digest(x), 1, rpois(1, str.lambda)))
 
-tdgg.raw = function(lambda = 8) {tdg = tdgg.character(1, lambda); function() unlist(sapply(tdg(), charToRaw))}
+rraw = 
+	function(lambda = 8) 
+		sample(as.raw(0:255), rpois(1, lambda),  replace = TRUE)
 
-tdgg.list = function(tdg = tdgg.any(list.tdg = tdg, len.lambda = lambda, max.level = max.level), 
-                    lambda = 10, max.level = 20) 
-  function() {
-    if(sys.nframe() < max.level) replicate(rpois(1, lambda),tdg(), simplify = FALSE) else list()}
 
-tdgg.data.frame = 
-  function(row.lambda = 20, 
-           col.lambda = 5){
-    function() {
-      ncol = 1 + rpois(1, col.lambda)
-      nrow = 1 + rpois(1, row.lambda)
-      gens = list(tdgg.logical(), 
-                  tdgg.integer(), 
-                  tdgg.double(), 
-                  tdgg.character())
-      columns = lapply(sample(gens,ncol, replace=TRUE), 
-                      function(g) replicate(nrow, g()[1], simplify = TRUE))
-      names(columns) = paste("col", 1:ncol)
-      do.call(data.frame, columns)}}
+rlist = 
+	function(
+		rdg = 
+			make.rany(
+				list.rdg = 
+					Curry(rlist, lambda = lambda, max.level = max.level - 1), 
+				max.level = max.level -1), 
+		lambda = 10, 
+		max.level = 4) {
+		if(max.level > 0) 
+			replicate(rpois(1, lambda), rdg(), simplify = FALSE) 
+		else list()}
+
+rdata.frame = 
+	function(row.lambda = 20, 
+					 col.lambda = 5) {
+		ncol = 1 + rpois(1, col.lambda)
+		nrow = 1 + rpois(1, row.lambda)
+		gens = list(rlogical(), 
+								rinteger(), 
+								rdouble(), 
+								rcharacter())
+		columns = lapply(sample(gens,ncol, replace=TRUE), 
+										 function(g) replicate(nrow, g()[1], simplify = TRUE))
+		names(columns) = paste("col", 1:ncol)
+		do.call(data.frame, columns)}
 
 ## special distributions
-tdgg.numeric.list = function(lambda = 100) function() lapply(1:rpois(1,lambda), function(i) runif(1))
-tdgg.fixed.list = function(...) function() lapply(list(...), function(tdg) tdg())
-tdgg.prototype = function(prototype, generator = tdgg.any()) function() rapply(prototype, function(x) generator(), how = "list")
+rnumeric.list = function(lambda = 100) lapply(1:rpois(1,lambda), function(i) runif(1))
+make.rfixed.list = function(...) function() lapply(list(...), function(rdg) rdg())
+make.rprototype = function(prototype, generator = rany()) function() rapply(prototype, function(x) generator(), how = "list")
 
-tdgg.prototype.list = 
-  function(prototype, lambda) {
-    tdg = tdgg.prototype(prototype)
-    function() replicate(rpois(1, lambda), tdg(), simplify = FALSE)}
+make.rprototype.list = 
+	function(prototype, lambda = 10) {
+		rdg = rprototype(prototype)
+		function() replicate(rpois(1, lambda), rdg(), simplify = FALSE)}
 
-tdgg.constant = function(const) function() const
-tdgg.select = function(l) function() sample(l,1)[[1]]
-tdgg.distribution = function(distribution, ...) function() distribution(1, ...)
+rconstant = function(const = NULL) const
+make.rselect = function(l) function() sample(l,1)[[1]]
 
 ##combiners
-tdgg.mixture = function(...) function() sample(list(...),1)[[1]]()
+make.rmixture = function(...) function() sample(list(...), 1)[[1]]()
 
 ## combine everything
-tdgg.any = 
-  function(p.true = .5, int.lambda = 100, min = -1, max = 1,  
-           list.tdg = tdgg.any(), max.level = 20, len.lambda = 10) 
-    tdgg.mixture(tdgg.logical(p.true, len.lambda), 
-                 tdgg.integer(int.lambda, len.lambda), 
-                 tdgg.double(min, max, len.lambda), 
-                 tdgg.character(len.lambda), 
-                 tdgg.raw(len.lambda),
-                 tdgg.list(list.tdg, len.lambda, max.level))
-
+make.rany = 
+	function(p.true = .5, int.lambda = 100, min = -1, max = 1,  
+					 list.rdg = make.rany(), max.level = 4, len.lambda = 10) 
+		make.rmixture(
+			Curry(rlogical, p.true, len.lambda), 
+			Curry(rinteger, int.lambda, len.lambda), 
+			Curry(rdouble, min, max, len.lambda), 
+			Curry(rcharacter, len.lambda), 
+			Curry(rraw, len.lambda),
+			Curry(rlist, list.rdg, len.lambda, max.level))
