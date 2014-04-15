@@ -91,16 +91,21 @@ rlist =
 		else list()}
 
 rdata.frame = 
-	function(row.lambda = 20, 
-					 col.lambda = 5) {
+	function(
+		row.lambda = 20, 
+		col.lambda = 5) {
 		ncol = 1 + rpois(1, col.lambda)
 		nrow = 1 + rpois(1, row.lambda)
-		gens = list(rlogical(), 
-								rinteger(), 
-								rdouble(), 
-								rcharacter())
-		columns = lapply(sample(gens,ncol, replace=TRUE), 
-										 function(g) replicate(nrow, g()[1], simplify = TRUE))
+		gens = 
+			list(
+				rlogical, 
+				rinteger, 
+				rdouble, 
+				rcharacter)
+		columns = 
+			lapply(
+				sample(gens,ncol, replace=TRUE), 
+				function(g) replicate(nrow, g()[1], simplify = TRUE))
 		names(columns) = paste("col", 1:ncol)
 		do.call(data.frame, columns)}
 
