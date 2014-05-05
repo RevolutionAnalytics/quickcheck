@@ -79,11 +79,7 @@ rraw =
 
 rlist = 
 	function(
-		rdg = 
-			make.rany(
-				list.rdg = 
-					Curry(rlist, lambda = lambda, max.level = max.level - 1), 
-				max.level = max.level -1), 
+		rdg = make.rany(max.level = max.level - 1, len.lambda = lambda), 
 		lambda = 10, 
 		max.level = 4) {
 		if(max.level > 0) 
@@ -112,11 +108,11 @@ rdata.frame =
 ## special distributions
 rnumeric.list = function(lambda = 100) lapply(1:rpois(1,lambda), function(i) runif(1))
 make.rfixed.list = function(...) function() lapply(list(...), function(rdg) rdg())
-make.rprototype = function(prototype, generator = rany()) function() rapply(prototype, function(x) generator(), how = "list")
+make.rprototype = function(prototype, generator = make.rany()) function() rapply(prototype, function(x) generator(), how = "list")
 
 make.rprototype.list = 
-	function(prototype, lambda = 10) {
-		rdg = rprototype(prototype)
+	function(prototype, lambda = 10, generator) {
+		rdg = make.rprototype(prototype, generator)
 		function() replicate(rpois(1, lambda), rdg(), simplify = FALSE)}
 
 rconstant = function(const = NULL) const
@@ -127,8 +123,14 @@ make.rmixture = function(...) function() sample(list(...), 1)[[1]]()
 
 ## combine everything
 make.rany = 
-	function(p.true = .5, int.lambda = 100, min = -1, max = 1,  
-					 list.rdg = make.rany(), max.level = 4, len.lambda = 10) 
+	function(
+		p.true = .5, 
+		int.lambda = 100, 
+		min = -1, 
+		max = 1, 
+		len.lambda = 10,  
+		list.rdg = 
+			make.rany(len.lambda = len.lambda, max.level= max.level - 1), max.level = 4) 
 		make.rmixture(
 			Curry(rlogical, p.true, len.lambda), 
 			Curry(rinteger, int.lambda, len.lambda), 
