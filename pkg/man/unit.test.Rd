@@ -1,5 +1,6 @@
 \name{unit.test}
 \alias{unit.test}
+\alias{catch.out}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Generate unit tests}
@@ -11,18 +12,12 @@ unit.test(predicate, generators = list(), sample.size = 10, precondition = funct
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{predicate}{
-
-}
-  \item{generators}{
-
-}
-  \item{sample.size}{
-
-}
-  \item{precondition}{
-
-}
+  \item{predicate}{}
+  \item{generators}{}
+  \item{sample.size}{}
+  \item{precondition}{}
+  \item{stop}{}
+	\item{...}{}
 }
 \details{
 
