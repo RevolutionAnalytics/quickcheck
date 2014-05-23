@@ -24,26 +24,38 @@ unit.test =
 		test.cases = 
 			list(
 				predicate = predicate, 
-				cases = lapply(
-					1:sample.size, 
-					function(i) {
-						args = lapply(generators, function(a) a())
-						if(do.call(precondition, args) && 
-							 	!do.call(
-							 		function(...){
-							 			tryCatch(
-							 				predicate(...), 
-							 				error = 
-							 					function(e){
-							 						traceback() 
-							 						print(e) 
-							 						FALSE})}, 
-							 		args)){
-							print(
-								paste(
-									"FAIL: predicate:",
-									paste(deparse(predicate), collapse = " ")))
-							args}}))
+				env = 
+					do.call(
+						c, 
+						lapply(
+							all.vars(body(predicate)), 
+							function(name) 
+								tryCatch({
+									val = list(eval(as.name(name)))
+									names(val) = name
+									val}, 
+									error = function(e) NULL))),
+				cases = 
+					lapply(
+						1:sample.size, 
+						function(i) {
+							args = lapply(generators, function(a) a())
+							if(do.call(precondition, args) && 
+								 	!do.call(
+								 		function(...){
+								 			tryCatch(
+								 				predicate(...), 
+								 				error = 
+								 					function(e){
+								 						traceback() 
+								 						print(e) 
+								 						FALSE})}, 
+								 		args)){
+								print(
+									paste(
+										"FAIL: predicate:",
+										paste(deparse(predicate), collapse = " ")))
+								args}}))
 		if(is.null(unlist(test.cases$cases)))
 			print(paste ("Pass ", paste(deparse(predicate), "\n", collapse = " ")))
 		else {
