@@ -62,7 +62,7 @@ unit.test =
 			if (stop) {
 				tf = tempfile(tmpdir=".", pattern = "quickcheck")
 				save(test.cases, file = tf)
-				stop(tf)}
+				stop(file.path(getwd(),tf))}
 			else test.cases}}
 
 ## for short
