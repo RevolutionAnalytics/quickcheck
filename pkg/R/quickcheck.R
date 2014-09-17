@@ -117,6 +117,14 @@ rdata.frame =
 		names(columns) = paste("col", 1:ncol)
 		do.call(data.frame, columns)}
 
+rDate = 
+	function(from = as.Date("0000/01/01"), to = Sys.Date(), len.lambda = 8, replace = TRUE)
+		as.Date(
+			sample(
+				as.Date(from):as.Date(to) , 
+				rpois(1, len.lambda), replace = TRUE), 
+			origin = as.Date("1970-01-01"))
+
 ## special distributions
 rnumeric.list = function(lambda = 100) lapply(1:rpois(1,lambda), function(i) runif(1))
 make.rfixed.list = function(...) function() lapply(list(...), function(rdg) rdg())
