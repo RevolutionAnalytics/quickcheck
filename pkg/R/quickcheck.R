@@ -70,19 +70,25 @@ catch.out = function(...) capture.output(invisible(...))
 ## test data  generators generators, 
 
 ## basic types
-rlogical = function(p.true = .5, lambda = 8) rbinom(1 + rpois(1, lambda),1,p.true) == 1
+rlogical = 
+	function(p.true = .5, lambda = 8) 
+		rbinom(1 + rpois(1, lambda),1,p.true) == 1
 
 rinteger = 
 	function(elem.lambda = 100, len.lambda = 8) 
 		as.integer(rpois(1 + rpois(1, len.lambda), elem.lambda)) #why poisson? Why not? Why 100?
 
-rdouble = function(min = -1, max = 1, lambda = 8) runif(1 + rpois(1, lambda), min, max)
+rdouble = 
+	function(min = -1, max = 1, lambda = 8) 
+		runif(1 + rpois(1, lambda), min, max)
 
 ##rcomplex NAY
 
 rcharacter = 
 	function(str.lambda = 8, len.lambda = 8)  
-		sapply(runif(1 + rpois(1, len.lambda)), function(x) substr(digest(x), 1, rpois(1, str.lambda)))
+		sapply(
+			runif(1 + rpois(1, len.lambda)), 
+			function(x) substr(digest(x), 1, rpois(1, str.lambda)))
 
 rraw = 
 	function(lambda = 8) 
@@ -126,20 +132,41 @@ rDate =
 			origin = as.Date("1970-01-01"))
 
 ## special distributions
-rnumeric.list = function(lambda = 100) lapply(1:rpois(1,lambda), function(i) runif(1))
-make.rfixed.list = function(...) function() lapply(list(...), function(rdg) rdg())
-make.rprototype = function(prototype, generator = make.rany()) function() rapply(prototype, function(x) generator(), how = "list")
+
+rnumeric.list = 
+	function(lambda = 100) 
+		lapply(1:rpois(1,lambda), function(i) runif(1))
+
+make.rfixed.list = 
+	function(...) 
+		function() 
+			lapply(list(...), function(rdg) rdg())
+
+make.rprototype = 
+	function(prototype, generator = make.rany()) 
+		function() 
+			rapply(prototype, function(x) generator(), how = "list")
 
 make.rprototype.list = 
 	function(prototype, lambda = 10, generator) {
 		rdg = make.rprototype(prototype, generator)
-		function() replicate(rpois(1, lambda), rdg(), simplify = FALSE)}
+		function() 
+			replicate(rpois(1, lambda), rdg(), simplify = FALSE)}
 
-rconstant = function(const = NULL) const
-make.rselect = function(l) function() sample(l,1)[[1]]
+rconstant = 
+	function(const = NULL) 
+		const
+
+make.rselect = 
+	function(l) 
+		function() 
+			sample(l,1)[[1]]
 
 ##combiners
-make.rmixture = function(...) function() sample(list(...), 1)[[1]]()
+make.rmixture = 
+	function(...) 
+		function() 
+			sample(list(...), 1)[[1]]()
 
 ## combine everything
 make.rany = 
