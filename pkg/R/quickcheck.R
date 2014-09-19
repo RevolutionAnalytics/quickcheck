@@ -124,12 +124,14 @@ rdata.frame =
 		do.call(data.frame, columns)}
 
 rDate = 
-	function(from = as.Date("0000/01/01"), to = Sys.Date(), len.lambda = 8, replace = TRUE)
+	function(from = as.Date("0000/01/01"), to = Sys.Date(), len.lambda = 8, replace = TRUE) {
+		dates = as.Date(from):as.Date(to) 
 		as.Date(
-			sample(
-				as.Date(from):as.Date(to) , 
-				rpois(1, len.lambda), replace = TRUE), 
-			origin = as.Date("1970-01-01"))
+			dates[
+				sample(
+					length(dates), 
+					rpois(1, len.lambda), replace = replace)], 
+			origin = as.Date("1970-01-01"))}
 
 ## special distributions
 
