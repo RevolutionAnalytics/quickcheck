@@ -79,7 +79,7 @@ unit.test =
 										"FAIL: predicate:",
 										paste(deparse(predicate), collapse = " ")))
 								args}}))
-		if(is.null(unlist(test.cases$cases)))
+		if(all(sapply(test.cases$cases, is.null)))
 			print(paste ("Pass ", paste(deparse(predicate), "\n", collapse = " ")))
 		else {
 			if (stop) {
