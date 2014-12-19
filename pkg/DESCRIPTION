@@ -5,6 +5,7 @@ Version: 2.1.0
 Date: 2014-05-05
 Author: Revolution Analytics
 Imports: digest, functional
+Suggests: testthat
 Collate: quickcheck.R
 Maintainer: Revolution Analytics <rhadoop@revolutionanalytics.com>
 Description: provides a unit.test function that generates a test and many simple generators 
