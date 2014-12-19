@@ -12,10 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+## quirkless sample
 sample = 
 	function(x, size, ...) 
 		x[base::sample(length(x), size = size, ...)]
 
+## readable Curry
+C = 
+	function(acall) 
+		do.call(Curry, as.list(match.call()$acall))
+
+## make use of testthat expectations
 as.predicate =
 	function(expect)
 		function(...) {
@@ -104,9 +111,9 @@ rlogical =
 
 rinteger =
 	function(element = 100, size = 10) {
-			if(is.numeric(element))
-				element = Curry(rpois, lambda = element)
-			element(rsize(size))}
+		if(is.numeric(element))
+			element = Curry(rpois, lambda = element)
+		element(rsize(size))}
 
 rdouble =
 	function(element = 0, size = 10) {
@@ -137,15 +144,16 @@ rlist =
 	function(element = NULL, size = 5, depth = 4) {		
 		if(is.null(element)) 
 			element = 
-			Curry(rany, 
-						generators = 
-							list(
-								rlogical, 
-								rinteger, 
-								rdouble, 
-								rcharacter, 
-								rraw, 
-								Curry(rlist, size = size, depth = depth - 1)))
+			Curry(
+				rany, 
+				generators = 
+					list(
+						rlogical, 
+						rinteger, 
+						rdouble, 
+						rcharacter, 
+						rraw, 
+						Curry(rlist, size = size, depth = rsize(depth - 1))))
 		if(depth > 0) 
 			replicate(rsize(size), element(), simplify = FALSE)
 		else NULL}
