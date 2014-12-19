@@ -24,7 +24,13 @@ variability.test =
 		unit.test(
 			function(x, y) !identical(x, y), 
 			generators = replicate(2, generator))
-length.test
+
+length.test = 
+	function(generator, lambda)
+		unit.test(
+			function()
+				ks.test(replicate(1000, length(generator())), rpois(1000, lambda), "two.sided")$p.value > 0.001,
+			generators = list())
 
 ##rlogical 
 type.test(is.logical, rlogical)
