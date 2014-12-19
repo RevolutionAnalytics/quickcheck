@@ -15,17 +15,38 @@
 library(quickcheck)
 library(functional)
 ## generator test thyself
+## define test of type and test of variability
+type.test = 
+	function(is.class, generator) 
+		unit.test(is.class, generators = list(generator))
+variability.test = 
+	function(generator)
+		unit.test(
+			function(x, y) !identical(x, y), 
+			generators = replicate(2, generator))
+length.test
+
 ##rlogical 
-unit.test(function(p.true) {
-  sample = rlogical(p.true,lambda=1000)
-  binom.test(
-    sum(sample),
-    length(sample), 
-    p.true,"two.sided")$p.value > 0.001},
-          generators = list(Curry(runif, n = 1, min = .1, max = .9)))
+type.test(is.logical, rlogical)
+variability.test(rlogical)
+
+
+# goodness of fit
+unit.test(
+	function(p.true) {
+		sample = rlogical(p.true, 1000)
+		binom.test(
+			sum(sample),
+			length(sample), 
+			p.true,
+			"two.sided")$p.value > 0.001},
+	generators = list(C(runif(n = 1, min = .1, max = .9))))
+
 ##rinteger 
-unit.test(is.integer,
-          generators = list(rinteger))
+type.test(is.integer, rinteger)
+variability.test(rinteger)
+
+poisson.test(x, )
 ##rdouble 
 unit.test(is.double,
           generators = list(rdouble))
