@@ -141,5 +141,5 @@ dim.test(rdata.frame, lambda = 5, ncol)
 
 # rany 
 variability.test(rany)
-variability.test(CurryL(class, rany()))
+variability.test(CurryL(class, rany())) # this passes by the skin of its teeth
 
