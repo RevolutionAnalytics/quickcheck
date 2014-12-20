@@ -20,8 +20,9 @@ sample =
 ## readable Curry
 fun = 
 	function(acall) 
-		do.call(partial, as.list(match.call()$acall))
-#		do.call(Curry, as.list(match.call()$acall))
+		do.call(
+			partial, 
+			lapply(as.list(match.call()$acall), eval.parent, n = 2))
 
 ## make use of testthat expectations
 as.predicate =
@@ -107,13 +108,13 @@ rlogical =
 rinteger =
 	function(element = 100, size = 10) {
 		if(is.numeric(element))
-			element = Curry(rpois, lambda = element)
+			element = fun(rpois(lambda = element))
 		element(rsize(size))}
 
 rdouble =
 	function(element = 0, size = 10) {
 		if(is.numeric(element))
-			element = Curry(rnorm, mean = element)
+			element = fun(rnorm(mean = element))
 		element(rsize(size))}
 
 ##rcomplex NAY
@@ -123,7 +124,7 @@ rcharacter =
 		if(is.character(element))
 			element = nchar(element)
 		if(is.numeric(element))
-			element = Curry(rpois, lambda = element)
+			element = fun(rpois(lambda = element))
 		unlist(
 			sapply(
 				runif(rsize(size)),
@@ -141,8 +142,8 @@ rlist =
 		else 
 			if(is.null(element)) {
 				element = 
-					Curry(
-						rany, 
+					fun(
+						rany( 
 						generators =
 							list(
 								rlogical, 
@@ -150,7 +151,7 @@ rlist =
 								rdouble, 
 								rcharacter, 
 								rraw,
-								Curry(rlist, size = size, height = rsize(height - 1))))
+								fun(rlist(size = size, height = rsize(height - 1))))))
 				replicate(rsize(size), element(), simplify = FALSE)}}
 
 rdata.frame =

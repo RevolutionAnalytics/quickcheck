@@ -118,7 +118,7 @@ unit.test(
 				constant(n), 
 				constant(2*n))(), 
 			c(n,2*n)), 
-	generators = list(Curry(runif, n = 1)))
+	generators = list(fun(runif(n = 1))))
 
 #rlist
 height = #height function to build a test about height of a nested list
@@ -141,5 +141,5 @@ dim.test(rdata.frame, lambda = 5, ncol)
 
 # rany 
 variability.test(rany)
-variability.test(fun(class(rany())))
+variability.test(CurryL(class, rany()))
 
