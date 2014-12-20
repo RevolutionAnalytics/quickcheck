@@ -4,7 +4,7 @@ Title: Support writing randomized unit tests
 Version: 2.1.0
 Date: 2014-05-05
 Author: Revolution Analytics
-Imports: digest, functional
+Imports: digest, functional, pryr
 Suggests: testthat
 Collate: quickcheck.R
 Maintainer: Revolution Analytics <rhadoop@revolutionanalytics.com>

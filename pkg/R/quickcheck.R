@@ -18,9 +18,10 @@ sample =
 		x[base::sample(length(x), size = size, ...)]
 
 ## readable Curry
-C = 
+fun = 
 	function(acall) 
-		do.call(Curry, as.list(match.call()$acall))
+		do.call(partial, as.list(match.call()$acall))
+#		do.call(Curry, as.list(match.call()$acall))
 
 ## make use of testthat expectations
 as.predicate =
@@ -44,6 +45,12 @@ unit.test =
 		precondition = function(...) TRUE,
 		stop = TRUE) {
 		set.seed(0)
+		tryPredicate =
+			function(xx)
+				tryCatch(
+					do.call(predicate, xx),
+					error =
+						function(e) FALSE)
 		test.cases =
 			list(
 				predicate = predicate,
@@ -63,29 +70,17 @@ unit.test =
 						1:sample.size,
 						function(i) {
 							args = lapply(generators, function(a) a())
-							if(do.call(precondition, args) &&
-								 	!do.call(
-								 		function(...){
-								 			tryCatch(
-								 				predicate(...),
-								 				error =
-								 					function(e){
-								 						traceback()
-								 						print(e)
-								 						FALSE})},
-								 		args)){
-								print(
-									paste(
-										"FAIL: predicate:",
-										paste(deparse(predicate), collapse = " ")))
+							if(do.call(precondition, args) &&	!tryPredicate(args)){
+								print(paste("FAIL: predicate:", paste(deparse(predicate), collapse = " ")))
 								args}}))
-		if(all(sapply(test.cases$cases, is.null)))
+		if(all(sapply(test.cases$cases, is.null))){
 			print(paste ("Pass ", paste(deparse(predicate), "\n", collapse = " ")))
+			TRUE}
 		else {
 			if (stop) {
 				tf = tempfile(tmpdir=".", pattern = "quickcheck")
 				save(test.cases, file = tf)
-				stop(file.path(getwd(), tf))}
+				stop("load(\"", file.path(getwd(), tf), "\")")}
 			else test.cases}}
 
 
@@ -137,26 +132,26 @@ rcharacter =
 rraw =
 	function(element = as.raw(0:255), size = 10) {
 		if(is.raw(element))
-			element = Curry(sample, x = element, replace = TRUE)
-		element(rsize(size))} 
+			element_ = select(element)
+		element_(rsize(size))} 
 
 rlist = 
-	function(element = NULL, size = 5, depth = 4) {		
-		if(is.null(element)) 
-			element = 
-			Curry(
-				rany, 
-				generators = 
-					list(
-						rlogical, 
-						rinteger, 
-						rdouble, 
-						rcharacter, 
-						rraw, 
-						Curry(rlist, size = size, depth = rsize(depth - 1))))
-		if(depth > 0) 
-			replicate(rsize(size), element(), simplify = FALSE)
-		else NULL}
+	function(element = NULL, size = 5, height = 4) {	
+		if (height == 0) NULL
+		else 
+			if(is.null(element)) {
+				element = 
+					Curry(
+						rany, 
+						generators =
+							list(
+								rlogical, 
+								rinteger, 
+								rdouble, 
+								rcharacter, 
+								rraw,
+								Curry(rlist, size = size, height = rsize(height - 1))))
+				replicate(rsize(size), element(), simplify = FALSE)}}
 
 rdata.frame =
 	function(
@@ -174,8 +169,9 @@ rdata.frame =
 			lapply(
 				sample(col.generators, ncol, replace = TRUE),
 				function(g) 
-					replicate(nrow, g()[1], simplify = TRUE))
-		names(columns) = paste("col", 1:ncol)
+					g(size = constant(nrow)))
+		if(length(columns) > 0)
+			names(columns) = paste("col", 1:ncol)
 		do.call(data.frame, columns)}
 
 rDate =
@@ -194,14 +190,13 @@ rDate =
 
 constant =
 	function(const = NULL)
-		function(size = 10)
-			replicate(size, const)
+		function(...)
+			const
 
 select = 
-	function(..., unlist = FALSE)
-		function(size = 10) {
-			sel = sample(list(...), size, replace = TRUE)
-			if(unlist) unlist(sel) else sel}
+	function(from)
+		function(size = 1)
+			sample(from, size, replace = TRUE)
 
 ##combiners
 mixture =
