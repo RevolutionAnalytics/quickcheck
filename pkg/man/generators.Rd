@@ -1,91 +1,63 @@
-\name{make.rany}
-\alias{make.rany}
+\name{rany}
+\alias{rany}
 \alias{rcharacter}
-\alias{rconstant}
+\alias{rfactor}
+\alias{constant}
 \alias{rdata.frame}
-\alias{rdistribution}
 \alias{rdouble}
-\alias{rfixed.list}
 \alias{rinteger}
 \alias{rlist}
 \alias{rlogical}
-\alias{make.rmixture}
-\alias{rnumeric.list}
-\alias{make.rprototype}
-\alias{make.rprototype.list}
-\alias{make.rfixed.list}
+\alias{mixture}
 \alias{rraw}
-\alias{make.rselect}
-\alias{rvector}
-%- Also NEED an '\alias' for EACH other topic documented here.
+\alias{rDate}
+\alias{select}
 \title{
-Meta-generators for random data of all types
+Generators and generator constructors for random data of many types
 }
 \description{
-These function are random data generators, argument-less functions that generate all sort of random data, to be used for the \code{generators} argument to the \code{\link{unit.test}} function. All arguments are given a default and can be modified with Curry, generating customized data generators. Exception to this pattern are the make.* functions which return a random data generator.
+These functions are divided into two groups, random data generators, and constructors for such functions. Random data generators, prefixed with "r",  are functions with no mandatory arguments that generate random data of the desired type, to be used for the \code{generators} argument to the \code{\link{unit.test}} function. All arguments are given a default and can be modified with \code{\link{Curry}}, thus defining customized data generators. In cases when no reasonable defaults could be defined, instead of a random data generator, a constructor is available that returns a valid random data generator.
 }
 \usage{
-make.rany(p.true = 0.5, int.lambda = 100, min = -1, max = 1,
-                 len.lambda = 10, list.rdg = make.rany(len.lambda =
-                 len.lambda, max.level = max.level - 1), max.level = 4)
-rcharacter(str.lambda = 8, len.lambda = 8)  
-rconstant(const)  
-rdata.frame(row.lambda = 20, col.lambda = 5)  
-rdouble(min = -1, max = 1, lambda = 8)  
-make.rfixed.list(...)  
-rinteger(elem.lambda = 100, len.lambda = 8)  
-rlist(rdg = make.rany(max.level = max.level - 1, len.lambda
-                 = lambda), lambda = 10, max.level = 4)
-rlogical(p.true = 0.5, lambda = 8)  
-make.rmixture(...)  
-rnumeric.list(lambda = 100)  
-make.rprototype(prototype, generator = make.rany())
-make.rprototype.list(prototype, lambda, generator)  
-make.rfixed.list(...)
-rraw(lambda = 8)  
-make.rselect(l)  }
+rany(generators)
+rcharacter(element = 10, size = 10)
+rfactor(element = 10, size = 10)
+constant(const = NULL)  
+rdata.frame(nrow, ncol, generators)
+rdouble(element = 0, size = 10)
+rinteger(element = 100, size = 10)  
+rlist(element = NULL, size = 5, height = 4)
+rlogical(element = 0.5, size = 10)  
+mixture(...)  
+rraw(element = as.raw(0:255), size = 10)  
+select(from, replace = TRUE)  }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{col.lambda}{}
-  \item{const}{}
-  \item{elem.lambda}{}
-  \item{generator}{}
-  \item{lambda}{}
-  \item{len.lambda}{}
-  \item{int.lambda}{}
-  \item{list.rdg}{}
-  \item{l}{}
-  \item{max.level}{}
-  \item{max}{}
-  \item{min}{}
-  \item{p.true}{}
-  \item{prototype}{}
-  \item{row.lambda}{}
-  \item{str.lambda}{}
-  \item{rdg}{}
-  \item{...}{}
+ \item{element}{The expectation for the element of the random data structure (for numeric types). For logical, the probability of \code{TRUE}. For character, the expected length of each element of the returned character vector. For factor, TODO. For raw, a raw vector from which to pick. Alternatively (and for list, exclusively), a function specifying the distribution of the elements in the form of a single argument random object generator. Its single argument -- at least, single mandatory argument -- is the size of the sample (e.g. \code{rnorm})}
+ \item{size}{The average size of the returned data structure. Alternatively, a function specifying its distribution in the form of a argument-less random non-negative integer number generator with a sample size of one.}
+ \item{nrow}{The average number of rows for the returned data frame. Alternatively, a function specifying its distribution (see \code{size})}
+ \item{ncol}{The average number of columns for the returned data frame. Alternatively, a function specifying its distribution (see \code{size})}
+ \item{height}{A parameter monotonically increasing with the average height (amount of nesting) of the returned list, for a fixed \code{size} argument. The goal is to make this parameter the expected height of the returned list, but this needs more work on the algorithm or its analysis.}
+ \item{from}{Vector of items to randomly sample from.}
+ \item{replace}{Whether to sample with replacement}
+ \item{generators}{List of random data generators to use in generating each column of a data frame}
+ \item{const}{Any R object}
+ \item{...}{Random generators to combine in a mixture distribution with equal weights}
 }
 \details{
-
-}
-\value{
-}
-\references{
-}
-\author{
-
-}
-\note{
-
+\code{rcharacter}, \code{rfactor}, \code{rdata.frame}, \code{rdouble}, \code{rinteger}, \code{rraw}, \code{rlogical} and \code{rlist} follow an obvious naming convention with an "r" prefix followed by a class name and generate random data of the type specified by the name. \code{rany} generates an R object of any type. In practice, it's a mixture of the available generators, but may be enriched with more generators in the future. \code{constant} is a constructor for a degenerate random data generator that always returns the same object. It's useful for testing, say, corner cases that a developer needs to make sure they are going to be hit, not just with a certain probability. It's a bridge to deterministic testing. \code{select} returns a generator that picks among a list of possible values. \code{mixture} creates a random generator that follows a mixture distribution of the generators provided as arguments (equally weighted). 
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-
-}
 \examples{
+#generate random integer vectors of expected size 4
+rinteger(size = 4)
+#generate random integer vectors of expected size 4 and expected value 5
+rinteger(element = 5, size = 4)
+#pick from a given vector (not unlike sample)
+select(1:5)(3)
+mixture(rinteger, rdouble)()
+constant(1)()
+# generate random integer vector of size exactly 4, note the composition of generators
+rinteger(size = constant(4))
 }
-
-\keyword{  }
-\keyword{  }
+}

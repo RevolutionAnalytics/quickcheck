@@ -19,47 +19,46 @@ sample =
 
 ## readable Curry
 fun = 
-	function(acall) 
+	function(a.call) 
 		do.call(
 			partial, 
-			lapply(as.list(match.call()$acall), eval.parent, n = 2))
+			lapply(as.list(match.call()$a.call), eval.parent, n = 2))
 
 ## make use of testthat expectations
-as.predicate =
-	function(expect)
+as.assertion =
+	function(expectation)
 		function(...) {
-			tryCatch({expect(...); TRUE} , error = function(e) FALSE)}
+			tryCatch({expectation(...); TRUE} , error = function(e) FALSE)}
 
 # import.expectations =
 # 	function(){
 # 		library(testthat)
 # 		names = grep("^expect", ls("package:testthat"), value = TRUE)
-# 		funs = lapply(names, function(n) as.predicate(get(n, envir = as.environment("package:testthat"))))
+# 		funs = lapply(names, function(n) as.assertion(get(n, envir = as.environment("package:testthat"))))
 # 	  mapply(Curry(assign, envir = parent.frame()), paste0("q", names), funs)
 # 	NULL}
 
 unit.test =
 	function(
-		predicate,
+		assertion,
 		generators = list(),
 		sample.size = 10,
-		precondition = function(...) TRUE,
 		stop = TRUE) {
 		set.seed(0)
-		tryPredicate =
+		try.assertion =
 			function(xx)
 				tryCatch(
-					do.call(predicate, xx),
+					do.call(assertion, xx),
 					error =
 						function(e) FALSE)
 		test.cases =
 			list(
-				predicate = predicate,
+				assertion = assertion,
 				env =
 					do.call(
 						c,
 						lapply(
-							all.vars(body(predicate)),
+							all.vars(body(assertion)),
 							function(name)
 								tryCatch({
 									val = list(eval(as.name(name)))
@@ -71,11 +70,11 @@ unit.test =
 						1:sample.size,
 						function(i) {
 							args = lapply(generators, function(a) a())
-							if(do.call(precondition, args) &&	!tryPredicate(args)){
-								print(paste("FAIL: predicate:", paste(deparse(predicate), collapse = " ")))
+							if(!try.assertion(args)){
+								print(paste("FAIL: assertion:", paste(deparse(assertion), collapse = " ")))
 								args}}))
 		if(all(sapply(test.cases$cases, is.null))){
-			print(paste ("Pass ", paste(deparse(predicate), "\n", collapse = " ")))
+			print(paste ("Pass ", paste(deparse(assertion), "\n", collapse = " ")))
 			TRUE}
 		else {
 			if (stop) {
@@ -87,12 +86,17 @@ unit.test =
 
 ## basic types
 
+
 rsize =
 	function(n) {
 		if(is.numeric(n))
 			rpois(1, lambda = n)
 		else
 			n(1)}
+
+rdata = 
+	function(element, size)
+		element(rsize(size))
 
 rlogical = 
 	function(element = 0.5,	size = 10) {
@@ -103,19 +107,19 @@ rlogical =
 			element = 
 				function(n) 
 					as.logical(rbinom(n, size = 1, prob = p))}
-		element(rsize(size))}
+		as.logical(rdata(element,size))}
 
 rinteger =
 	function(element = 100, size = 10) {
 		if(is.numeric(element))
 			element = fun(rpois(lambda = element))
-		element(rsize(size))}
+		as.integer(rdata(element,size))}
 
 rdouble =
 	function(element = 0, size = 10) {
 		if(is.numeric(element))
 			element = fun(rnorm(mean = element))
-		element(rsize(size))}
+		as.double(rdata(element,size))}
 
 ##rcomplex NAY
 
@@ -128,13 +132,16 @@ rcharacter =
 		unlist(
 			sapply(
 				runif(rsize(size)),
-				function(x) substr(digest(x), 1, element(1))))}
+				function(x) substr(digest(x), 1, as.character(element(1)))))}
 
-rraw =
+rfactor = function(element = 10, size = 10)
+	as.factor(rcharacter(element, size))
+
+	rraw =
 	function(element = as.raw(0:255), size = 10) {
 		if(is.raw(element))
 			element_ = select(element)
-		element_(rsize(size))} 
+		as.raw(element_(rsize(size)))} 
 
 rlist = 
 	function(element = NULL, size = 5, height = 4) {	
@@ -151,6 +158,8 @@ rlist =
 								rdouble, 
 								rcharacter, 
 								rraw,
+								rDate,
+								rfactor,
 								fun(rlist(size = size, height = rsize(height - 1))))))
 				replicate(rsize(size), element(), simplify = FALSE)}}
 
@@ -158,17 +167,19 @@ rdata.frame =
 	function(
 		nrow = 10, 
 		ncol = 5, 
-		col.generators =
+		generators =
 			list(
 				rlogical,
 				rinteger,
 				rdouble,
-				rcharacter)) {
+				rcharacter,
+				rDate,
+				rfactor)) {
 		nrow = rsize(nrow)
 		ncol = rsize(ncol)		
 		columns =
 			lapply(
-				sample(col.generators, ncol, replace = TRUE),
+				sample(generators, ncol, replace = TRUE),
 				function(g) 
 					g(size = constant(nrow)))
 		if(length(columns) > 0)
@@ -185,7 +196,7 @@ rDate =
 					rsize(size), replace = TRUE),
 				origin = as.Date("1970-01-01"))}
 		else
-			element(rsize(size))}
+			as.Date(rdata(element,size))}
 
 ## special distributions
 
@@ -195,9 +206,9 @@ constant =
 			const
 
 select = 
-	function(from)
+	function(from, replace = TRUE)
 		function(size = 1)
-			sample(from, size, replace = TRUE)
+			sample(from, size, replace = replace)
 
 ##combiners
 mixture =
@@ -207,5 +218,5 @@ mixture =
 
 # combine everything
 rany =
-	function(generators = list(rlogical, rinteger, rdouble, rcharacter, rraw, rlist))
+	function(generators = list(rlogical, rinteger, rdouble, rcharacter, rraw, rlist, rDate, rfactor))
 		do.call(mixture, generators)()
