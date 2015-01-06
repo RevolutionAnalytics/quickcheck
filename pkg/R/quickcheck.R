@@ -166,12 +166,11 @@ rlist =
 ratomic = 
 	function(element = list(rlogical, rinteger, rdouble, rcharacter, rraw, rfactor), size = 10) {
 		size = rsize(size)
-		do.call(
-			mixture, 
-		lapply(
-			element,
-			function(gg)
-				fun(gg(size = constant(size)))))()}
+		mixture(
+			lapply(
+				element,
+				function(gg)
+					fun(gg(size = constant(size)))))()}
 
 rmatrix = 
 	function(element = ratomic, nrow = 10, ncol = 10) {
