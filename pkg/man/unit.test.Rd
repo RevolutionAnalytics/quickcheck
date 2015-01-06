@@ -17,7 +17,7 @@ unit.test(assertion, generators = list(), sample.size = 10, stop = TRUE)
 }
 \details{
 A test is considered passed if each run passes. A run passes if the assertion, evaluated with randomly generated arguments, returns \code{TRUE}. A run fails if the assertion returns \code{FALSE} or raises an error. The arguments for each run of the test are generated using the generators provided with the \code{generators} argument. \code{set.seed(0)} is performed at the beginning of each test for reproducibility.}
-}
+
 \value{When \code{stop} is FALSE, a list with three elements 
 \enumerate{
 \item{The assertion being evaluated}

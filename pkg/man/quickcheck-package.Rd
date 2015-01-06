@@ -21,12 +21,5 @@ License: \tab What license is it under?\cr
 \author{
 Revolution Analytics <rhadoop@revolutionanalytics.com>
 }
-\references{
-}
+
 \keyword{testing }
-\seealso{
-
-}
-\examples{
-
-}
