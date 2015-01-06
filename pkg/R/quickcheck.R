@@ -137,7 +137,7 @@ rcharacter =
 rfactor = function(element = 10, size = 10)
 	as.factor(rcharacter(element, size))
 
-	rraw =
+rraw =
 	function(element = as.raw(0:255), size = 10) {
 		if(is.raw(element))
 			element_ = select(element)
@@ -151,35 +151,52 @@ rlist =
 				element = 
 					fun(
 						rany( 
-						generators =
-							list(
-								rlogical, 
-								rinteger, 
-								rdouble, 
-								rcharacter, 
-								rraw,
-								rDate,
-								rfactor,
-								fun(rlist(size = size, height = rsize(height - 1))))))
+							element =
+								list(
+									rlogical, 
+									rinteger, 
+									rdouble, 
+									rcharacter, 
+									rraw,
+									rDate,
+									rfactor,
+									fun(rlist(size = size, height = rsize(height - 1))))))
 				replicate(rsize(size), element(), simplify = FALSE)}}
+
+ratomic = 
+	function(element = list(rlogical, rinteger, rdouble, rcharacter, rraw, rfactor),  size = 10) {
+		size = rsize(size)
+		do.call(
+			mixture, 
+		lapply(
+			element,
+			function(gg)
+				fun(gg(size = constant(size)))))()}
+
+rmatrix = 
+	function(element = ratomic, nrow = 10, ncol = 10) {
+		nrow = rsize(nrow)
+		ncol = rsize(ncol)
+		matrix(ratomic(size = constant(nrow*ncol)), nrow = nrow, ncol = ncol)}
 
 rdata.frame =
 	function(
-		nrow = 10, 
-		ncol = 5, 
-		generators =
+		element =
 			list(
 				rlogical,
 				rinteger,
 				rdouble,
 				rcharacter,
+				rraw,
 				rDate,
-				rfactor)) {
+				rfactor),
+		nrow = 10, 
+		ncol = 5) {
 		nrow = rsize(nrow)
 		ncol = rsize(ncol)		
 		columns =
 			lapply(
-				sample(generators, ncol, replace = TRUE),
+				sample(element, ncol, replace = TRUE),
 				function(g) 
 					g(size = constant(nrow)))
 		if(length(columns) > 0)
@@ -218,5 +235,5 @@ mixture =
 
 # combine everything
 rany =
-	function(generators = list(rlogical, rinteger, rdouble, rcharacter, rraw, rlist, rDate, rfactor))
-		do.call(mixture, generators)()
+	function(element = list(rlogical, rinteger, rdouble, rcharacter, rraw, rlist, rDate, rfactor))
+		do.call(mixture, element)()

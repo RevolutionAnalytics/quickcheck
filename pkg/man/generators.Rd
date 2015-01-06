@@ -4,6 +4,8 @@
 \alias{rfactor}
 \alias{constant}
 \alias{rdata.frame}
+\alias{rmatrix}
+\alias{ratomic}
 \alias{rdouble}
 \alias{rinteger}
 \alias{rlist}
@@ -23,7 +25,9 @@ rany(generators)
 rcharacter(element = 10, size = 10)
 rfactor(element = 10, size = 10)
 constant(const = NULL)  
-rdata.frame(nrow, ncol, generators)
+rdata.frame(generators, nrow, ncol)
+rmatrix(element, nrow, ncol)
+ratomix(size = 10)
 rdouble(element = 0, size = 10)
 rinteger(element = 100, size = 10)  
 rlist(element = NULL, size = 5, height = 4)
