@@ -179,17 +179,31 @@ rmatrix =
 		ncol = rsize(ncol)
 		matrix(ratomic(size = constant(nrow*ncol)), nrow = nrow, ncol = ncol)}
 
+rDate =
+	function(element = list(from = as.Date("0000/01/01"), to = Sys.Date()), size = 10) {
+		if(is.list(element)) {
+			dates = as.Date(element$from):as.Date(element$to)
+			as.Date(
+				sample(
+					dates,
+					rsize(size), replace = TRUE),
+				origin = as.Date("1970-01-01"))}
+		else
+			as.Date(rdata(element,size))}
+
+column.generators = 		
+	list(
+		rlogical,
+		rinteger,
+		rdouble,
+		rcharacter,
+		rraw,
+		rDate,
+		rfactor)
+
 rdata.frame =
 	function(
-		element =
-			list(
-				rlogical,
-				rinteger,
-				rdouble,
-				rcharacter,
-				rraw,
-				rDate,
-				rfactor),
+		element = column.generators,
 		nrow = 10, 
 		ncol = 5) {
 		nrow = rsize(nrow)
@@ -202,18 +216,6 @@ rdata.frame =
 		if(length(columns) > 0)
 			names(columns) = paste("col", 1:ncol)
 		do.call(data.frame, columns)}
-
-rDate =
-	function(element = list(from = as.Date("0000/01/01"), to = Sys.Date()), size = 10) {
-		if(is.list(element)) {
-			dates = as.Date(element$from):as.Date(element$to)
-			as.Date(
-				sample(
-					dates,
-					rsize(size), replace = TRUE),
-				origin = as.Date("1970-01-01"))}
-		else
-			as.Date(rdata(element,size))}
 
 ## special distributions
 
@@ -234,18 +236,8 @@ mixture =
 			sample(generators, 1)[[1]]()
 
 # combine everything
+all.generators = c(column.generators, list(rlist, rdata.frame, rmatrix))
+
 rany =
-	function(
-		generators = 
-			list(
-				rlogical, 
-				rinteger, 
-				rdouble, 
-				rcharacter, 
-				rraw, 
-				rlist, 
-				rDate, 
-				rfactor, 
-				rmatrix, 
-				rdata.frame))
+	function(generators = all.generators)
 		mixture(generators)()
