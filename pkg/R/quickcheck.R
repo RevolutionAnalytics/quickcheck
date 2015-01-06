@@ -151,7 +151,7 @@ rlist =
 				element = 
 					fun(
 						rany( 
-							element =
+							generators =
 								list(
 									rlogical, 
 									rinteger, 
@@ -228,11 +228,23 @@ select =
 
 ##combiners
 mixture =
-	function(element)
+	function(generators)
 		function()
-			sample(element, 1)[[1]]()
+			sample(generators, 1)[[1]]()
 
 # combine everything
 rany =
-	function(element = list(rlogical, rinteger, rdouble, rcharacter, rraw, rlist, rDate, rfactor, rmatrix, rdata.frame))
-		mixture(element)()
+	function(
+		generators = 
+			list(
+				rlogical, 
+				rinteger, 
+				rdouble, 
+				rcharacter, 
+				rraw, 
+				rlist, 
+				rDate, 
+				rfactor, 
+				rmatrix, 
+				rdata.frame))
+		mixture(generators)()
