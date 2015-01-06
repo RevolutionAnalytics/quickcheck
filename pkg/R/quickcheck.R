@@ -164,7 +164,7 @@ rlist =
 				replicate(rsize(size), element(), simplify = FALSE)}}
 
 ratomic = 
-	function(element = list(rlogical, rinteger, rdouble, rcharacter, rraw, rfactor),  size = 10) {
+	function(element = list(rlogical, rinteger, rdouble, rcharacter, rraw, rfactor), size = 10) {
 		size = rsize(size)
 		do.call(
 			mixture, 
@@ -229,11 +229,11 @@ select =
 
 ##combiners
 mixture =
-	function(...)
+	function(element)
 		function()
-			sample(list(...), 1)[[1]]()
+			sample(element, 1)[[1]]()
 
 # combine everything
 rany =
-	function(element = list(rlogical, rinteger, rdouble, rcharacter, rraw, rlist, rDate, rfactor))
-		do.call(mixture, element)()
+	function(element = list(rlogical, rinteger, rdouble, rcharacter, rraw, rlist, rDate, rfactor, rmatrix, rdata.frame))
+		mixture(element)()
