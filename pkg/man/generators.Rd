@@ -21,13 +21,15 @@ Generators and generator constructors for random data of many types
 These functions are divided into two groups, random data generators, and constructors for such functions. Random data generators, prefixed with "r",  are functions with no mandatory arguments that generate random data of the desired type, to be used for the \code{generators} argument to the \code{\link{unit.test}} function. All arguments are given a default and can be modified with \code{\link{Curry}}, thus defining customized data generators. In cases when no reasonable defaults could be defined, instead of a random data generator, a constructor is available that returns a valid random data generator.
 }
 \usage{
-rany(generators)
+rany(generators = list(rlogical, rinteger, rdouble,
+                 rcharacter, rraw, rlist, rDate, rfactor, rmatrix,
+                 rdata.frame))
 rcharacter(element = 10, size = 10)
 rfactor(element = 10, size = 10)
 constant(const = NULL)  
 rdata.frame(element, nrow, ncol)
 rmatrix(element, nrow, ncol)
-ratomix(size = 10)
+ratomic(size = 10)
 rdouble(element = 0, size = 10)
 rinteger(element = 100, size = 10)  
 rlist(element = NULL, size = 5, height = 4)
@@ -57,7 +59,9 @@ rinteger(size = 4)
 rinteger(element = 5, size = 4)
 #pick from a given vector (not unlike sample)
 select(1:5)(3)
+#generate random numeric vector
 mixture(list(rinteger, rdouble))()
+#always return 1
 constant(1)()
 # generate random integer vector of size exactly 4, note the composition of generators
 rinteger(size = constant(4))
