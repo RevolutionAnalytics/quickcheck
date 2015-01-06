@@ -144,24 +144,25 @@ rraw =
 		as.raw(element_(rsize(size)))} 
 
 rlist = 
-	function(element = NULL, size = 5, height = 4) {	
+	function(
+		element = 
+			fun(
+				rany( 
+					generators =
+						list(
+							rlogical, 
+							rinteger, 
+							rdouble, 
+							rcharacter, 
+							rraw,
+							rDate,
+							rfactor,
+							fun(rlist(size = size, height = rsize(height - 1)))))), 
+		size = 5, 
+		height = 4) {	
 		if (height == 0) NULL
-		else 
-			if(is.null(element)) {
-				element = 
-					fun(
-						rany( 
-							generators =
-								list(
-									rlogical, 
-									rinteger, 
-									rdouble, 
-									rcharacter, 
-									rraw,
-									rDate,
-									rfactor,
-									fun(rlist(size = size, height = rsize(height - 1))))))
-				replicate(rsize(size), element(), simplify = FALSE)}}
+		else 		
+			replicate(rsize(size), element(), simplify = FALSE)}
 
 ratomic = 
 	function(element = list(rlogical, rinteger, rdouble, rcharacter, rraw, rfactor), size = 10) {
