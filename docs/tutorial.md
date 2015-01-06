@@ -6,15 +6,16 @@
 
 ## Introduction
 
-Quickcheck was originally a package for the language Haskell aiming to simplify the writing of tests. The main idea is the automatic generation of tests based on assertions a function needs to satisfy and the signature of that function. The idea spread to other languages and is now implemented in R with this package. Because of the differences in type systems between Haskell and other languages, the original idea morphed into something different for each language it was translated into, and R is no different. The main ideas retained are that tests are based on assertions and that the developer should not have to specify the inputs and output values of a test. The difference from Haskell is that the user needs to specify the type of each variable in an assertion with the optional possibility to fully specify its distribution. The main function in the package, `unit.test`, will randomly generate input values, execute the assertion and collect results. The advantages are multiple:
+Quickcheck was originally a package for the language Haskell aiming to simplify the writing of tests. The main idea is the automatic generation of tests based on assertions a function needs to satisfy and the signature of that function. The idea spread to other languages and is now implemented in R with this package. Because of the differences in type systems between Haskell and other languages, the original idea morphed into something different for each language it was translated into. In R, the main ideas retained are that tests are based on assertions and that the developer should not have to specify the inputs and output values of a test. The difference from Haskell is that the user needs to specify the type of each variable in an assertion with the optional possibility to fully specify its distribution. The main function in the package, `unit.test`, will randomly generate input values, execute the assertion and collect results. The advantages are multiple:
 
-  - each test can be run multiple times on different data points, improving coverage and the ability to detect bugs;
-  - test can run on large size inputs, possible but impractical in non-randomized testing;
-  - assertions are more self-documenting than specific examples of the I/O relation. In fact, enough assertions can constitute a specification for the function being tested, but that's not necessary for testing to be useful.
+  - each test can be run multiple times on different data points, improving coverage and the ability to detect bugs, at no additional cost for the developer;
+  - tests can run on large size inputs, possible but impractical in non-randomized testing;
+  - assertions are more self-documenting than specific examples of the I/O relation -- in fact, enough assertions can constitute a specification for the function being tested, but that's not necessary for testing to be useful;
+  - it's less likely for the developer to use implicit assumptions in the selection of testing data -- randomized testing "keeps you honest".
   
 ## First example
 
-Let's start with something very simple. Let's say we just wrote the function identity. Using the widely used testing package `testthat`, one would like to write a test like:
+Let's start with something very simple. Let's say we just wrote the function `identity`. Using the widely used testing package `testthat`, one would like to write a test like:
 
 
 ```r
@@ -30,7 +31,7 @@ for(x in c(1L, 1, list(1), NULL, factor(1)))
   test_that("identity test", expect_identical(identity(x),x))
 ```
 
-But there is no good reason to pick those specific examples, testing on more data  points or larger values would increase the clutter factor, a developer may inadvertently inject unwritten assumptions in the choice of data points etc. `quickcheck` can solve or at lease alleviate all those problems
+But there is no good reason to pick those specific examples, testing on more data  points or larger values would increase the clutter factor, a developer may inadvertently inject unwritten assumptions in the choice of data points etc. `quickcheck` can solve or at least alleviate all those problems:
 
 
 ```r
@@ -62,7 +63,7 @@ unit.test(assertion = function(x) identical(identity(x), x), generators = list(r
 [1] TRUE
 ```
 
-Done! You see, if you had to write down those 100 integer vectors one by one, you'd never have time to. But, you may object, `identity` is not supposed to work only on integer vectors, why did we test only on those? That was just a starter indeed. Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. Notable omission is `rfunction` -- don't expect it any time soon. The library is easy to extend with your own generators (for instance, `rnorm` works out of the box) and offers a number of constructors for data generators such as `constant` and `mixture`. In particular, there is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). That is exactly what we need for our identity test.
+Done! You see, if you had to write down those 100 integer vectors one by one, you'd never have time to. But, you may object, `identity` is not supposed to work only on integer vectors, why did we test only on those? That was just a starter indeed. Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. Notable omission is `rfunction` -- don't expect it any time soon. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. In particular, there is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). That is exactly what we need for our identity test.
 
 
 ```r
@@ -81,7 +82,7 @@ Now we have more confidence that `identity` works for all types of R objects.
 
 ## Ways to define assertions
 
-Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with the return value of length one. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behaviour? Here is where the function `as.predicate` comes handy. It allows to convert a `testthat` expectation into a predicate, and expectations, which seem overkill to express the identity of two values,  are a powerful way of expressing less common requirements such as raising exceptions or generating warnings. In the case of `stop`, the appropriate expectations is `expect_error(stop())`. We can use it with `unit.test` as follows:
+Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with the return value of length one. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behaviour? Here is where the function `as.assertion` comes handy. It allows to convert a `testthat` expectation into a predicate, and expectations, which seem overkill to express the identity of two values,  are a powerful way of expressing less common requirements such as raising exceptions or generating warnings. In the case of `stop`, the appropriate expectations is `expect_error(stop())`. We can use it with `unit.test` as follows:
 
 
 ```r
