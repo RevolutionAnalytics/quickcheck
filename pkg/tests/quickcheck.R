@@ -128,8 +128,9 @@ unit.test(
 	function(n) 
 		is.element(
 			mixture(
-				constant(n), 
-				constant(2*n))(), 
+				list(
+					constant(n), 
+					constant(2*n)))(), 
 			c(n,2*n)), 
 	generators = list(fun(runif(n = 1))))
 
@@ -148,4 +149,17 @@ dim.test(rdata.frame, lambda = 5, ncol)
 # rany 
 variability.test(rany)
 #variability.test(CurryL(class, rany()))  this passes by the skin of its teeth
+
+#rmatrix
+
+type.test(is.matrix, rmatrix)
+variability.test(rmatrix)
+dim.test(rmatrix, lambda = 10, nrow)
+dim.test(rmatrix, lambda = 10, ncol)
+
+#ratomic
+type.test(is.atomic, ratomic)
+variability.test(ratomic)
+length.test(ratomic, 10)
+
 
