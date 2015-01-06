@@ -87,7 +87,7 @@ unit.test =
 ## basic types
 
 
-rsize =
+rsize = 
 	function(n) {
 		if(is.numeric(n))
 			rpois(1, lambda = n)
@@ -107,19 +107,19 @@ rlogical =
 			element = 
 				function(n) 
 					as.logical(rbinom(n, size = 1, prob = p))}
-		as.logical(rdata(element,size))}
+		as.logical(rdata(element, size))}
 
 rinteger =
 	function(element = 100, size = 10) {
 		if(is.numeric(element))
 			element = fun(rpois(lambda = element))
-		as.integer(rdata(element,size))}
+		as.integer(rdata(element, size))}
 
 rdouble =
 	function(element = 0, size = 10) {
 		if(is.numeric(element))
 			element = fun(rnorm(mean = element))
-		as.double(rdata(element,size))}
+		as.double(rdata(element, size))}
 
 ##rcomplex NAY
 
@@ -189,7 +189,7 @@ rDate =
 					rsize(size), replace = TRUE),
 				origin = as.Date("1970-01-01"))}
 		else
-			as.Date(rdata(element,size))}
+			as.Date(rdata(element, size))}
 
 column.generators = 		
 	list(
