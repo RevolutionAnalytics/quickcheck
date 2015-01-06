@@ -1,5 +1,7 @@
 .Rproj.user
 .Rhistory
 .RData
-quickcheck*
+quickcheck[0-9a-z]*
 pkg.Rcheck
+quickcheck.Rcheck
+quickcheck.Rproj
