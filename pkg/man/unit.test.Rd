@@ -1,6 +1,5 @@
 \name{unit.test}
 \alias{unit.test}
-\alias{catch.out}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Generate unit tests}
@@ -25,6 +24,7 @@ A test is considered passed if each run passes. A run passes if the assertion, e
 \item{A list of in-scope variables for the assertion that may affect its result (still work-in-progress, consider incomplete)}
 \item{A list of list of arguments passed to the assertion, one per run. An element is NULL if a run passed}
 }
+When \code{stop} is TRUE, the default, there is no returned value but the same list is stored in a file. The command to load that file into the current environment as the variable \code{test.cases} is printed as the error message. This allows to replicate the error.
 }
 
 \examples{
