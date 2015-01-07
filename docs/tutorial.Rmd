@@ -152,5 +152,5 @@ unit.test(
 			list(
 				fun(rdouble(size = constant(l))), 
 				fun(rdouble(size = constant(l))))), 
-	list(rinteger))
+	list(fun(rinteger(size = constant(1)))))
 ```

@@ -180,7 +180,7 @@ rdouble(size = function(x) 10 * runif(x))
 rdouble(size = function(x) 10 * runif(x))
 ```
 
-Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`. Nested data structures have an argument `height`. All of these are intended to be averages and not deterministic values but can be replaced by a generator. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
+Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`. Nested data structures have an argument `height`. All of these are intended to be expectations as opposed to deterministic values but can be replaced by a generator, which gives you total control. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
 
 ```r
 rdouble(size = constant(3))
@@ -198,7 +198,7 @@ rdouble(size = constant(3))
 [1]  1.5197 -0.3087 -1.2533
 ```
 
-The function returned by `constant(x)` is itself a generator, that we can use when we want to specify a deterministic value for a test
+The function returned by `constant(x)` is itself a generator, that we can use when we want to specify a deterministic value for a test:
 
 
 ```r
@@ -213,7 +213,7 @@ unit.test(function(x, y) all(abs(x)/y == Inf), generators = list(rdouble, consta
 [1] TRUE
 ```
 
-Another simple constructor is `select` which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
+Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple constructor is `select` which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
 
 
 ```r
@@ -232,7 +232,7 @@ select(1:5)()
 [1] 3
 ```
 
-When passing generators to `unit.test`, one needs to pass a function, not a data set, so to provide custom arguments to generators one needs a little bit of functional programming, in the form of functions `Curry` from package `functional` or a more readable version there of, `fun` -- named as such because it returns a function but also because it is allegedly more fun to use. If `rdouble(element = 100)` generates data from the desired distribution, then a test would use it as follow
+When passing generators to `unit.test`, one needs to pass a function, not a data set, so to provide custom arguments to generators one needs a little bit of functional programming, in the form of functions `Curry` from package `functional` or a more readable version thereof, `fun` -- thus named because it returns a function but also because it is allegedly more fun to use. If `rdouble(element = 100)` generates data from the desired distribution, then a test would use it as follow
 
 
 ```r
@@ -262,7 +262,7 @@ Note the the last two tests only pass with high probability. Sometimes accepting
 
 ## Advanced topics
 
-The alert reader may have already noticed how generators can be used to define other generators. For instance, a random list of double vectors can be generated with `rlist(rdouble)` and a list of list of the same with `rlist(fun(rlist(rdouble)))`. Composition can also be applied to tests, which can be used as assertions inside other tests. One application of this is developing a test that involves two random vectors of the same random length. There isn't a built in way in quickcheck to express this dependency between arguments, but the solution is not far using the composability of tests. We first pick a random length in the "outer" test, then using it to generate equal length vectors in the "inner" test.
+The alert reader may have already noticed how generators can be used to define other generators. For instance, a random list of double vectors can be generated with `rlist(rdouble)` and a list thereof with `rlist(fun(rlist(rdouble)))`. Composition can also be applied to tests, which can be used as assertions inside other tests. One application of this is developing a test that involves two random vectors of the same random length. There isn't a built in way in quickcheck to express this dependency between arguments, but the solution is not far using the composability of tests. We first pick a random length in the "outer" test, then use it to generate equal length vectors in the "inner" test.
 
 
 ```r
@@ -274,7 +274,7 @@ unit.test(
 			list(
 				fun(rdouble(size = constant(l))), 
 				fun(rdouble(size = constant(l))))), 
-	list(rinteger))
+	list(fun(rinteger(size = constant(1)))))
 ```
 
 ```
