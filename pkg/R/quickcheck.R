@@ -38,7 +38,7 @@ as.assertion =
 # 	  mapply(Curry(assign, envir = parent.frame()), paste0("q", names), funs)
 # 	NULL}
 
-unit.test =
+test =
 	function(
 		assertion,
 		generators = list(),

@@ -18,17 +18,17 @@ library(functional)
 ## define general tests that can apply to several if not most genrators
 type.test = 
 	function(is.class, generator) 
-		unit.test(is.class, generators = list(generator))
+		test(is.class, generators = list(generator))
 
 variability.test = 
 	function(generator)
-		unit.test(
+		test(
 			function(x, y) !identical(x, y), 
 			generators = replicate(2, generator))
 
 distribution.test = 
 	function(generator1, generator2)
-		unit.test(
+		test(
 			function(s1, s2)
 				suppressWarnings(
 					ks.test(s1, s2, "two.sided")$p.value > 0.001),
@@ -36,7 +36,7 @@ distribution.test =
 
 dim.test = 
 	function(generator, lambda, f)
-		unit.test(
+		test(
 			function()
 				suppressWarnings(
 					ks.test(
@@ -104,27 +104,27 @@ distribution.test(
 	fun(sample(0:255, 1000, replace = TRUE)))
 
 #constant
-unit.test(
+test(
 	function(x) 
-		unit.test(
+		test(
 			function(y) identical(x, y), 
 			generators = list(constant(x))),
 	generators = list(rany))
 
 #select
-unit.test(
+test(
 	function(x)
 		variability.test(select(x)),
 	generators = list(fun(rlist(size = 1000, height = 1))))
 
-unit.test(
+test(
 	function(l) 
 		is.element(select(l)(), l),
 	generators = list(rlist))
 
 #rmixture
 #very weak test
-unit.test(
+test(
 	function(n) 
 		is.element(
 			mixture(
