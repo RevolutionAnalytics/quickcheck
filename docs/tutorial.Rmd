@@ -6,7 +6,7 @@ output:
 ---
 
 `r library(knitr)`
-`r opts_chunk$set(echo=TRUE, tidy=FALSE, comment="", cache=TRUE, autodep=TRUE, error=TRUE)`
+`r opts_chunk$set(echo=TRUE, tidy=FALSE, comment="", cache=TRUE, autodep=TRUE, error=FALSE)`
 
 
 ## Introduction
@@ -22,12 +22,16 @@ Quickcheck was originally a package for the language Haskell aiming to simplify 
 
 Let's start with something very simple. Let's say we just wrote the function `identity`. Using the widely used testing package `testthat`, one would like to write a test like:
 
-```{r, eval=FALSE}
+```{r, cache=FALSE}
 library(testthat)
+```
+
+```{r, eval=FALSE}
 test_that("identity test", expect_identical(identity(x), x))
 ```
 
 That in general doesn't work because `x` is not defined. What was meant was something like a quantifier *for all legal values of `x`*, but there isn't any easy way of implementing that. So a developer has to enter some values for `x`.
+
 
 ```{r}
 for(x in c(1L, 1, list(1), NULL, factor(1)))
@@ -36,19 +40,19 @@ for(x in c(1L, 1, list(1), NULL, factor(1)))
 
 But there is no good reason to pick those specific examples, testing on more data  points or larger values would increase the clutter factor, a developer may inadvertently inject unwritten assumptions in the choice of data points etc. `quickcheck` can solve or at least alleviate all those problems:
 
-```{r}
+```{r, cache=FALSE}
 library(quickcheck)
 test(assertion = function(x) identical(identity(x), x), generators = list(rinteger))
 ```
 
 We have supplied an assertion, that is a function returning a length-1 logical vector, where `TRUE` means *passed* and `FALSE` means *failed*, and a list of generators, one for each argument of the assertion -- use named or positional arguments as preferred.
-What this means is that we have tested `identity` for this assertion on random integer vectors. We don't have to write them down one by one and later we will see how we can affect the distribution of such vectors, to make them potentially huge in size or value. We can also repeat the test multiple times on different values with the least amount of effort, in fact, we have already repeated the test 10 times, which is the default. But if 100 times is required, no problem:
+What this means is that we have tested `identity` for this assertion on random integer vectors. We don't have to write them down one by one and later we will see how we can affect the distribution of such vectors, to make them say large in size or value, or more likely to hit corener cases. We can also repeat the test multiple times on different values with the least amount of effort, in fact, we have already executed this test 10 times, which is the default. But if 100 times is required, no problem:
 
 ```{r}
 test(assertion = function(x) identical(identity(x), x), generators = list(rinteger), sample.size = 100)
 ```
 
-Done! You see, if you had to write down those 100 integer vectors one by one, you'd never have time to. But, you may object, `identity` is not supposed to work only on integer vectors, why did we test only on those? That was just a starter indeed. Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. Notable omission is `rfunction` -- don't expect it any time soon. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. In particular, there is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). That is exactly what we need for our identity test.
+Done! You see, if you had to write down those 100 integer vectors one by one, you'd never have time to. But, you may object, `identity` is not supposed to work only on integer vectors, why did we test only on those? That was just a starter indeed. Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc. for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. Notable omission is `rfunction` -- don't expect it any time soon. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. In particular, there is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). That is exactly what we need for our identity test.
 
 ```{r}
 test(assertion = function(x) identical(identity(x), x), generators = list(rany), sample.size = 100)
@@ -58,7 +62,7 @@ Now we have more confidence that `identity` works for all types of R objects.
 
 ## Defining assertions
 
-Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with the return value of length one. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behaviour? Here is where the function `as.assertion` comes handy. It allows to convert a `testthat` expectation into a predicate, and expectations, which seem overkill to express the identity of two values,  are a powerful way of expressing less common requirements such as raising exceptions or generating warnings. In the case of `stop`, the appropriate expectations is `expect_error(stop())`. We can use it with `test` as follows:
+Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with the return value of length one. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behaviour? Here is where the function `as.assertion` comes handy. It allows to convert a `testthat` expectation into a predicate, and expectations, which seem overkill to express the identity of two values,  are very good at expressing less common requirements such as raising exceptions or generating warnings. In the case of `stop`, the appropriate expectations is `expect_error(stop(x))`. We can use it with `test` as follows:
 
 ```{r}
 test(
@@ -128,6 +132,7 @@ select(1:5)()
 When passing generators to `test`, one needs to pass a function, not a data set, so to provide custom arguments to generators one needs a little bit of functional programming, in the form of functions `Curry` from package `functional` or a more readable version thereof, `fun` -- thus named because it returns a function but also because it is allegedly more fun to use. If `rdouble(element = 100)` generates data from the desired distribution, then a test would use it as follow
 
 ```{r}
+library(functional)
 test(function(x) sum(x) > 100, list(Curry(rdouble, element = 100)))
 ```
 

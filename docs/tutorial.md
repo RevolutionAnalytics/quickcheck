@@ -20,10 +20,15 @@ Let's start with something very simple. Let's say we just wrote the function `id
 
 ```r
 library(testthat)
+```
+
+
+```r
 test_that("identity test", expect_identical(identity(x), x))
 ```
 
 That in general doesn't work because `x` is not defined. What was meant was something like a quantifier *for all legal values of `x`*, but there isn't any easy way of implementing that. So a developer has to enter some values for `x`.
+
 
 
 ```r
@@ -40,11 +45,15 @@ test(assertion = function(x) identical(identity(x), x), generators = list(rinteg
 ```
 
 ```
-Error: could not find function "test"
+[1] "Pass  function (x)  \n identical(identity(x), x) \n"
+```
+
+```
+[1] TRUE
 ```
 
 We have supplied an assertion, that is a function returning a length-1 logical vector, where `TRUE` means *passed* and `FALSE` means *failed*, and a list of generators, one for each argument of the assertion -- use named or positional arguments as preferred.
-What this means is that we have tested `identity` for this assertion on random integer vectors. We don't have to write them down one by one and later we will see how we can affect the distribution of such vectors, to make them potentially huge in size or value. We can also repeat the test multiple times on different values with the least amount of effort, in fact, we have already repeated the test 10 times, which is the default. But if 100 times is required, no problem:
+What this means is that we have tested `identity` for this assertion on random integer vectors. We don't have to write them down one by one and later we will see how we can affect the distribution of such vectors, to make them say large in size or value, or more likely to hit corener cases. We can also repeat the test multiple times on different values with the least amount of effort, in fact, we have already executed this test 10 times, which is the default. But if 100 times is required, no problem:
 
 
 ```r
@@ -52,10 +61,14 @@ test(assertion = function(x) identical(identity(x), x), generators = list(rinteg
 ```
 
 ```
-Error: could not find function "test"
+[1] "Pass  function (x)  \n identical(identity(x), x) \n"
 ```
 
-Done! You see, if you had to write down those 100 integer vectors one by one, you'd never have time to. But, you may object, `identity` is not supposed to work only on integer vectors, why did we test only on those? That was just a starter indeed. Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. Notable omission is `rfunction` -- don't expect it any time soon. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. In particular, there is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). That is exactly what we need for our identity test.
+```
+[1] TRUE
+```
+
+Done! You see, if you had to write down those 100 integer vectors one by one, you'd never have time to. But, you may object, `identity` is not supposed to work only on integer vectors, why did we test only on those? That was just a starter indeed. Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc. for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. Notable omission is `rfunction` -- don't expect it any time soon. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. In particular, there is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). That is exactly what we need for our identity test.
 
 
 ```r
@@ -63,14 +76,18 @@ test(assertion = function(x) identical(identity(x), x), generators = list(rany),
 ```
 
 ```
-Error: could not find function "test"
+[1] "Pass  function (x)  \n identical(identity(x), x) \n"
+```
+
+```
+[1] TRUE
 ```
 
 Now we have more confidence that `identity` works for all types of R objects.
 
 ## Defining assertions
 
-Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with the return value of length one. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behaviour? Here is where the function `as.assertion` comes handy. It allows to convert a `testthat` expectation into a predicate, and expectations, which seem overkill to express the identity of two values,  are a powerful way of expressing less common requirements such as raising exceptions or generating warnings. In the case of `stop`, the appropriate expectations is `expect_error(stop())`. We can use it with `test` as follows:
+Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with the return value of length one. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behaviour? Here is where the function `as.assertion` comes handy. It allows to convert a `testthat` expectation into a predicate, and expectations, which seem overkill to express the identity of two values,  are very good at expressing less common requirements such as raising exceptions or generating warnings. In the case of `stop`, the appropriate expectations is `expect_error(stop(x))`. We can use it with `test` as follows:
 
 
 ```r
@@ -80,7 +97,11 @@ test(
 ```
 
 ```
-Error: could not find function "test"
+[1] "Pass  function (...)  \n { \n     tryCatch({ \n         expectation(...) \n         TRUE \n     }, error = function(e) FALSE) \n } \n"
+```
+
+```
+[1] TRUE
 ```
 
 By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument.
@@ -190,7 +211,11 @@ test(function(x, y) all(abs(x)/y == Inf), generators = list(rdouble, constant(0)
 ```
 
 ```
-Error: could not find function "test"
+[1] "Pass  function (x, y)  \n all(abs(x)/y == Inf) \n"
+```
+
+```
+[1] TRUE
 ```
 
 Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple constructor is `select` which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
@@ -216,11 +241,16 @@ When passing generators to `test`, one needs to pass a function, not a data set,
 
 
 ```r
+library(functional)
 test(function(x) sum(x) > 100, list(Curry(rdouble, element = 100)))
 ```
 
 ```
-Error: could not find function "test"
+[1] "Pass  function (x)  \n sum(x) > 100 \n"
+```
+
+```
+[1] TRUE
 ```
 
 or the more readable
@@ -231,7 +261,11 @@ test(function(x) sum(x) > 100, list(fun(rdouble(element = 100))))
 ```
 
 ```
-Error: could not find function "test"
+[1] "Pass  function (x)  \n sum(x) > 100 \n"
+```
+
+```
+[1] TRUE
 ```
 
 Note the the last two tests only pass with high probability. Sometimes accepting a high probability of passing is  a shortcut to writing an effective, simple test when a deterministic one is not available.
@@ -254,5 +288,19 @@ test(
 ```
 
 ```
-Error: could not find function "test"
+[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
+[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
+[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
+[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
+[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
+[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
+[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
+[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
+[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
+[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
+[1] "Pass  function (l)  \n test(function(x, y) isTRUE(all.equal(x, x + y - y)), list(fun(rdouble(size = constant(l))),  \n     fun(rdouble(size = constant(l))))) \n"
+```
+
+```
+[1] TRUE
 ```
