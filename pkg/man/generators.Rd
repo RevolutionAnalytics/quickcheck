@@ -18,7 +18,7 @@
 Generators and generator constructors for random data of many types
 }
 \description{
-These functions are divided into two groups, random data generators, and constructors for such functions. Random data generators, prefixed with "r",  are functions with no mandatory arguments that generate random data of the desired type, to be used for the \code{generators} argument to the \code{\link{unit.test}} function. All arguments are given a default and can be modified with \code{\link{Curry}}, thus defining customized data generators. In cases when no reasonable defaults could be defined, instead of a random data generator, a constructor is available that returns a valid random data generator.
+These functions are divided into two groups, random data generators, and constructors for such functions. Random data generators, prefixed with "r",  are functions with no mandatory arguments that generate random data of the desired type, to be used for the \code{generators} argument to the \code{\link{test}} function. All arguments are given a default and can be modified with \code{\link{Curry}}, thus defining customized data generators. In cases when no reasonable defaults could be defined, instead of a random data generator, a constructor is available that returns a valid random data generator.
 }
 \usage{
 rany(generators = all.generators)

@@ -2,7 +2,7 @@
 \alias{as.assertion}
 \alias{fun}
 \title{Helper functions for quikcheck}
-\description{\code{as.assertion} allows to convert any  \code{testthtat} expectation into an assertion appropriate for use with the function \code{unit.test}. \code{fun} is equivalent to \code{Curry} but adds a little syntactic sugar. \code{fun(f(arg1 = val1, arg2 = val2, ...))} is the same as \code{Curry(fun, arg1 = val1, arg2 = val2, ...)}} 
+\description{\code{as.assertion} allows to convert any  \code{testthtat} expectation into an assertion appropriate for use with the function \code{test}. \code{fun} is equivalent to \code{Curry} but adds a little syntactic sugar. \code{fun(f(arg1 = val1, arg2 = val2, ...))} is the same as \code{Curry(fun, arg1 = val1, arg2 = val2, ...)}} 
 \usage{
 as.assertion(expectation)
 fun(a.call)}

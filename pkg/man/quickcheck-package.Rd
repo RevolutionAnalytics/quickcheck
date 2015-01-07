@@ -3,10 +3,10 @@
 \alias{quickcheck}
 \docType{package}
 \title{
-Randomized unit testing
+Randomized testing
 }
 \description{
-Supports the generatio of randomized unit tests by defining the \code{\link{unit.test}} function and a collection of meta-genarators for data of all types
+Supports the generatio of randomized tests by defining the \code{\link{test}} function and a collection of meta-genarators for data of all types
 }
 \details{
 \tabular{ll}{

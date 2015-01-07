@@ -1,13 +1,13 @@
-\name{unit.test}
-\alias{unit.test}
+\name{test}
+\alias{test}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Generate unit tests}
+Run tests}
 \description{
 Evaluates a assertion with n arguments provided by evaluating the generators. Stops or returns test cases.
 }
 \usage{
-unit.test(assertion, generators = list(), sample.size = 10, stop = TRUE)
+test(assertion, generators = list(), sample.size = 10, stop = TRUE)
 }
 \arguments{
   \item{assertion}{A function returning a length-1 logical vector}
@@ -28,5 +28,5 @@ When \code{stop} is TRUE, the default, there is no returned value but the same l
 }
 
 \examples{
-unit.test(function(x) all(x + 0 == x), list(rdouble))
+test(function(x) all(x + 0 == x), list(rdouble))
 }
