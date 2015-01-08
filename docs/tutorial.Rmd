@@ -146,6 +146,8 @@ Note the the last two tests only pass with high probability. Sometimes accepting
 
 ## Advanced topics
 
+### Composition of generators and tests as assertions
+
 The alert reader may have already noticed how generators can be used to define other generators. For instance, a random list of double vectors can be generated with `rlist(rdouble)` and a list thereof with `rlist(fun(rlist(rdouble)))`. Composition can also be applied to tests, which can be used as assertions inside other tests. One application of this is developing a test that involves two random vectors of the same random length. There isn't a built in way in quickcheck to express this dependency between arguments, but the solution is not far using the composability of tests. We first pick a random length in the "outer" test, then use it to generate equal length vectors in the "inner" test.
 
 ```{r}
@@ -158,4 +160,44 @@ test(
 				fun(rdouble(size = constant(l))), 
 				fun(rdouble(size = constant(l))))), 
 	list(fun(rinteger(size = constant(1)))))
+```
+
+### Custom generators
+
+There is not reason to limit oneself to built in generators and one can do much more than just change the parameters. For instance, we may want to 
+make sure that extremes of the allowed range are hit more often than the built-in generators ensure. For instance, `rdouble` uses by default a standard normal, and values like 0 and Inf have very small or 0 probability of occurring. Let's say we want to test the following assertion about the ratio:
+
+```{r}
+is.self.reverse = function(x) isTRUE(all.equal(x, 1/(1/x)))
+```
+
+We can have two separate tests, one for values returned by `rdouble`:
+
+```{r}
+test(is.self.reverse, list(rdouble))
+```
+
+and one for the corner cases:
+```{r}
+test(is.self.reverse, list(select(c(0, -Inf, Inf))))
+```
+
+That's a start, but the two type of values never mix in the same vector. We can combine the two with a custom generator
+
+```{r}
+rdoublex = 
+	function(element = 100, size = 10) {
+		data = rdouble(element, size)
+		sample(
+			c(data, c(0, -Inf, Inf)), 
+			size = length(data), 
+			replace = FALSE)}
+rdoublex()
+rdoublex()
+```
+		
+And use it in a more general test.
+
+```{r}
+test(is.self.reverse, list(rdoublex))
 ```

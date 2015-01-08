@@ -272,6 +272,8 @@ Note the the last two tests only pass with high probability. Sometimes accepting
 
 ## Advanced topics
 
+### Composition of generators and tests as assertions
+
 The alert reader may have already noticed how generators can be used to define other generators. For instance, a random list of double vectors can be generated with `rlist(rdouble)` and a list thereof with `rlist(fun(rlist(rdouble)))`. Composition can also be applied to tests, which can be used as assertions inside other tests. One application of this is developing a test that involves two random vectors of the same random length. There isn't a built in way in quickcheck to express this dependency between arguments, but the solution is not far using the composability of tests. We first pick a random length in the "outer" test, then use it to generate equal length vectors in the "inner" test.
 
 
@@ -299,6 +301,87 @@ test(
 [1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
 [1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
 [1] "Pass  function (l)  \n test(function(x, y) isTRUE(all.equal(x, x + y - y)), list(fun(rdouble(size = constant(l))),  \n     fun(rdouble(size = constant(l))))) \n"
+```
+
+```
+[1] TRUE
+```
+
+### Custom generators
+
+There is not reason to limit oneself to built in generators and one can do much more than just change the parameters. For instance, we may want to 
+make sure that extremes of the allowed range are hit more often than the built-in generators ensure. For instance, `rdouble` uses by default a standard normal, and values like 0 and Inf have very small or 0 probability of occurring. Let's say we want to test the following assertion about the ratio:
+
+
+```r
+is.self.reverse = function(x) isTRUE(all.equal(x, 1/(1/x)))
+```
+
+We can have two separate tests, one for values returned by `rdouble`:
+
+
+```r
+test(is.self.reverse, list(rdouble))
+```
+
+```
+[1] "Pass  function (x)  \n isTRUE(all.equal(x, 1/(1/x))) \n"
+```
+
+```
+[1] TRUE
+```
+
+and one for the corner cases:
+
+```r
+test(is.self.reverse, list(select(c(0, -Inf, Inf))))
+```
+
+```
+[1] "Pass  function (x)  \n isTRUE(all.equal(x, 1/(1/x))) \n"
+```
+
+```
+[1] TRUE
+```
+
+That's a start, but the two type of values never mix in the same vector. We can combine the two with a custom generator
+
+
+```r
+rdoublex = 
+	function(element = 100, size = 10) {
+		data = rdouble(element, size)
+		sample(
+			c(data, c(0, -Inf, Inf)), 
+			size = length(data), 
+			replace = FALSE)}
+rdoublex()
+```
+
+```
+ [1] 100.92  99.96 101.12 100.82 100.74  99.38   -Inf  97.79 100.39  99.98
+[11] 101.51 100.58 100.59 100.94
+```
+
+```r
+rdoublex()
+```
+
+```
+[1]  98.62   0.00  99.61 100.39    Inf  99.59  99.90  99.95
+```
+		
+And use it in a more general test.
+
+
+```r
+test(is.self.reverse, list(rdoublex))
+```
+
+```
+[1] "Pass  function (x)  \n isTRUE(all.equal(x, 1/(1/x))) \n"
 ```
 
 ```
