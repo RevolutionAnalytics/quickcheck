@@ -163,3 +163,6 @@ variability.test(ratomic)
 length.test(ratomic, 10)
 
 
+#rfunction
+type.test(is.function, quickcheck:::rfunction)
+variability.test(quickcheck:::rfunction)

@@ -25,18 +25,21 @@ fun =
 			lapply(as.list(match.call()$a.call), eval.parent, n = 2))
 
 ## make use of testthat expectations
-as.assertion =
-	function(expectation)
-		function(...) {
-			tryCatch({expectation(...); TRUE} , error = function(e) FALSE)}
 
-# import.expectations =
-# 	function(){
-# 		library(testthat)
-# 		names = grep("^expect", ls("package:testthat"), value = TRUE)
-# 		funs = lapply(names, function(n) as.assertion(get(n, envir = as.environment("package:testthat"))))
-# 	  mapply(Curry(assign, envir = parent.frame()), paste0("q", names), funs)
-# 	NULL}
+as.assertion =
+	function(an.exp) {
+		tmp = an.exp
+		function(...) {
+			tryCatch({tmp(...); TRUE} , error = function(e) FALSE)}}
+
+library(testthat)
+assert.names = grep("^expect_", ls("package:testthat"), value = TRUE)
+assert.funs = lapply(assert.names, function(n) as.assertion(get(n, envir = as.environment("package:testthat"))))
+names(assert.funs) = gsub("expect_", "", assert.names)
+	
+assert = 
+	function(what)
+			assert.funs[[what]]
 
 test =
 	function(
@@ -216,6 +219,18 @@ rdata.frame =
 		if(length(columns) > 0)
 			names(columns) = paste("col", 1:ncol)
 		do.call(data.frame, columns)}
+
+rfunction =
+	function()
+		sample(
+			do.call(
+				c, 
+				lapply(
+					unlist(sapply(search(), ls)), 
+					function(x) {
+						x = get(x)
+						if (is.function(x)) list(x) else list()})),
+			1)[[1]]
 
 ## special distributions
 

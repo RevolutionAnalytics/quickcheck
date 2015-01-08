@@ -52,7 +52,7 @@ test(assertion = function(x) identical(identity(x), x), generators = list(rinteg
 [1] TRUE
 ```
 
-We have supplied an assertion, that is a function returning a length-1 logical vector, where `TRUE` means *passed* and `FALSE` means *failed*, and a list of generators, one for each argument of the assertion -- use named or positional arguments as preferred.
+We have supplied an assertion, that is a function returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` means *failed*, and a list of generators, one for each argument of the assertion -- use named or positional arguments as preferred.
 What this means is that we have tested `identity` for this assertion on random integer vectors. We don't have to write them down one by one and later we will see how we can affect the distribution of such vectors, to make them say large in size or value, or more likely to hit corener cases. We can also repeat the test multiple times on different values with the least amount of effort, in fact, we have already executed this test 10 times, which is the default. But if 100 times is required, no problem:
 
 
@@ -68,7 +68,7 @@ test(assertion = function(x) identical(identity(x), x), generators = list(rinteg
 [1] TRUE
 ```
 
-Done! You see, if you had to write down those 100 integer vectors one by one, you'd never have time to. But, you may object, `identity` is not supposed to work only on integer vectors, why did we test only on those? That was just a starter indeed. Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc. for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. Notable omission is `rfunction` -- don't expect it any time soon. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. In particular, there is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). That is exactly what we need for our identity test.
+Done! You see, if you had to write down those 100 integer vectors one by one, you'd never have time to. But, you may object, `identity` is not supposed to work only on integer vectors, why did we test only on those? That was just a starter indeed. Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc. for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. In particular, there is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). That is exactly what we need for our identity test.
 
 
 ```r
@@ -87,27 +87,26 @@ Now we have more confidence that `identity` works for all types of R objects.
 
 ## Defining assertions
 
-Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with the return value of length one. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behaviour? Here is where the function `as.assertion` comes handy. It allows to convert a `testthat` expectation into a predicate, and expectations, which seem overkill to express the identity of two values,  are very good at expressing less common requirements such as raising exceptions or generating warnings. In the case of `stop`, the appropriate expectations is `expect_error(stop(x))`. We can use it with `test` as follows:
+Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with a length-one return value. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behaviour? `testthat` has a rich set of expectations to capture that and other requirements, such as printing something or generating a warning. Derived from those, `quickcheck` has a rich set of predefined assertions, in a list called `assert`:
 
 
 ```r
 test(
-  as.assertion(function(x) expect_error(stop(x))), 
+  function(x) assert("error")(stop(x)), 
   list(rcharacter))
 ```
 
 ```
-[1] "Pass  function (...)  \n { \n     tryCatch({ \n         expectation(...) \n         TRUE \n     }, error = function(e) FALSE) \n } \n"
+[1] "Pass  function (x)  \n assert(\"error\")(stop(x)) \n"
 ```
 
 ```
 [1] TRUE
 ```
 
-By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument.
+By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, with out the "expect_" prefix. We don't see why you'd ever want to use `assert$equal`, but we threw it in for completeness.
 
-
-## Modifing or defining random data generators
+## Modifying or defining random data generators
 
 There are built in random data generators for most built-in data types. They follow a simple naming conventions, "r" followed by the class name. For instance `rinteger` generates a random integer vector. Another characteristic of random data generators as defined in this package is that they have defaults for every argument, that is they can be called without arguments. Finally, the return value of different calls are statistically independent. For example
 
