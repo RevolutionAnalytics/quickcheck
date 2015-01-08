@@ -87,7 +87,7 @@ Now we have more confidence that `identity` works for all types of R objects.
 
 ## Defining assertions
 
-Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with a length-one return value. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behaviour? `testthat` has a rich set of expectations to capture that and other requirements, such as printing something or generating a warning. Derived from those, `quickcheck` has a rich set of predefined assertions, in a list called `assert`:
+Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with a length-one return value. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behaviour? `testthat` has a rich set of expectations to capture that and other requirements, such as printing something or generating a warning. Derived from those, `quickcheck` has a rich set of predefined assertions, returned by the function `assert`:
 
 
 ```r
@@ -104,7 +104,7 @@ test(
 [1] TRUE
 ```
 
-By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, with out the "expect_" prefix. We don't see why you'd ever want to use `assert$equal`, but we threw it in for completeness.
+By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, with	out the "expect_" prefix. We don't see why you'd ever want to use `assert("equal")`, but we threw it in for completeness.
 
 ## Modifying or defining random data generators
 
