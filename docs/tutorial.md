@@ -236,7 +236,7 @@ select(1:5)()
 [1] 3
 ```
 
-When passing generators to `test`, one needs to pass a function, not a data set, so to provide custom arguments to generators one needs a little bit of functional programming, in the form of functions `Curry` from package `functional` or a more readable version thereof, `fun` -- thus named because it returns a function but also because it is allegedly more fun to use. If `rdouble(element = 100)` generates data from the desired distribution, then a test would use it as follow
+When passing generators to `test`, one needs to pass a function, not a data set, so to provide custom arguments to generators one needs a little bit of functional programming, in the form of functions `Curry` from package `functional`. If `rdouble(element = 100)` generates data from the desired distribution, then a test would use it as follow
 
 
 ```r
@@ -252,20 +252,7 @@ test(function(x) sum(x) > 100, list(Curry(rdouble, element = 100)))
 [1] TRUE
 ```
 
-or the more readable
 
-
-```r
-test(function(x) sum(x) > 100, list(fun(rdouble(element = 100))))
-```
-
-```
-[1] "Pass  function (x)  \n sum(x) > 100 \n"
-```
-
-```
-[1] TRUE
-```
 
 Note the the last two tests only pass with high probability. Sometimes accepting a high probability of passing is  a shortcut to writing an effective, simple test when a deterministic one is not available.
 
@@ -273,7 +260,7 @@ Note the the last two tests only pass with high probability. Sometimes accepting
 
 ### Composition of generators and tests as assertions
 
-The alert reader may have already noticed how generators can be used to define other generators. For instance, a random list of double vectors can be generated with `rlist(rdouble)` and a list thereof with `rlist(fun(rlist(rdouble)))`. Composition can also be applied to tests, which can be used as assertions inside other tests. One application of this is developing a test that involves two random vectors of the same random length. There isn't a built in way in quickcheck to express this dependency between arguments, but the solution is not far using the composability of tests. We first pick a random length in the "outer" test, then use it to generate equal length vectors in the "inner" test.
+The alert reader may have already noticed how generators can be used to define other generators. For instance, a random list of double vectors can be generated with `rlist(rdouble)` and a list thereof with `rlist(function() rlist(rdouble))`. Composition can also be applied to tests, which can be used as assertions inside other tests. One application of this is developing a test that involves two random vectors of the same random length. There isn't a built in way in quickcheck to express this dependency between arguments, but the solution is not far using the composability of tests. We first pick a random length in the "outer" test, then use it to generate equal length vectors in the "inner" test.
 
 
 ```r
@@ -283,9 +270,9 @@ test(
 			function(x,y) 
 				isTRUE(all.equal(x, x + y - y)), 
 			list(
-				fun(rdouble(size = constant(l))), 
-				fun(rdouble(size = constant(l))))), 
-	list(fun(rinteger(size = constant(1)))))
+				Curry(rdouble, size = constant(l)), 
+				Curry(rdouble, size = constant(l)))), 
+	list(Curry(rinteger, size = constant(1))))
 ```
 
 ```
@@ -299,7 +286,7 @@ test(
 [1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
 [1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
 [1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
-[1] "Pass  function (l)  \n test(function(x, y) isTRUE(all.equal(x, x + y - y)), list(fun(rdouble(size = constant(l))),  \n     fun(rdouble(size = constant(l))))) \n"
+[1] "Pass  function (l)  \n test(function(x, y) isTRUE(all.equal(x, x + y - y)), list(Curry(rdouble,  \n     size = constant(l)), Curry(rdouble, size = constant(l)))) \n"
 ```
 
 ```

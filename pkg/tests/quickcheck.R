@@ -15,7 +15,8 @@
 library(quickcheck)
 library(functional)
 ## generator test thyself
-## define general tests that can apply to several if not most genrators
+## define general tests that can apply to several if not most generators
+
 type.test = 
 	function(is.class, generator) 
 		test(is.class, generators = list(generator))

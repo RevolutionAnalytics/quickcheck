@@ -23,11 +23,11 @@ sample =
 		x[base::sample(length(x), size = size, ...)]
 
 ## readable Curry
-fun = 
-	function(a.call) 
-		do.call(
-			partial, 
-			lapply(as.list(match.call()$a.call), eval.parent, n = 2))
+# fun = 
+# 	function(a.call) 
+# 		do.call(
+# 			partial, 
+# 			lapply(as.list(match.call()$a.call), eval.parent, n = 2))
 
 ## make use of testthat expectations
 
@@ -123,13 +123,13 @@ rlogical =
 rinteger =
 	function(element = 100, size = 10) {
 		if(is.numeric(element))
-			element = fun(rpois(lambda = element))
+			element = Curry(rpois, lambda = element)
 		as.integer(rdata(element, size))}
 
 rdouble =
 	function(element = 0, size = 10) {
 		if(is.numeric(element))
-			element = fun(rnorm(mean = element))
+			element = Curry(rnorm, mean = element)
 		as.double(rdata(element, size))}
 
 rnumeric = 
@@ -146,7 +146,7 @@ rcharacter =
 		if(is.character(element))
 			element = nchar(element)
 		if(is.numeric(element))
-			element = fun(rpois(lambda = element))
+			element = Curry(rpois, lambda = element)
 		unlist(
 			sapply(
 				runif(rsize(size)),
@@ -164,16 +164,18 @@ rraw =
 rlist = 
 	function(
 		element = 
-			fun(
-				rany( 
-					generators =
-						list(
-							rdouble, 
-							rcharacter, 
-							rraw,
-							rDate,
-							rfactor,
-							fun(rlist(size = size, height = rsize(height - 1)))))), 
+			Curry(
+				rany, 
+				generators =
+					list(
+						rlogical, 
+						rinteger, 
+						rdouble, 
+						rcharacter, 
+						rraw,
+						rDate,
+						rfactor,
+						Curry(rlist(size = size, height = rsize(height - 1))))), 
 		size = 5, 
 		height = 4) {	
 		if (height == 0) NULL
@@ -187,7 +189,7 @@ ratomic =
 			lapply(
 				element,
 				function(gg)
-					fun(gg(size = constant(size)))))()}
+					Curry(gg, size = constant(size))))()}
 
 rmatrix = 
 	function(element = ratomic, nrow = 10, ncol = 10) {
@@ -207,19 +209,20 @@ rDate =
 		else
 			as.Date(rdata(element, size))}
 
-column.generators = 		
-	list(
-		rlogical,
-		rinteger,
-		rdouble,
-		rcharacter,
-		rraw,
-		rDate,
-		rfactor)
+column.generators = 
+	function()
+		list(
+			rlogical = rlogical,
+			rinteger = rinteger,
+			rdouble = rdouble,
+			rcharacter = rcharacter,
+			rraw = rraw,
+			rDate = rDate,
+			rfactor = rfactor)
 
 rdata.frame =
 	function(
-		element = column.generators,
+		element = column.generators(),
 		nrow = 10, 
 		ncol = 5) {
 		nrow = rsize(nrow)
@@ -264,7 +267,7 @@ mixture =
 			sample(generators, 1)[[1]]()
 
 # combine everything
-all.generators = c(column.generators, list(rlist, rdata.frame, rmatrix))
+all.generators = c(column.generators(), list(rlist, rdata.frame, rmatrix))
 
 rany =
 	function(generators = all.generators)
