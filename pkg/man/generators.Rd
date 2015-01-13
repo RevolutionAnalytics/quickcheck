@@ -8,6 +8,7 @@
 \alias{ratomic}
 \alias{rdouble}
 \alias{rinteger}
+\alias{rnumeric}
 \alias{rlist}
 \alias{rlogical}
 \alias{mixture}
@@ -31,6 +32,7 @@ ratomic(element = list(rlogical, rinteger, rdouble,
                  rcharacter, rraw, rfactor), size = 10)
 rdouble(element = 0, size = 10)
 rinteger(element = 100, size = 10)  
+rnumeric(element = 100, size = 10)
 rlist(element =	fun(rany(generators =	list(rlogical, rinteger, rdouble, rcharacter, rraw, rDate, rfactor, fun(rlist(size = size, height = rsize(height - 1)))))), size = 5, height = 4)
 rlogical(element = 0.5, size = 10)  
 mixture(generators)  
@@ -48,7 +50,7 @@ select(from, replace = TRUE)}
  \item{const}{Any R object} \item{...}{Random generators to combine in a mixture distribution with equal weights}
 }
 \details{
-\code{rcharacter}, \code{rfactor}, \code{rdata.frame}, \code{rdouble}, \code{rinteger}, \code{rraw}, \code{rlogical} and \code{rlist} follow an obvious naming convention with an "r" prefix followed by a class name and generate random data of the type specified by the name. \code{rany} generates an R object of any type. In practice, it's a mixture of the available generators, but may be enriched with more generators in the future. \code{constant} is a constructor for a degenerate random data generator that always returns the same object. It's useful for testing, say, corner cases that a developer needs to make sure they are going to be hit, not just with a certain probability. It's a bridge to deterministic testing. \code{select} returns a generator that picks among a list of possible values. \code{mixture} creates a random generator that follows a mixture distribution of the generators provided as arguments (equally weighted). 
+\code{rcharacter}, \code{rfactor}, \code{rdata.frame}, \code{rdouble}, \code{rinteger}, \code{rnumeric}, \code{rraw}, \code{rlogical} and \code{rlist} follow an obvious naming convention with an "r" prefix followed by a class name and generate random data of the type specified by the name. \code{rany} generates an R object of any type. In practice, it's a mixture of the available generators, but may be enriched with more generators in the future. \code{constant} is a constructor for a degenerate random data generator that always returns the same object. It's useful for testing, say, corner cases that a developer needs to make sure they are going to be hit, not just with a certain probability. It's a bridge to deterministic testing. \code{select} returns a generator that picks among a list of possible values. \code{mixture} creates a random generator that follows a mixture distribution of the generators provided as arguments (equally weighted). 
 }
 
 \examples{

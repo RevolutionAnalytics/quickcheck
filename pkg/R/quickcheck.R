@@ -132,6 +132,13 @@ rdouble =
 			element = fun(rnorm(mean = element))
 		as.double(rdata(element, size))}
 
+rnumeric = 
+	function(element = 100, size = 10)
+		mixture(
+			list(
+				Curry(rdouble, element = element, size = size), 
+				Curry(rinteger, element = element, size = size)))()
+
 ##rcomplex NAY
 
 rcharacter = 
@@ -161,8 +168,6 @@ rlist =
 				rany( 
 					generators =
 						list(
-							rlogical, 
-							rinteger, 
 							rdouble, 
 							rcharacter, 
 							rraw,
