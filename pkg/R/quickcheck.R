@@ -13,6 +13,11 @@
 # limitations under the License.
 
 ## quirkless sample
+
+quickcheck.env = new.env()
+
+quickcheck.env$nested = FALSE
+
 sample = 
 	function(x, size, ...) 
 		x[base::sample(length(x), size = size, ...)]
@@ -47,7 +52,10 @@ test =
 		generators = list(),
 		sample.size = 10,
 		stop = TRUE) {
-		set.seed(0)
+		if(!quickcheck.env$nested) {
+			set.seed(0)
+			quickcheck.env$nested = TRUE
+			on.exit({quickcheck.env$nested = FALSE})}
 		try.assertion =
 			function(xx)
 				tryCatch(
