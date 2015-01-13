@@ -38,8 +38,8 @@ assert.funs = lapply(assert.names, function(n) as.assertion(get(n, envir = as.en
 names(assert.funs) = gsub("expect_", "", assert.names)
 	
 assert = 
-	function(what)
-			assert.funs[[what]]
+	function(what, ...)
+			assert.funs[[what]](...)
 
 test =
 	function(

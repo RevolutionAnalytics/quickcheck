@@ -92,19 +92,19 @@ Unlike `testhat` where you need to construct specially defined *expectations*, `
 
 ```r
 test(
-  function(x) assert("error")(stop(x)), 
+  function(x) assert("error", stop(x)), 
   list(rcharacter))
 ```
 
 ```
-[1] "Pass  function (x)  \n assert(\"error\")(stop(x)) \n"
+[1] "Pass  function (x)  \n assert(\"error\", stop(x)) \n"
 ```
 
 ```
 [1] TRUE
 ```
 
-By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, with	out the "expect_" prefix. We don't see why you'd ever want to use `assert("equal")`, but we threw it in for completeness.
+By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, with	out the "expect_" prefix. We don't see why you'd ever want to use `assert("equal", ...)`, but we threw it in for completeness.
 
 ## Modifying or defining random data generators
 
