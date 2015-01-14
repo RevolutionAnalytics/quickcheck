@@ -106,6 +106,136 @@ test(
 
 By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, with	out the "expect_" prefix. We don't see why you'd ever want to use `assert("equal", ...)`, but we threw it in for completeness.
 
+## What to do when tests fail
+
+`quickcheck` doesn't fix bugs for you, but tries to get you started in a couple of ways. The first is its output:
+
+
+```r
+test(function(x) mean(x) > 0, list(rdouble))
+```
+
+```
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+```
+
+```
+Error:
+load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheckad4268b55371")
+```
+
+Its output shows that about half of the default 10 runs have failed and then invites us to load some data. Another way to get at that data is to run the test with the option `stop = FALSE` which doesn't produce an error. This is convenient for interactive sessions, but less so when running `R CMD check`.
+
+
+```r
+test(function(x) mean(x) > 0, list(rdouble), stop = FALSE)
+```
+
+```
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+```
+
+```
+$assertion
+function (x) 
+mean(x) > 0
+
+$env
+$env$x
+[1] 1
+
+
+$cases
+$cases[[1]]
+NULL
+
+$cases[[2]]
+$cases[[2]][[1]]
+[1] -0.4115  0.2522 -0.8919  0.4357 -1.2375 -0.2243  0.3774  0.1333  0.8042
+
+
+$cases[[3]]
+$cases[[3]][[1]]
+[1]  0.50361  1.08577 -0.69095 -1.28460  0.04673 -0.23571 -0.54289 -0.43331
+[9] -0.64947
+
+
+$cases[[4]]
+$cases[[4]][[1]]
+ [1]  1.1519  0.9922 -0.4295  1.2383 -0.2793  1.7579  0.5607 -0.4528
+ [9] -0.8320 -1.1666 -1.0656 -1.5638
+
+
+$cases[[5]]
+$cases[[5]][[1]]
+ [1]  0.83205 -0.22733  0.26614 -0.37670  2.44136 -0.79534 -0.05488
+ [8]  0.25014  0.61824 -0.17262 -2.22390 -1.26361  0.35873
+
+
+$cases[[6]]
+$cases[[6]][[1]]
+[1] -0.94065 -0.11583 -0.81497  0.24226 -1.42510  0.36594  0.24841  0.06529
+[9]  0.01916
+
+
+$cases[[7]]
+$cases[[7]][[1]]
+ [1] -0.6490 -0.1192  0.6641  1.1010  0.1438 -0.1178 -0.9121 -1.4376
+ [9] -0.7971  1.2541
+
+
+$cases[[8]]
+NULL
+
+$cases[[9]]
+NULL
+
+$cases[[10]]
+NULL
+```
+
+The ouput is a list with three elements:
+  - the assertion that failed
+  - a list of in-scope variables that could have affected the result -- this is work in progress and shouldn't be trusted at this time
+  - a list of arguments passed to the assertion
+  
+My recommendation is to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and its generators. This is because the first step in fixing a bug is almost always to reproduce it, and nondeterministic bugs are more difficult to reproduce. The `test` function seeds the random number generator so that every time it is called it will rerun the same test, that is call the assertion with the same arguments, run after run. So I guess we should call it pseudo-random testing to be precise. Let's go in more detail on the `cases` element. It is a list with an element for each run, which has a value of `NULL` if the run was succesful and a list of arguments passed to the assertion otherwise. In this case runs 2 through 7 failed. We can replicate it as follows.
+
+
+```r
+test.out = test(function(x) mean(x) > 0, list(rdouble), stop = FALSE)
+```
+
+```
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x) > 0"
+```
+
+```r
+do.call(test.out$assertion, test.out$cases[[3]])
+```
+
+```
+[1] FALSE
+```
+
+At this point we can use `debug` or any other debugging technique and modify our code until the assertion returns true. 
+
+
 ## Modifying or defining random data generators
 
 There are built in random data generators for most built-in data types. They follow a simple naming conventions, "r" followed by the class name. For instance `rinteger` generates a random integer vector. Another characteristic of random data generators as defined in this package is that they have defaults for every argument, that is they can be called without arguments. Finally, the return value of different calls are statistically independent. For example
@@ -116,7 +246,8 @@ rdouble()
 ```
 
 ```
-[1] -1.0081  1.8832 -0.9290 -0.2942 -0.6150 -0.9471  0.5990 -1.5236
+ [1] -0.50806 -0.20738 -0.39281 -0.31999 -0.27911  0.49419 -0.17733
+ [8] -0.50596  1.34304 -0.21458 -0.17956 -0.10019  0.71267 -0.07356
 ```
 
 ```r
@@ -124,8 +255,8 @@ rdouble()
 ```
 
 ```
-[1] -0.57430 -1.39017 -0.07042 -0.43088 -0.59223  0.98112  0.53241 -0.09046
-[9]  0.15649
+[1] -0.68166 -0.32427  0.06016 -0.58889  0.53150 -1.51839  0.30656 -1.53645
+[9] -0.30098
 ```
 
 As you can see, both elements and length change from one call to the next and in fact they are both random and independent. This is generally true for all generators, with the exception of the trivial generators created with `constant`. Most generators take two arguments, `element` and `size` which are meant to specify the distribution of the elements and size of the returned data structures and whose exact interpretation depends on the specific generator. In general, if the argument `element` is a value it is construed as a desired expectation of the elements of the return value, if it is a function, it is called with a single argument to generate the elements of the random data structure. For example
@@ -136,7 +267,7 @@ rdouble()
 ```
 
 ```
-[1] -0.4302 -0.9261 -0.1771  0.4020 -0.7317  0.8304 -1.2081
+[1] -0.6521 -0.0569 -1.9144  1.1766 -1.6650 -0.4635 -1.1159 -0.7508
 ```
 generates some random double vector. The next expression does the same but with an expectation equal to 100
 
@@ -145,7 +276,8 @@ rdouble(element = 100)
 ```
 
 ```
-[1] 100.02  99.61  99.51  98.95  99.10 101.27
+ [1] 100.02  98.71  98.36 100.45  99.98  99.68  99.07  98.51  98.92 101.00
+[11]  99.38  98.62 101.87 100.43  99.76 101.06
 ```
 and finally this extracts the elements from a uniform distribution with all parameters at default values.
 
@@ -154,8 +286,8 @@ rdouble(runif)
 ```
 
 ```
- [1] 0.78102 0.01115 0.94031 0.99375 0.35741 0.74764 0.79291 0.70586
- [9] 0.47583 0.49465 0.30805
+ [1] 0.26788 0.76215 0.98631 0.29361 0.39935 0.81213 0.07715 0.36370
+ [9] 0.44259 0.15671 0.58221 0.97016
 ```
 
 The same is true for argument size. If not a function, it's construed as a length expectation, otherwise it is called with an single argument equal to 1 to generate a random length.
@@ -167,7 +299,7 @@ rdouble(size = 1)
 ```
 
 ```
-[1] 0.9261
+[1] -0.9290 -0.2942 -0.6150 -0.9471
 ```
 
 ```r
@@ -175,7 +307,7 @@ rdouble(size = 1)
 ```
 
 ```
-[1] 0.4207
+[1] -0.03473
 ```
 
 Second form:
@@ -191,7 +323,7 @@ rdouble(size = constant(3))
 ```
 
 ```
-[1] -0.4002 -1.3702  0.9878
+[1] 0.7876 2.0752 1.0274
 ```
 
 ```r
@@ -199,7 +331,7 @@ rdouble(size = constant(3))
 ```
 
 ```
-[1]  1.5197 -0.3087 -1.2533
+[1]  1.2079 -1.2313  0.9839
 ```
 
 The function returned by `constant(x)` is itself a generator, that we can use when we want to specify a deterministic value for a test:
