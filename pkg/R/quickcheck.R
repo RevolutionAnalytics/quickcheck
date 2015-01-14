@@ -175,7 +175,7 @@ rlist =
 						rraw,
 						rDate,
 						rfactor,
-						Curry(rlist(size = size, height = rsize(height - 1))))), 
+						Curry(rlist, size = size, height = rsize(height - 1)))), 
 		size = 5, 
 		height = 4) {	
 		if (height == 0) NULL
@@ -183,7 +183,7 @@ rlist =
 			replicate(rsize(size), element(), simplify = FALSE)}
 
 ratomic = 
-	function(element = list(rlogical, rinteger, rdouble, rcharacter, rraw, rfactor), size = 10) {
+	function(element = atomic.generators, size = 10) {
 		size = rsize(size)
 		mixture(
 			lapply(
@@ -209,8 +209,7 @@ rDate =
 		else
 			as.Date(rdata(element, size))}
 
-column.generators = 
-	function()
+atomic.generators = 
 		list(
 			rlogical = rlogical,
 			rinteger = rinteger,
@@ -222,16 +221,12 @@ column.generators =
 
 rdata.frame =
 	function(
-		element = column.generators(),
+		element = ratomic,
 		nrow = 10, 
 		ncol = 5) {
 		nrow = rsize(nrow)
 		ncol = rsize(ncol)		
-		columns =
-			lapply(
-				sample(element, ncol, replace = TRUE),
-				function(g) 
-					g(size = constant(nrow)))
+		columns = replicate(ncol, ratomic(size = constant(nrow)), simplify = FALSE)
 		if(length(columns) > 0)
 			names(columns) = paste("col", 1:ncol)
 		do.call(data.frame, columns)}
@@ -267,7 +262,7 @@ mixture =
 			sample(generators, 1)[[1]]()
 
 # combine everything
-all.generators = c(column.generators(), list(rlist, rdata.frame, rmatrix))
+all.generators = c(atomic.generators, list(rlist, rdata.frame, rmatrix))
 
 rany =
 	function(generators = all.generators)
