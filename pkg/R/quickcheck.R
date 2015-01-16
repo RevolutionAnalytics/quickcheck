@@ -22,13 +22,17 @@ sample =
 	function(x, size, ...) 
 		x[base::sample(length(x), size = size, ...)]
 
-## readable Curry
-# fun = 
-# 	function(a.call) 
-# 		do.call(
-# 			partial, 
-# 			lapply(as.list(match.call()$a.call), eval.parent, n = 2))
+## 
 
+## argument is called assertion for user facing API, but used also on generators internally
+repro = 
+eval.formula.or.function = 
+	function(assertion, args = list()) {
+		if(is.function(assertion))
+			do.call(assertion, args)
+		else
+			eval(tail(as.list(assertion), 1)[[1]], args, environment(assertion))}
+		
 ## make use of testthat expectations
 
 as.assertion =
@@ -59,7 +63,7 @@ test =
 		try.assertion =
 			function(xx)
 				tryCatch(
-					do.call(assertion, xx),
+					eval.formula.or.function(assertion, xx),
 					error =
 						function(e) FALSE)
 		test.cases =
@@ -80,7 +84,7 @@ test =
 					lapply(
 						1:sample.size,
 						function(i) {
-							args = lapply(generators, function(a) a())
+							args = lapply(generators, eval.formula.or.function, args = list())
 							if(!try.assertion(args)){
 								print(paste("FAIL: assertion:", paste(deparse(assertion), collapse = " ")))
 								args}}))
@@ -103,11 +107,17 @@ rsize =
 		if(is.numeric(n))
 			rpois(1, lambda = n)
 		else
-			n(1)}
+			eval.formula.or.function(n)[[1]]}
 
 rdata = 
-	function(element, size)
-		element(rsize(size))
+	function(element, size) {
+		size = rsize(size)
+		eval.formula.or.function(
+			element, 
+			if(is.function(element))
+				list(size)
+			else 
+				list(size = rsize(size)))}
 
 rlogical = 
 	function(element = 0.5,	size = 10) {
@@ -180,7 +190,7 @@ rlist =
 		height = 4) {	
 		if (height == 0) NULL
 		else 		
-			replicate(rsize(size), element(), simplify = FALSE)}
+			replicate(rsize(size), eval.formula.or.function(element), simplify = FALSE)}
 
 ratomic = 
 	function(element = atomic.generators, size = 10) {

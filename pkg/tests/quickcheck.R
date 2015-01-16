@@ -68,32 +68,32 @@ type.test(is.logical, rlogical)
 variability.test(rlogical)
 length.test(rlogical, 10)
 distribution.test(
-	Curry(rlogical, size = 1000),
-	Curry(rbinom, n = 1000, size = 1, prob = 0.5))
+	~rlogical(size = 1000),
+	~rbinom(n = 1000, size = 1, prob = 0.5))
 
 ##rinteger 
 type.test(is.integer, rinteger)
 variability.test(rinteger)
 length.test(rinteger, 10)
 distribution.test(
-	Curry(rinteger, size = 1000), 
-	Curry(rpois, n = 1000, lambda = 100))
+	~rinteger(size = 1000), 
+	~rpois(n = 1000, lambda = 100))
 
 ##rdouble 
 type.test(is.double, rdouble)
 variability.test(rdouble)
 length.test(rdouble, 10)
 distribution.test(
-	Curry(rdouble, size = 1000), 
-	Curry(rnorm, n = 1000))
+	~rdouble(size = 1000), 
+	~rnorm(n = 1000))
 
 ##rcharacter: 
 type.test(is.character, rcharacter)
 variability.test(rcharacter)
 length.test(rcharacter, 10)
 distribution.test(
-	Curry(nchar, rcharacter(size = 1000)),
-	Curry(rpois, n = 1000, lambda = 10))
+	~nchar(rcharacter(size = 1000)),
+	~rpois(n = 1000, lambda = 10))
 
 
 ##rraw
@@ -101,8 +101,8 @@ type.test(is.raw, rraw)
 variability.test(rraw)
 length.test(rraw, 10)
 distribution.test(
-	Curry(as.integer, rraw(size = 1000)), 
-	Curry(sample, 0:255, 1000, replace = TRUE))
+	~as.integer(rraw(size = 1000)), 
+	~sample(0:255, 1000, replace = TRUE))
 
 #constant
 test(
@@ -116,7 +116,7 @@ test(
 test(
 	function(x)
 		variability.test(select(x)),
-	generators = list(Curry(rlist, size = 1000, height = 1)))
+	generators = list(~rlist(size = 1000, height = 1)))
 
 test(
 	function(l) 
@@ -133,7 +133,7 @@ test(
 					constant(n), 
 					constant(2*n)))(), 
 			c(n,2*n)), 
-	generators = list(Curry(runif, n = 1)))
+	generators = list(~runif(n = 1)))
 
 #rlist
 

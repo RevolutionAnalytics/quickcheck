@@ -1,17 +1,17 @@
 \name{test}
 \alias{test}
-%- Also NEED an '\alias' for EACH other topic documented here.
+\alias{repro}
 \title{
 Run tests}
 \description{
-Evaluates a assertion with n arguments provided by evaluating the generators. Stops or returns test cases.
+\code{test} evaluates an assertion with arguments provided by evaluating repeatedly a list of generators. Stops or returns test cases. \code{repro} help reproducing any error that might have occurred. 
 }
 \usage{
 test(assertion, generators = list(), sample.size = 10, stop = TRUE)
 }
 \arguments{
-  \item{assertion}{A function returning a length-1 logical vector}
-  \item{generators}{A list of random data generators, one per argument needed by the \code{assertion} argument}
+  \item{assertion}{A function returning a length-1 logical vector. Alternatively, a formula with only the right side (left side is ignored) that evaluates to a length-1 logical vector in the environment of the caller expanded with the named list of objects obtained evaluating the generators.}
+  \item{generators}{A list of random data generators, one per argument needed by the \code{assertion} argument when \code{assertion} is a formula, or one per free variable in \code{argument} when it is a formula --- in the latter case all element must be named.}
   \item{sample.size}{How many times to check the assertion, with newly sampled data as arguments}
   \item{stop}{Whether to stop in case of error or continue}
 }
@@ -29,4 +29,5 @@ When \code{stop} is TRUE, the default, there is no returned value but the same l
 
 \examples{
 test(function(x) all(x + 0 == x), list(rdouble))
+test(~all(x + 0 == x), list(x = ~rdouble(10)))
 }

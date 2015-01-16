@@ -53,7 +53,7 @@ test(assertion = function(x) identical(identity(x), x), generators = list(rinteg
 ```
 
 We have supplied an assertion, that is a function returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` means *failed*, and a list of generators, one for each argument of the assertion -- use named or positional arguments as preferred.
-What this means is that we have tested `identity` for this assertion on random integer vectors. We don't have to write them down one by one and later we will see how we can affect the distribution of such vectors, to make them say large in size or value, or more likely to hit corener cases. We can also repeat the test multiple times on different values with the least amount of effort, in fact, we have already executed this test 10 times, which is the default. But if 100 times is required, no problem:
+What this means is that we have tested `identity` for this assertion on random integer vectors. We don't have to write them down one by one and later we will see how we can affect the distribution of such vectors, to make them say large in size or value, or more likely to hit corner cases. We can also repeat the test multiple times on different values with the least amount of effort, in fact, we have already executed this test 10 times, which is the default. But if 100 times is required, no problem:
 
 
 ```r
@@ -87,7 +87,7 @@ Now we have more confidence that `identity` works for all types of R objects.
 
 ## Defining assertions
 
-Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with a length-one return value. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behaviour? `testthat` has a rich set of expectations to capture that and other requirements, such as printing something or generating a warning. Derived from those, `quickcheck` has a rich set of predefined assertions, returned by the function `assert`:
+Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with a length-one return value. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behavior? `testthat` has a rich set of expectations to capture that and other requirements, such as printing something or generating a warning. Derived from those, `quickcheck` has a rich set of predefined assertions, returned by the function `assert`:
 
 
 ```r
@@ -104,7 +104,22 @@ test(
 [1] TRUE
 ```
 
-By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, with	out the "expect_" prefix. We don't see why you'd ever want to use `assert("equal", ...)`, but we threw it in for completeness.
+By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you'd ever want to use `assert("equal", ...)`, but we threw it in for completeness. Since writing assertions is a very common endeavor when developing with quickcheck, there is an alternate short syntax for doing so, using formulas. The above example becomes:
+
+
+```r
+test(
+  ~assert("error", stop(x)), 
+  list(rcharacter))
+```
+
+```
+[1] "Pass  ~assert(\"error\", stop(x)) \n"
+```
+
+```
+[1] TRUE
+```
 
 ## What to do when tests fail
 
@@ -112,84 +127,81 @@ By executing this test successfully we have built confidence that the function `
 
 
 ```r
-test(function(x) mean(x) > 0, list(rdouble))
+test(~mean(x) > 0, list(x = rdouble))
 ```
 
 ```
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
 ```
 
 ```
 Error:
-load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheckad4268b55371")
+load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheck8386b707758")
 ```
 
-Its output shows that about half of the default 10 runs have failed and then invites us to load some data. Another way to get at that data is to run the test with the option `stop = FALSE` which doesn't produce an error. This is convenient for interactive sessions, but less so when running `R CMD check`.
+Its output shows that about half of the default 10 runs have failed and then invites us to load some debugging data. Another way to get at that data is to run the test with the option `stop = FALSE` which doesn't produce an error. This is convenient for interactive sessions, but less so when running `R CMD check`.
 
 
 ```r
-test(function(x) mean(x) > 0, list(rdouble), stop = FALSE)
+test(~mean(x) > 0, list(x = rdouble), stop = FALSE)
 ```
 
 ```
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
 ```
 
 ```
 $assertion
-function (x) 
-mean(x) > 0
+~mean(x) > 0
 
 $env
-$env$x
-[1] 1
-
+NULL
 
 $cases
 $cases[[1]]
 NULL
 
 $cases[[2]]
-$cases[[2]][[1]]
+$cases[[2]]$x
 [1] -0.4115  0.2522 -0.8919  0.4357 -1.2375 -0.2243  0.3774  0.1333  0.8042
 
 
 $cases[[3]]
-$cases[[3]][[1]]
+$cases[[3]]$x
 [1]  0.50361  1.08577 -0.69095 -1.28460  0.04673 -0.23571 -0.54289 -0.43331
 [9] -0.64947
 
 
 $cases[[4]]
-$cases[[4]][[1]]
+$cases[[4]]$x
  [1]  1.1519  0.9922 -0.4295  1.2383 -0.2793  1.7579  0.5607 -0.4528
  [9] -0.8320 -1.1666 -1.0656 -1.5638
 
 
 $cases[[5]]
-$cases[[5]][[1]]
+$cases[[5]]$x
  [1]  0.83205 -0.22733  0.26614 -0.37670  2.44136 -0.79534 -0.05488
  [8]  0.25014  0.61824 -0.17262 -2.22390 -1.26361  0.35873
 
 
 $cases[[6]]
-$cases[[6]][[1]]
+$cases[[6]]$x
 [1] -0.94065 -0.11583 -0.81497  0.24226 -1.42510  0.36594  0.24841  0.06529
 [9]  0.01916
 
 
 $cases[[7]]
-$cases[[7]][[1]]
+$cases[[7]]$x
  [1] -0.6490 -0.1192  0.6641  1.1010  0.1438 -0.1178 -0.9121 -1.4376
  [9] -0.7971  1.2541
 
@@ -204,12 +216,13 @@ $cases[[10]]
 NULL
 ```
 
-The ouput is a list with three elements:
+The output is a list with three elements:
+
   - the assertion that failed
   - a list of in-scope variables that could have affected the result -- this is work in progress and shouldn't be trusted at this time
   - a list of arguments passed to the assertion
   
-My recommendation is to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and its generators. This is because the first step in fixing a bug is almost always to reproduce it, and nondeterministic bugs are more difficult to reproduce. The `test` function seeds the random number generator so that every time it is called it will rerun the same test, that is call the assertion with the same arguments, run after run. So I guess we should call it pseudo-random testing to be precise. Let's go in more detail on the `cases` element. It is a list with an element for each run, which has a value of `NULL` if the run was succesful and a list of arguments passed to the assertion otherwise. In this case runs 2 through 7 failed. We can replicate it as follows.
+My recommendation is to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and its generators. This is because the first step in fixing a bug is almost always to reproduce it, and non-deterministic bugs are more difficult to reproduce. The `test` function seeds the random number generator so that every time it is called it will rerun the same test, that is call the assertion with the same arguments, run after run. So I guess we should call it pseudo-random testing to be precise. Let's go in more detail on the `cases` element. It is a list with an element for each run, which has a value of `NULL`, if the run was successful, and a list of arguments passed to the assertion otherwise. In this case runs 2 through 7 failed. We can replicate it as follows.
 
 
 ```r
@@ -233,7 +246,37 @@ do.call(test.out$assertion, test.out$cases[[3]])
 [1] FALSE
 ```
 
-At this point we can use `debug` or any other debugging technique and modify our code until the assertion returns true. 
+At this point we can use `debug` or any other debugging technique and modify our code until the assertion returns true. If the assertion is a formula, evaluating it is a little more complicated, therfore you can use the function `repro` for both formulas and functions:
+
+
+```r
+repro(test.out$assertion, test.out$cases[[3]])
+```
+
+```
+[1] FALSE
+```
+
+```r
+test.out = test(~mean(x) > 0, list(x = rdouble), stop = FALSE)
+```
+
+```
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+[1] "FAIL: assertion: ~mean(x) > 0"
+```
+
+```r
+repro(test.out$assertion, test.out$cases[[3]])
+```
+
+```
+[1] FALSE
+```
 
 
 ## Modifying or defining random data generators
@@ -290,7 +333,7 @@ rdouble(runif)
  [9] 0.44259 0.15671 0.58221 0.97016
 ```
 
-The same is true for argument size. If not a function, it's construed as a length expectation, otherwise it is called with an single argument equal to 1 to generate a random length.
+The same is true for argument `size`. If not a function, it's construed as a length expectation, otherwise it is called with a single argument equal to 1 to generate a random length.
 
 First form:
 
@@ -368,7 +411,7 @@ select(1:5)()
 [1] 3
 ```
 
-When passing generators to `test`, one needs to pass a function, not a data set, so to provide custom arguments to generators one needs a little bit of functional programming, in the form of functions `Curry` from package `functional`. If `rdouble(element = 100)` generates data from the desired distribution, then a test would use it as follow
+When passing generators to `test`, one needs to pass a function, not a data set, so to provide custom arguments to generators one needs a little bit of functional programming, namely function `Curry` from package `functional`. If `rdouble(element = 100)` generates data from the desired distribution, then a test would use it as follow
 
 
 ```r
@@ -384,10 +427,28 @@ test(function(x) sum(x) > 100, list(Curry(rdouble, element = 100)))
 [1] TRUE
 ```
 
+Note the the last two tests only pass with high probability. Sometimes accepting a high probability of passing is  a shortcut to writing an effective, simple test when a deterministic one is not available. Since currying is common when using `quickchek`, we thought of providing an alternate syntax using formulas. The last example would become
 
 
-Note the the last two tests only pass with high probability. Sometimes accepting a high probability of passing is  a shortcut to writing an effective, simple test when a deterministic one is not available.
+```r
+library(functional)
+test(function(x) sum(x) > 100, list(~rdouble(element = 100)))
+```
 
+```
+[1] "Pass  function (x)  \n sum(x) > 100 \n"
+```
+
+```
+[1] TRUE
+```
+
+Whether it's better, it's probably a matter of taste, but we find it looks more like the actual call that's going to generate the data and it works better with completion at the R prompt and in Rstudio.
+
+
+
+
+Whether it's better
 ## Advanced topics
 
 ### Composition of generators and tests as assertions
@@ -402,9 +463,9 @@ test(
 			function(x,y) 
 				isTRUE(all.equal(x, x + y - y)), 
 			list(
-				Curry(rdouble, size = constant(l)), 
-				Curry(rdouble, size = constant(l)))), 
-	list(Curry(rinteger, size = constant(1))))
+				~rdouble(size = constant(l)), 
+				~rdouble(size = constant(l)))), 
+	list(~rinteger(size = constant(1))))
 ```
 
 ```
@@ -418,7 +479,7 @@ test(
 [1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
 [1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
 [1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
-[1] "Pass  function (l)  \n test(function(x, y) isTRUE(all.equal(x, x + y - y)), list(Curry(rdouble,  \n     size = constant(l)), Curry(rdouble, size = constant(l)))) \n"
+[1] "Pass  function (l)  \n test(function(x, y) isTRUE(all.equal(x, x + y - y)), list(~rdouble(size = constant(l)),  \n     ~rdouble(size = constant(l)))) \n"
 ```
 
 ```

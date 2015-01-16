@@ -38,7 +38,7 @@ mixture(generators)
 rraw(element = as.raw(0:255), size = 10)  
 select(from, replace = TRUE)}
 \arguments{
- \item{element}{The expectation for the element of the random data structure (for numeric types). For logical, the probability of \code{TRUE}. For character, the expected length of each element of the returned character vector. For factor, TODO. For raw, a raw vector from which to pick. Alternatively (and for list, exclusively), a function specifying the distribution of the elements in the form of a single argument random object generator. Its single argument -- at least, single mandatory argument -- is the size of the sample (e.g. \code{rnorm})}
+ \item{element}{The expectation for the element of the random data structure (for numeric types). For logical, the probability of \code{TRUE}. For character, the expected length of each element of the returned character vector. For factor, TODO. For raw, a raw vector from which to pick. Alternatively, a function specifying the distribution of the elements in the form of a single argument function. Its single argument -- at least, single mandatory argument -- is the size of the sample (e.g. \code{rnorm}). Alternatively, a formula that will evaluate to the desired distribution. The formula must contain the name \code{size} and return \code{size} items}
  \item{size}{The average size of the returned data structure. Alternatively, a function specifying its distribution in the form of a argument-less random non-negative integer number generator with a sample size of one.}
  \item{nrow}{The average number of rows for the returned data frame. Alternatively, a function specifying its distribution (see \code{size})}
  \item{ncol}{The average number of columns for the returned data frame. Alternatively, a function specifying its distribution (see \code{size})}
@@ -64,5 +64,7 @@ mixture(list(rinteger, rdouble))()
 #always return 1
 constant(1)()
 # generate random integer vector of size exactly 4, note the composition of generators
-rinteger(size = constant(4))}
+rinteger(size = constant(4))
+#same with formulas
+rinteger(size = ~4)}
 
