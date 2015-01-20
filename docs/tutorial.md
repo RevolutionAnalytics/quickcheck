@@ -11,7 +11,7 @@ Quickcheck was originally a package for the language Haskell aiming to simplify 
   - each test can be run multiple times on different data points, improving coverage and the ability to detect bugs, at no additional cost for the developer;
   - tests can run on large size inputs, possible but impractical in non-randomized testing;
   - assertions are more self-documenting than specific examples of the I/O relation -- in fact, enough assertions can constitute a specification for the function being tested, but that's not necessary for testing to be useful;
-  - it's less likely for the developer to use implicit assumptions in the selection of testing data -- randomized testing "keeps you honest".
+  - it is less likely for the developer to use implicit assumptions in the selection of testing data -- randomized testing "keeps you honest".
   
 ## First example
 
@@ -46,7 +46,8 @@ test(assertion = function(x = rinteger()) identical(identity(x), x))
 ```
 
 ```
-[1] "Pass  function (x = rinteger())  \n identical(identity(x), x) \n"
+Pass  function (x = rinteger())  
+ identical(identity(x), x) 
 ```
 
 ```
@@ -62,7 +63,8 @@ test(assertion = function(x = rinteger()) identical(identity(x), x), sample.size
 ```
 
 ```
-[1] "Pass  function (x = rinteger())  \n identical(identity(x), x) \n"
+Pass  function (x = rinteger())  
+ identical(identity(x), x) 
 ```
 
 ```
@@ -77,7 +79,8 @@ test(assertion = function(x = rany()) identical(identity(x), x), sample.size = 1
 ```
 
 ```
-[1] "Pass  function (x = rany())  \n identical(identity(x), x) \n"
+Pass  function (x = rany())  
+ identical(identity(x), x) 
 ```
 
 ```
@@ -94,48 +97,19 @@ Unlike `testhat` where you need to construct specially defined *expectations*, `
 
 ```r
 test(
-  function(x) assert("error", stop(x)), 
-  list(x = rcharacter))
+  function(x = rcharacter()) assert("error", stop(x)))
 ```
 
 ```
-[1] "Pass  function (x)  \n assert(\"error\", stop(x)) \n"
-```
-
-```
-[1] TRUE
-```
-
-By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you'd ever want to use `assert("equal", ...)`, but we threw it in for completeness. Since writing assertions is a very common endeavor when developing with quickcheck, there is an alternate short syntax for doing so, using formulas. The above example becomes:
-
-
-```r
-test(
-  ~assert("error", stop(x)), 
-  list(x = rcharacter))
-```
-
-```
-[1] "Pass  ~assert(\"error\", stop(x)) \n"
+Pass  function (x = rcharacter())  
+ assert("error", stop(x)) 
 ```
 
 ```
 [1] TRUE
 ```
 
-And going back to the `identity` example it can be written as
-
-
-```r
-test(assertion = ~identical(identity(x), x), generators = list(x = rany))
-```
-
-```
-[1] "Pass  ~identical(identity(x), x) \n"
-```
-
-```
-[1] TRUE
+By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you'd ever want to use `assert("equal", ...)`, but we threw it in for completeness. 
 ```
 
 ## What to do when tests fail
@@ -144,42 +118,33 @@ test(assertion = ~identical(identity(x), x), generators = list(x = rany))
 
 
 ```r
-test(~mean(x) > 0, list(x = rdouble))
+test(function(x = rdouble()) mean(x) > 0)
 ```
 
 ```
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
+FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0
 ```
 
 ```
 Error:
-load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheckda4a9c0c7fd")
+load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheck1119c6b09e196")
 ```
 
 Its output shows that about half of the default 10 runs have failed and then invites us to load some debugging data. Another way to get at that data is to run the test with the option `stop = FALSE` which doesn't produce an error. This is convenient for interactive sessions, but less so when running `R CMD check`.
 
 
 ```r
-test(~mean(x) > 0, list(x = rdouble), stop = FALSE)
+test(function(x = rdouble()) mean(x) > 0, stop = FALSE)
 ```
 
 ```
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
+FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0
 ```
 
 ```
 $assertion
-~mean(x) > 0
+function (x = rdouble()) 
+mean(x) > 0
 
 $env
 NULL
@@ -243,16 +208,11 @@ My recommendation is to write assertions that depend exclusively on their argume
 
 
 ```r
-test.out = test(function(x) mean(x = rdouble()) > 0, stop = FALSE)
+test.out = test(function(x  = rdouble()) mean(x) > 0, stop = FALSE)
 ```
 
 ```
-[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
-[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
-[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
-[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
-[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
-[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
+FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0
 ```
 
 ```r
@@ -263,51 +223,7 @@ do.call(test.out$assertion, test.out$cases[[3]])
 [1] FALSE
 ```
 
-At this point we can use `debug` or any other debugging technique and modify our code until the assertion returns true. If the assertion is a formula, evaluating it is a little more complicated, therfore you can use the function `repro` for both formulas and functions:
-
-
-```r
-test.out = test(function(x) mean(x = rdouble()) > 0, stop = FALSE)
-```
-
-```
-[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
-[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
-[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
-[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
-[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
-[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
-```
-
-```r
-repro(test.out$assertion, test.out$cases[[3]])
-```
-
-```
-[1] FALSE
-```
-
-```r
-test.out = test(~mean(x) > 0, list(x = rdouble), stop = FALSE)
-```
-
-```
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-[1] "FAIL: assertion: ~mean(x) > 0"
-```
-
-```r
-repro(test.out$assertion, test.out$cases[[3]])
-```
-
-```
-[1] FALSE
-```
-
+At this point we can use `debug` or any other debugging technique and modify our code until the assertion returns true. 
 
 ## Modifying or defining random data generators
 
@@ -363,7 +279,7 @@ rdouble(runif)
  [9] 0.44259 0.15671 0.58221 0.97016
 ```
 
-The same is true for argument `size`. If not a function, it's construed as a length expectation, otherwise it is called with a single argument equal to 1 to generate a random length.
+The same is true for argument `size`. If not a function, it is construed as a length expectation, otherwise it is called with a single argument equal to 1 to generate a random length.
 
 First form:
 
@@ -407,31 +323,8 @@ rdouble(size = constant(3))
 [1]  1.2079 -1.2313  0.9839
 ```
 
-The function returned by `constant(x)` is itself a generator, that we can use when we want to specify a deterministic value for a test:
-
-
-```r
-test(function(x, y) all(abs(x)/y == Inf), generators = list(rdouble, constant(0))) 
-```
-
-```
-[1] "Pass  function (x, y)  \n all(abs(x)/y == Inf) \n"
-```
-
-```
-[1] TRUE
-```
-
 Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple constructor is `select` which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
 
-
-```r
-select(1:5)()
-```
-
-```
-[1] 5
-```
 
 ```r
 select(1:5)()
@@ -441,66 +334,13 @@ select(1:5)()
 [1] 3
 ```
 
-When passing generators to `test`, one needs to pass a function, not a data set, so to provide custom arguments to generators one needs a little bit of functional programming, namely function `Curry` from package `functional`. If `rdouble(element = 100)` generates data from the desired distribution, then a test would use it as follow
-
-
 ```r
-library(functional)
-test(~sum(x) > 100, list(x = Curry(rdouble, element = 100)))
+select(1:5)()
 ```
 
 ```
-[1] "Pass  ~sum(x) > 100 \n"
+[1] 5
 ```
-
-```
-[1] TRUE
-```
-
-Note the the last two tests only pass with high probability. Sometimes accepting a high probability of passing is  a shortcut to writing an effective, simple test when a deterministic one is not available. Since currying is common when using `quickchek`, we thought of providing an alternate syntax using formulas. The last example would become
-
-
-```r
-test(~sum(x) > 100, list(x = ~rdouble(element = 100)))
-```
-
-```
-[1] "Pass  ~sum(x) > 100 \n"
-```
-
-```
-[1] TRUE
-```
-
-Whether it's better, it's probably a matter of taste, but we find it looks more like the actual call that's going to generate the data and it works better with completion at the R prompt and in Rstudio. Without formulas, the above can be written as:
-
-
-```r
-test(function(x = rdouble(element = 100)) sum(x > 100))
-```
-
-```
-[1] "Pass  function (x = rdouble(element = 100))  \n sum(x > 100) \n"
-```
-
-```
-[1] TRUE
-```
-
-
-```r
-library(pryr)
-test(f(x = rdouble(element = 100), sum(x > 100)))
-```
-
-```
-[1] "Pass  function (x = rdouble(element = 100))  \n sum(x > 100) \n"
-```
-
-```
-[1] TRUE
-```
-
 
 
 ## Advanced topics
@@ -512,28 +352,38 @@ The alert reader may have already noticed how generators can be used to define o
 
 ```r
 test(
-	function(l) 
+	function(l = rinteger(size = constant(1))) 
 		test(
-			function(x,y) 
-				isTRUE(all.equal(x, x + y - y)), 
-			list(
-				~rdouble(size = constant(l)), 
-				~rdouble(size = constant(l)))), 
-	list(~rinteger(size = constant(1))))
+			function(
+				x = rdouble(size = constant(l)), 
+				y = rdouble(size = constant(l))) 
+				isTRUE(all.equal(x, x + y - y))))
 ```
 
 ```
-[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
-[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
-[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
-[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
-[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
-[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
-[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
-[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
-[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
-[1] "Pass  function (x, y)  \n isTRUE(all.equal(x, x + y - y)) \n"
-[1] "Pass  function (l)  \n test(function(x, y) isTRUE(all.equal(x, x + y - y)), list(~rdouble(size = constant(l)),  \n     ~rdouble(size = constant(l)))) \n"
+Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
+ isTRUE(all.equal(x, x + y - y)) 
+Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
+ isTRUE(all.equal(x, x + y - y)) 
+Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
+ isTRUE(all.equal(x, x + y - y)) 
+Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
+ isTRUE(all.equal(x, x + y - y)) 
+Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
+ isTRUE(all.equal(x, x + y - y)) 
+Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
+ isTRUE(all.equal(x, x + y - y)) 
+Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
+ isTRUE(all.equal(x, x + y - y)) 
+Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
+ isTRUE(all.equal(x, x + y - y)) 
+Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
+ isTRUE(all.equal(x, x + y - y)) 
+Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
+ isTRUE(all.equal(x, x + y - y)) 
+Pass  function (l = rinteger(size = constant(1)))  
+ test(function(x = rdouble(size = constant(l)), y = rdouble(size = constant(l))) isTRUE(all.equal(x,  
+     x + y - y))) 
 ```
 
 ```
@@ -554,11 +404,12 @@ We can have two separate tests, one for values returned by `rdouble`:
 
 
 ```r
-test(is.self.reverse, list(rdouble))
+test(function(x = rdouble()) is.self.reverse(x))
 ```
 
 ```
-[1] "Pass  function (x)  \n isTRUE(all.equal(x, 1/(1/x))) \n"
+Pass  function (x = rdouble())  
+ is.self.reverse(x) 
 ```
 
 ```
@@ -568,11 +419,12 @@ test(is.self.reverse, list(rdouble))
 and one for the corner cases:
 
 ```r
-test(is.self.reverse, list(select(c(0, -Inf, Inf))))
+test(function(x = select(c(0, -Inf, Inf))()) is.self.reverse(x))
 ```
 
 ```
-[1] "Pass  function (x)  \n isTRUE(all.equal(x, 1/(1/x))) \n"
+Pass  function (x = select(c(0, -Inf, Inf))())  
+ is.self.reverse(x) 
 ```
 
 ```
@@ -610,11 +462,12 @@ And use it in a more general test.
 
 
 ```r
-test(is.self.reverse, list(rdoublex))
+test(function(x = rdoublex()) is.self.reverse(x))
 ```
 
 ```
-[1] "Pass  function (x)  \n isTRUE(all.equal(x, 1/(1/x))) \n"
+Pass  function (x = rdoublex())  
+ is.self.reverse(x) 
 ```
 
 ```

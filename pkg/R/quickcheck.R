@@ -25,14 +25,13 @@ sample =
 
 
 ## argument is called assertion for user facing API, but used also on generators internally
-repro = 
-eval.formula.or.function = 
-	function(assertion, args = list()) {
-		if(is.function(assertion))
-			do.call(assertion, args)
+eval.formula.or.function= 
+	function(rng, args = list()) {
+		if(is.function(rng))
+			do.call(rng, args)
 		else
-			eval(tail(as.list(assertion), 1)[[1]], args, environment(assertion))}
-		
+			eval(tail(as.list(rng), 1)[[1]], args, environment(rng))}
+
 ## make use of testthat expectations
 
 as.assertion =
@@ -91,15 +90,12 @@ test =
 					lapply(
 						1:sample.size,
 						function(i) {
-							args = lapply(generators, eval.formula.or.function, args = list())
-							args2 = do.call(c, lapply(formals(assertion), function(x) if(is.symbol(x)) list() else  list(eval(x))))
-							if(!is.null(args2) && is.null(names(args2))) names(args2) = replicate(length(args2), "")
-							args[names(args2)] = args2
+							args = lapply(formals(assertion), eval, envir = envir)
 							if(!try.assertion(args)){
-								print(paste("FAIL: assertion:", paste(deparse(assertion), collapse = " ")))
+								cat(paste("FAIL: assertion:", paste(deparse(assertion), "\n", collapse = " ")))
 								args}}))
 		if(all(sapply(test.cases$cases, is.null))){
-			print(paste ("Pass ", paste(deparse(assertion), "\n", collapse = " ")))
+			cat(paste ("Pass ", paste(deparse(assertion), "\n", collapse = " ")))
 			TRUE}
 		else {
 			if (stop) {
@@ -238,9 +234,6 @@ atomic.generators =
 			rraw = rraw,
 			rDate = rDate,
 			rfactor = rfactor)
-
-
-ff = f(x = atomic.generators$rinteger, x)
 
 rdata.frame =
 	function(

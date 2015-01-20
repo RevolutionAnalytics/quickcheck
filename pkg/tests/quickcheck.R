@@ -14,26 +14,26 @@
 
 library(quickcheck)
 library(functional)
+
 ## generator test thyself
 ## define general tests that can apply to several if not most generators
 
 type.test = 
 	function(is.class, generator) 
-		test(is.class, generators = list(generator))
+		test(function(x = generator()) is.class(x))
 
 variability.test = 
 	function(generator)
 		test(
-			function(x, y) !identical(x, y), 
-			generators = replicate(2, generator))
+			function(x = generator(), y = generator()) !identical(x, y))
 
 distribution.test = 
 	function(generator1, generator2)
 		test(
-			function(s1, s2)
+			function(s1 = generator1(), s2 = generator2())
 				suppressWarnings(
 					ks.test(s1, s2, "two.sided")$p.value > 0.001),
-			generators = list(generator1, generator2))
+			sample.size = 1)
 
 dim.test = 
 	function(generator, lambda, f)
@@ -44,7 +44,7 @@ dim.test =
 						replicate(1000, f(generator())), 
 						rpois(1000, lambda), 
 						"two.sided")$p.value > 0.001),
-			generators = list())
+			sample.size = 1)
 
 length.test = 
 	function(generator, lambda)
@@ -68,32 +68,32 @@ type.test(is.logical, rlogical)
 variability.test(rlogical)
 length.test(rlogical, 10)
 distribution.test(
-	~rlogical(size = 1000),
-	~rbinom(n = 1000, size = 1, prob = 0.5))
+	Curry(rlogical, size = 1000),
+	Curry(rbinom, n = 1000, size = 1, prob = 0.5))
 
 ##rinteger 
 type.test(is.integer, rinteger)
 variability.test(rinteger)
 length.test(rinteger, 10)
 distribution.test(
-	~rinteger(size = 1000), 
-	~rpois(n = 1000, lambda = 100))
+	Curry(rinteger, size = 1000), 
+	Curry(rpois, n = 1000, lambda = 100))
 
 ##rdouble 
 type.test(is.double, rdouble)
 variability.test(rdouble)
 length.test(rdouble, 10)
 distribution.test(
-	~rdouble(size = 1000), 
-	~rnorm(n = 1000))
+	Curry(rdouble, size = 1000), 
+	Curry(rnorm, n = 1000))
 
 ##rcharacter: 
 type.test(is.character, rcharacter)
 variability.test(rcharacter)
 length.test(rcharacter, 10)
 distribution.test(
-	~nchar(rcharacter(size = 1000)),
-	~rpois(n = 1000, lambda = 10))
+	Curry(nchar, rcharacter(size = 1000)),
+	Curry(rpois, n = 1000, lambda = 10))
 
 
 ##rraw
@@ -101,39 +101,34 @@ type.test(is.raw, rraw)
 variability.test(rraw)
 length.test(rraw, 10)
 distribution.test(
-	~as.integer(rraw(size = 1000)), 
-	~sample(0:255, 1000, replace = TRUE))
+	Curry(as.integer, rraw(size = 1000)), 
+	Curry(sample, 0:255, 1000, replace = TRUE))
 
 #constant
 test(
-	function(x) 
+	function(x = rany()) 
 		test(
-			function(y) identical(x, y), 
-			generators = list(constant(x))),
-	generators = list(rany))
+			function(y = constant(x)()) identical(x, y)))
 
 #select
 test(
-	function(x)
-		variability.test(select(x)),
-	generators = list(~rlist(size = 1000, height = 1)))
+	function(x = rlist(size = 1000, height = 1))
+		variability.test(select(x)))
 
 test(
-	function(l) 
-		is.element(select(l)(), l),
-	generators = list(rlist))
+	function(l = rlist()) 
+		is.element(select(l)(), l))
 
 #mixture
 #very weak test
 test(
-	function(n) 
+	function(n = runif(n = 1)) 
 		is.element(
 			mixture(
 				list(
 					constant(n), 
 					constant(2*n)))(), 
-			c(n,2*n)), 
-	generators = list(~runif(n = 1)))
+			c(n,2*n))) 
 
 #rlist
 
