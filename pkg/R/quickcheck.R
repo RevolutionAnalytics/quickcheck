@@ -92,6 +92,9 @@ test =
 						1:sample.size,
 						function(i) {
 							args = lapply(generators, eval.formula.or.function, args = list())
+							args2 = lapply(formals(assertion), function(x) if(is.symbol(x)) NULL else  eval(x))
+							if(is.null(names(args2))) names(args2) = replicate(length(args2), "")
+							args[names(args2)] = args2
 							if(!try.assertion(args)){
 								print(paste("FAIL: assertion:", paste(deparse(assertion), collapse = " ")))
 								args}}))
