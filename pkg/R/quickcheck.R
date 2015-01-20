@@ -50,6 +50,10 @@ assert =
 	function(what, ...)
 			assert.funs[[what]](...)
 
+is.formula = 
+	function(x)
+		class(x) == "formula"
+
 test =
 	function(
 		assertion,
@@ -60,6 +64,9 @@ test =
 			set.seed(0)
 			quickcheck.env$nested = TRUE
 			on.exit({quickcheck.env$nested = FALSE})}
+		stopifnot(is.function(assertion) || is.formula(assertion))
+		if(!is.list(generators))
+			generators = list(generators)
 		try.assertion =
 			function(xx)
 				tryCatch(
