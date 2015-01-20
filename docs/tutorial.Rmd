@@ -36,6 +36,7 @@ That in general doesn't work because `x` is not defined. What was meant was some
 ```{r}
 for(x in c(1L, 1, list(1), NULL, factor(1)))
   test_that("identity test", expect_identical(identity(x),x))
+rm(x)
 ```
 
 But there is no good reason to pick those specific examples, testing on more data  points or larger values would increase the clutter factor, a developer may inadvertently inject unwritten assumptions in the choice of data points etc. `quickcheck` can solve or at least alleviate all those problems:
