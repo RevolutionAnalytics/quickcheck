@@ -42,27 +42,27 @@ But there is no good reason to pick those specific examples, testing on more dat
 
 ```r
 library(quickcheck)
-test(assertion = function(x) identical(identity(x), x), generators = list(rinteger))
+test(assertion = function(x = rinteger()) identical(identity(x), x))
 ```
 
 ```
-[1] "Pass  function (x)  \n identical(identity(x), x) \n"
+[1] "Pass  function (x = rinteger())  \n identical(identity(x), x) \n"
 ```
 
 ```
 [1] TRUE
 ```
 
-We have supplied an assertion, that is a function returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` means *failed*, and a list of generators, one for each argument of the assertion -- use named or positional arguments as preferred.
+We have supplied an assertion, that is a function with defaults for each argument, at least some set using random data generators, and returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` means *failed*.
 What this means is that we have tested `identity` for this assertion on random integer vectors. We don't have to write them down one by one and later we will see how we can affect the distribution of such vectors, to make them say large in size or value, or more likely to hit corner cases. We can also repeat the test multiple times on different values with the least amount of effort, in fact, we have already executed this test 10 times, which is the default. But if 100 times is required, no problem:
 
 
 ```r
-test(assertion = function(x) identical(identity(x), x), generators = list(rinteger), sample.size = 100)
+test(assertion = function(x = rinteger()) identical(identity(x), x), sample.size = 100)
 ```
 
 ```
-[1] "Pass  function (x)  \n identical(identity(x), x) \n"
+[1] "Pass  function (x = rinteger())  \n identical(identity(x), x) \n"
 ```
 
 ```
@@ -73,18 +73,19 @@ Done! You see, if you had to write down those 100 integer vectors one by one, yo
 
 
 ```r
-test(assertion = function(x) identical(identity(x), x), generators = list(rany), sample.size = 100)
+test(assertion = function(x = rany()) identical(identity(x), x), sample.size = 100)
 ```
 
 ```
-[1] "Pass  function (x)  \n identical(identity(x), x) \n"
+[1] "Pass  function (x = rany())  \n identical(identity(x), x) \n"
 ```
 
 ```
 [1] TRUE
 ```
 
-Now we have more confidence that `identity` works for all types of R objects.
+Now we have more confidence that `identity` works for all types of R objects. 
+
 
 ## Defining assertions
 
@@ -94,7 +95,7 @@ Unlike `testhat` where you need to construct specially defined *expectations*, `
 ```r
 test(
   function(x) assert("error", stop(x)), 
-  list(rcharacter))
+  list(x = rcharacter))
 ```
 
 ```
@@ -111,11 +112,26 @@ By executing this test successfully we have built confidence that the function `
 ```r
 test(
   ~assert("error", stop(x)), 
-  list(rcharacter))
+  list(x = rcharacter))
 ```
 
 ```
 [1] "Pass  ~assert(\"error\", stop(x)) \n"
+```
+
+```
+[1] TRUE
+```
+
+And going back to the `identity` example it can be written as
+
+
+```r
+test(assertion = ~identical(identity(x), x), generators = list(x = rany))
+```
+
+```
+[1] "Pass  ~identical(identity(x), x) \n"
 ```
 
 ```
@@ -142,7 +158,7 @@ test(~mean(x) > 0, list(x = rdouble))
 
 ```
 Error:
-load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheck8386b707758")
+load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheckda4a9c0c7fd")
 ```
 
 Its output shows that about half of the default 10 runs have failed and then invites us to load some debugging data. Another way to get at that data is to run the test with the option `stop = FALSE` which doesn't produce an error. This is convenient for interactive sessions, but less so when running `R CMD check`.
@@ -227,16 +243,16 @@ My recommendation is to write assertions that depend exclusively on their argume
 
 
 ```r
-test.out = test(function(x) mean(x) > 0, list(rdouble), stop = FALSE)
+test.out = test(function(x) mean(x = rdouble()) > 0, stop = FALSE)
 ```
 
 ```
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
-[1] "FAIL: assertion: function (x)  mean(x) > 0"
+[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
+[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
+[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
+[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
+[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
+[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
 ```
 
 ```r
@@ -249,6 +265,19 @@ do.call(test.out$assertion, test.out$cases[[3]])
 
 At this point we can use `debug` or any other debugging technique and modify our code until the assertion returns true. If the assertion is a formula, evaluating it is a little more complicated, therfore you can use the function `repro` for both formulas and functions:
 
+
+```r
+test.out = test(function(x) mean(x = rdouble()) > 0, stop = FALSE)
+```
+
+```
+[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
+[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
+[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
+[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
+[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
+[1] "FAIL: assertion: function (x)  mean(x = rdouble()) > 0"
+```
 
 ```r
 repro(test.out$assertion, test.out$cases[[3]])
@@ -417,11 +446,11 @@ When passing generators to `test`, one needs to pass a function, not a data set,
 
 ```r
 library(functional)
-test(function(x) sum(x) > 100, list(Curry(rdouble, element = 100)))
+test(~sum(x) > 100, list(x = Curry(rdouble, element = 100)))
 ```
 
 ```
-[1] "Pass  function (x)  \n sum(x) > 100 \n"
+[1] "Pass  ~sum(x) > 100 \n"
 ```
 
 ```
@@ -432,24 +461,48 @@ Note the the last two tests only pass with high probability. Sometimes accepting
 
 
 ```r
-library(functional)
-test(function(x) sum(x) > 100, list(~rdouble(element = 100)))
+test(~sum(x) > 100, list(x = ~rdouble(element = 100)))
 ```
 
 ```
-[1] "Pass  function (x)  \n sum(x) > 100 \n"
+[1] "Pass  ~sum(x) > 100 \n"
 ```
 
 ```
 [1] TRUE
 ```
 
-Whether it's better, it's probably a matter of taste, but we find it looks more like the actual call that's going to generate the data and it works better with completion at the R prompt and in Rstudio.
+Whether it's better, it's probably a matter of taste, but we find it looks more like the actual call that's going to generate the data and it works better with completion at the R prompt and in Rstudio. Without formulas, the above can be written as:
+
+
+```r
+test(function(x = rdouble(element = 100)) sum(x > 100))
+```
+
+```
+[1] "Pass  function (x = rdouble(element = 100))  \n sum(x > 100) \n"
+```
+
+```
+[1] TRUE
+```
+
+
+```r
+library(pryr)
+test(f(x = rdouble(element = 100), sum(x > 100)))
+```
+
+```
+[1] "Pass  function (x = rdouble(element = 100))  \n sum(x > 100) \n"
+```
+
+```
+[1] TRUE
+```
 
 
 
-
-Whether it's better
 ## Advanced topics
 
 ### Composition of generators and tests as assertions
@@ -489,7 +542,7 @@ test(
 
 ### Custom generators
 
-There is not reason to limit oneself to built in generators and one can do much more than just change the parameters. For instance, we may want to 
+There is no reason to limit oneself to built in generators and one can do much more than just change the parameters. For instance, we may want to 
 make sure that extremes of the allowed range are hit more often than the built-in generators ensure. For instance, `rdouble` uses by default a standard normal, and values like 0 and Inf have very small or 0 probability of occurring. Let's say we want to test the following assertion about the ratio:
 
 

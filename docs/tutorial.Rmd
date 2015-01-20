@@ -1,6 +1,6 @@
 ---
 title: "Assertion-based testing with Quickcheck"
-output: 
+output:
   html_document:
     keep_md: true
 ---
@@ -43,23 +43,24 @@ But there is no good reason to pick those specific examples, testing on more dat
 
 ```{r, cache=FALSE}
 library(quickcheck)
-test(assertion = function(x) identical(identity(x), x), generators = list(rinteger))
+test(assertion = function(x = rinteger()) identical(identity(x), x))
 ```
 
-We have supplied an assertion, that is a function returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` means *failed*, and a list of generators, one for each argument of the assertion -- use named or positional arguments as preferred.
+We have supplied an assertion, that is a function with defaults for each argument, at least some set using random data generators, and returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` means *failed*.
 What this means is that we have tested `identity` for this assertion on random integer vectors. We don't have to write them down one by one and later we will see how we can affect the distribution of such vectors, to make them say large in size or value, or more likely to hit corner cases. We can also repeat the test multiple times on different values with the least amount of effort, in fact, we have already executed this test 10 times, which is the default. But if 100 times is required, no problem:
 
 ```{r}
-test(assertion = function(x) identical(identity(x), x), generators = list(rinteger), sample.size = 100)
+test(assertion = function(x = rinteger()) identical(identity(x), x), sample.size = 100)
 ```
 
 Done! You see, if you had to write down those 100 integer vectors one by one, you'd never have time to. But, you may object, `identity` is not supposed to work only on integer vectors, why did we test only on those? That was just a starter indeed. Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc. for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. In particular, there is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). That is exactly what we need for our identity test.
 
 ```{r}
-test(assertion = function(x) identical(identity(x), x), generators = list(rany), sample.size = 100)
+test(assertion = function(x = rany()) identical(identity(x), x), sample.size = 100)
 ```
 
-Now we have more confidence that `identity` works for all types of R objects.
+Now we have more confidence that `identity` works for all types of R objects. 
+
 
 ## Defining assertions
 
@@ -68,7 +69,7 @@ Unlike `testhat` where you need to construct specially defined *expectations*, `
 ```{r}
 test(
   function(x) assert("error", stop(x)), 
-  list(rcharacter))
+  list(x = rcharacter))
 ```
 
 By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you'd ever want to use `assert("equal", ...)`, but we threw it in for completeness. Since writing assertions is a very common endeavor when developing with quickcheck, there is an alternate short syntax for doing so, using formulas. The above example becomes:
@@ -76,7 +77,13 @@ By executing this test successfully we have built confidence that the function `
 ```{r}
 test(
   ~assert("error", stop(x)), 
-  list(rcharacter))
+  list(x = rcharacter))
+```
+
+And going back to the `identity` example it can be written as
+
+```{r}
+test(assertion = ~identical(identity(x), x), generators = list(x = rany))
 ```
 
 ## What to do when tests fail
@@ -102,13 +109,14 @@ The output is a list with three elements:
 My recommendation is to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and its generators. This is because the first step in fixing a bug is almost always to reproduce it, and non-deterministic bugs are more difficult to reproduce. The `test` function seeds the random number generator so that every time it is called it will rerun the same test, that is call the assertion with the same arguments, run after run. So I guess we should call it pseudo-random testing to be precise. Let's go in more detail on the `cases` element. It is a list with an element for each run, which has a value of `NULL`, if the run was successful, and a list of arguments passed to the assertion otherwise. In this case runs 2 through 7 failed. We can replicate it as follows.
 
 ```{r}
-test.out = test(function(x) mean(x) > 0, list(rdouble), stop = FALSE)
+test.out = test(function(x) mean(x = rdouble()) > 0, stop = FALSE)
 do.call(test.out$assertion, test.out$cases[[3]])
 ```
 
 At this point we can use `debug` or any other debugging technique and modify our code until the assertion returns true. If the assertion is a formula, evaluating it is a little more complicated, therfore you can use the function `repro` for both formulas and functions:
 
 ```{r}
+test.out = test(function(x) mean(x = rdouble()) > 0, stop = FALSE)
 repro(test.out$assertion, test.out$cases[[3]])
 test.out = test(~mean(x) > 0, list(x = rdouble), stop = FALSE)
 repro(test.out$assertion, test.out$cases[[3]])
@@ -175,22 +183,28 @@ When passing generators to `test`, one needs to pass a function, not a data set,
 
 ```{r}
 library(functional)
-test(function(x) sum(x) > 100, list(Curry(rdouble, element = 100)))
+test(~sum(x) > 100, list(x = Curry(rdouble, element = 100)))
 ```
 
 Note the the last two tests only pass with high probability. Sometimes accepting a high probability of passing is  a shortcut to writing an effective, simple test when a deterministic one is not available. Since currying is common when using `quickchek`, we thought of providing an alternate syntax using formulas. The last example would become
 
 ```{r}
-library(functional)
-test(function(x) sum(x) > 100, list(~rdouble(element = 100)))
+test(~sum(x) > 100, list(x = ~rdouble(element = 100)))
 ```
 
-Whether it's better, it's probably a matter of taste, but we find it looks more like the actual call that's going to generate the data and it works better with completion at the R prompt and in Rstudio.
+Whether it's better, it's probably a matter of taste, but we find it looks more like the actual call that's going to generate the data and it works better with completion at the R prompt and in Rstudio. Without formulas, the above can be written as:
+
+```{r}
+test(function(x = rdouble(element = 100)) sum(x > 100))
+```
+
+```{r}
+library(pryr)
+test(f(x = rdouble(element = 100), sum(x > 100)))
+```
 
 
 
-
-Whether it's better
 ## Advanced topics
 
 ### Composition of generators and tests as assertions
@@ -211,7 +225,7 @@ test(
 
 ### Custom generators
 
-There is not reason to limit oneself to built in generators and one can do much more than just change the parameters. For instance, we may want to 
+There is no reason to limit oneself to built in generators and one can do much more than just change the parameters. For instance, we may want to 
 make sure that extremes of the allowed range are hit more often than the built-in generators ensure. For instance, `rdouble` uses by default a standard normal, and values like 0 and Inf have very small or 0 probability of occurring. Let's say we want to test the following assertion about the ratio:
 
 ```{r}

@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-## quirkless sample
 
 quickcheck.env = new.env()
 
 quickcheck.env$nested = FALSE
 
+## quirkless sample
+
 sample = 
 	function(x, size, ...) 
 		x[base::sample(length(x), size = size, ...)]
 
-## 
 
 ## argument is called assertion for user facing API, but used also on generators internally
 repro = 
@@ -92,8 +92,8 @@ test =
 						1:sample.size,
 						function(i) {
 							args = lapply(generators, eval.formula.or.function, args = list())
-							args2 = lapply(formals(assertion), function(x) if(is.symbol(x)) NULL else  eval(x))
-							if(is.null(names(args2))) names(args2) = replicate(length(args2), "")
+							args2 = do.call(c, lapply(formals(assertion), function(x) if(is.symbol(x)) list() else  list(eval(x))))
+							if(!is.null(args2) && is.null(names(args2))) names(args2) = replicate(length(args2), "")
 							args[names(args2)] = args2
 							if(!try.assertion(args)){
 								print(paste("FAIL: assertion:", paste(deparse(assertion), collapse = " ")))
@@ -238,6 +238,9 @@ atomic.generators =
 			rraw = rraw,
 			rDate = rDate,
 			rfactor = rfactor)
+
+
+ff = f(x = atomic.generators$rinteger, x)
 
 rdata.frame =
 	function(
