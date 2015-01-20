@@ -72,7 +72,7 @@ test =
 				tryCatch(
 					eval.formula.or.function(assertion, xx),
 					error =
-						function(e) FALSE)
+						function(e) {message(e); FALSE})
 		test.cases =
 			list(
 				assertion = assertion,
