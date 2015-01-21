@@ -56,20 +56,19 @@ is.formula =
 test =
 	function(
 		assertion,
-		generators = list(),
 		sample.size = 10,
 		stop = TRUE) {
 		if(!quickcheck.env$nested) {
 			set.seed(0)
 			quickcheck.env$nested = TRUE
 			on.exit({quickcheck.env$nested = FALSE})}
-		stopifnot(is.function(assertion) || is.formula(assertion))
-		if(!is.list(generators))
-			generators = list(generators)
+		stopifnot(is.function(assertion))
+		envir = environment(assertion)
+	
 		try.assertion =
 			function(xx)
 				tryCatch(
-					eval.formula.or.function(assertion, xx),
+					do.call(assertion, xx),
 					error =
 						function(e) {message(e); FALSE})
 		test.cases =
@@ -92,7 +91,7 @@ test =
 						function(i) {
 							args = lapply(formals(assertion), eval, envir = envir)
 							if(!try.assertion(args)){
-								cat(paste("FAIL: assertion:", paste(deparse(assertion), "\n", collapse = " ")))
+								cat(paste("FAIL: assertion:", paste(deparse(assertion), collapse = "\n"), sep = "\n"))
 								args}}))
 		if(all(sapply(test.cases$cases, is.null))){
 			cat(paste ("Pass ", paste(deparse(assertion), "\n", collapse = " ")))

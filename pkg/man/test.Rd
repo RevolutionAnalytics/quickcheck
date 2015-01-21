@@ -7,7 +7,7 @@ Run tests}
 \code{test} evaluates an assertion with arguments provided by evaluating repeatedly a list of generators. Stops or returns test cases. \code{repro} help reproducing any error that might have occurred. 
 }
 \usage{
-test(assertion, generators = list(), sample.size = 10, stop = TRUE)
+test(assertion, sample.size = 10, stop = TRUE)
 }
 \arguments{
   \item{assertion}{A function returning a length-1 logical vector and defaults for all arguments.}

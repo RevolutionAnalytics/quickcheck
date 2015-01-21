@@ -110,7 +110,6 @@ Pass  function (x = rcharacter())
 ```
 
 By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you'd ever want to use `assert("equal", ...)`, but we threw it in for completeness. 
-```
 
 ## What to do when tests fail
 
@@ -122,12 +121,24 @@ test(function(x = rdouble()) mean(x) > 0)
 ```
 
 ```
-FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
 ```
 
 ```
 Error:
-load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheck1119c6b09e196")
+load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheck1355d478022de")
 ```
 
 Its output shows that about half of the default 10 runs have failed and then invites us to load some debugging data. Another way to get at that data is to run the test with the option `stop = FALSE` which doesn't produce an error. This is convenient for interactive sessions, but less so when running `R CMD check`.
@@ -138,7 +149,19 @@ test(function(x = rdouble()) mean(x) > 0, stop = FALSE)
 ```
 
 ```
-FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
 ```
 
 ```
@@ -212,7 +235,19 @@ test.out = test(function(x  = rdouble()) mean(x) > 0, stop = FALSE)
 ```
 
 ```
-FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0FAIL: assertion: function (x = rdouble())  mean(x) > 0
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
 ```
 
 ```r
@@ -227,7 +262,7 @@ At this point we can use `debug` or any other debugging technique and modify our
 
 ## Modifying or defining random data generators
 
-There are built in random data generators for most built-in data types. They follow a simple naming conventions, "r" followed by the class name. For instance `rinteger` generates a random integer vector. Another characteristic of random data generators as defined in this package is that they have defaults for every argument, that is they can be called without arguments. Finally, the return value of different calls are statistically independent. For example
+There are built in random data generators for most built-in data types. They follow a simple naming conventions, "r" followed by the class name. For instance `rinteger` generates a random integer vector. Another characteristic of random data generators as defined in this package is that they have defaults for every argument, that is they can be called without arguments. Finally, the return value of different calls are statistically independent. For example""
 
 
 ```r
