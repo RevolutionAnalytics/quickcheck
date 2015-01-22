@@ -92,24 +92,24 @@ Now we have more confidence that `identity` works for all types of R objects.
 
 ## Defining assertions
 
-Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with a length-one return value. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `stop` is a valid assertion but always fails. How do I express the fact that this is its correct behavior? `testthat` has a rich set of expectations to capture that and other requirements, such as printing something or generating a warning. Derived from those, `quickcheck` has a rich set of predefined assertions, returned by the function `assert`:
+Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with a length-one return value. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `function(x = rcharacter()) stop()` is a valid assertion but always fails. How do I express the fact that this is its correct behavior? `testthat` has a rich set of expectations to capture that and other requirements, such as printing something or generating a warning. Derived from those, `quickcheck` has a rich set of predefined assertions, returned by the function `assert`:
 
 
 ```r
 test(
-  function(x = rcharacter()) assert("error", stop(x)))
+  function(x = rcharacter()) expect("error", stop(x)))
 ```
 
 ```
 Pass  function (x = rcharacter())  
- assert("error", stop(x)) 
+ expect("error", stop(x)) 
 ```
 
 ```
 [1] TRUE
 ```
 
-By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertion defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you'd ever want to use `assert("equal", ...)`, but we threw it in for completeness. 
+By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertions defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you'd ever want to use `expect"equal", ...)`, but we threw it in for completeness. 
 
 ## What to do when tests fail
 
@@ -231,7 +231,7 @@ My recommendation is to write assertions that depend exclusively on their argume
 
 
 ```r
-test.out = test(function(x  = rdouble()) mean(x) > 0, stop = FALSE)
+repro(test(function(x  = rdouble()) mean(x) > 0, stop = FALSE))
 ```
 
 ```
@@ -247,18 +247,22 @@ mean(x) > 0FAIL: assertion:
 function (x = rdouble()) 
 mean(x) > 0FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0
-```
-
-```r
-do.call(test.out$assertion, test.out$cases[[3]])
+mean(x) > 0debugging in: (function (x = rdouble()) 
+mean(x) > 0)(x = c(-0.411510832795067, 0.252223448156132, -0.891921127284569, 
+0.435683299355719, -1.23753842192996, -0.224267885278309, 0.377395645981701, 
+0.133336360814841, 0.804189509744908))
+debug: mean(x) > 0
+exiting from: (function (x = rdouble()) 
+mean(x) > 0)(x = c(-0.411510832795067, 0.252223448156132, -0.891921127284569, 
+0.435683299355719, -1.23753842192996, -0.224267885278309, 0.377395645981701, 
+0.133336360814841, 0.804189509744908))
 ```
 
 ```
 [1] FALSE
 ```
 
-At this point we can use `debug` or any other debugging technique and modify our code until the assertion returns true. 
+This opens the debugger at the beginning of a failed call to the assertion. Now it is up to developer.
 
 ## Modifying or defining random data generators
 
@@ -293,7 +297,9 @@ rdouble()
 ```
 [1] -0.6521 -0.0569 -1.9144  1.1766 -1.6650 -0.4635 -1.1159 -0.7508
 ```
+
 generates some random double vector. The next expression does the same but with an expectation equal to 100
+
 
 ```r
 rdouble(element = 100)
@@ -335,28 +341,65 @@ rdouble(size = 1)
 ```
 
 Second form:
+
+```r
+rdouble(size = function() 10 * runif(1))
 ```
-rdouble(size = function(x) 10 * runif(x))
-rdouble(size = function(x) 10 * runif(x))
+
+```
+[1] -0.20619 -0.57430 -1.39017 -0.07042 -0.43088 -0.59223  0.98112
+```
+
+```r
+rdouble(size = function() 10 * runif(1))
+```
+
+```
+[1]  0.5210 -0.1588  1.4646 -0.7661 -0.4302 -0.9261 -0.1771
+```
+
+A shorthand for the above expression is:
+
+
+```r
+rdouble(size = ~10*runif(1))
+```
+
+```
+[1]  2.02476 -0.70369  0.96079  1.79049 -1.06417  0.01764
 ```
 
 Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`. Nested data structures have an argument `height`. All of these are intended to be expectations as opposed to deterministic values but can be replaced by a generator, which gives you total control. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
 
-```r
-rdouble(size = constant(3))
-```
-
-```
-[1] 0.7876 2.0752 1.0274
-```
 
 ```r
 rdouble(size = constant(3))
 ```
 
 ```
-[1]  1.2079 -1.2313  0.9839
+[1] -0.3899 -0.4908 -1.0457
 ```
+
+```r
+rdouble(size = constant(3))
+```
+
+```
+[1] -0.8962  1.2694  0.5938
+```
+
+Or, since "conciseness is power":
+
+
+```r
+rdouble(size = ~3)
+```
+
+```
+[1]  0.7756  1.5574 -0.3654
+```
+
+Without the `~` it would be an expected size, with it it is deterministic.
 
 Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple constructor is `select` which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
 
@@ -366,7 +409,7 @@ select(1:5)()
 ```
 
 ```
-[1] 3
+[1] 4
 ```
 
 ```r
@@ -374,60 +417,19 @@ select(1:5)()
 ```
 
 ```
-[1] 5
+[1] 4
 ```
 
 
 ## Advanced topics
 
-### Composition of generators and tests as assertions
+### Composition of generators
 
-The alert reader may have already noticed how generators can be used to define other generators. For instance, a random list of double vectors can be generated with `rlist(rdouble)` and a list thereof with `rlist(function() rlist(rdouble))`. Composition can also be applied to tests, which can be used as assertions inside other tests. One application of this is developing a test that involves two random vectors of the same random length. There isn't a built in way in quickcheck to express this dependency between arguments, but the solution is not far using the composability of tests. We first pick a random length in the "outer" test, then use it to generate equal length vectors in the "inner" test.
-
-
-```r
-test(
-	function(l = rinteger(size = constant(1))) 
-		test(
-			function(
-				x = rdouble(size = constant(l)), 
-				y = rdouble(size = constant(l))) 
-				isTRUE(all.equal(x, x + y - y))))
-```
-
-```
-Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
- isTRUE(all.equal(x, x + y - y)) 
-Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
- isTRUE(all.equal(x, x + y - y)) 
-Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
- isTRUE(all.equal(x, x + y - y)) 
-Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
- isTRUE(all.equal(x, x + y - y)) 
-Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
- isTRUE(all.equal(x, x + y - y)) 
-Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
- isTRUE(all.equal(x, x + y - y)) 
-Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
- isTRUE(all.equal(x, x + y - y)) 
-Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
- isTRUE(all.equal(x, x + y - y)) 
-Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
- isTRUE(all.equal(x, x + y - y)) 
-Pass  function (x = rdouble(size = constant(l)), y = rdouble(size = constant(l)))  
- isTRUE(all.equal(x, x + y - y)) 
-Pass  function (l = rinteger(size = constant(1)))  
- test(function(x = rdouble(size = constant(l)), y = rdouble(size = constant(l))) isTRUE(all.equal(x,  
-     x + y - y))) 
-```
-
-```
-[1] TRUE
-```
+The alert reader may have already noticed how generators can be used to define other generators. For instance, a random list of double vectors can be generated with `rlist(rdouble)` and a list thereof with `rlist(function() rlist(rdouble))`. Since typing `function()` over and over again gets old quickly and adds clutter, we can use `~` as a shortcut `rlist(~rlist(rdouble))`. 
 
 ### Custom generators
 
-There is no reason to limit oneself to built in generators and one can do much more than just change the parameters. For instance, we may want to 
+There is no reason to limit oneself to built-in generators and one can do much more than just change the parameters. For instance, we may want to 
 make sure that extremes of the allowed range are hit more often than the built-in generators ensure. For instance, `rdouble` uses by default a standard normal, and values like 0 and Inf have very small or 0 probability of occurring. Let's say we want to test the following assertion about the ratio:
 
 

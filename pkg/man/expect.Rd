@@ -1,15 +1,15 @@
-\name{assert}
-\alias{assert}
-\title{Create assertions}
+\name{expect}
+\alias{expect}
+\title{Create assertions from expectations}
 \description{Create assertion equivalent to \code{testthat} expectations}
 \usage{
-	assert(what, ...)
+	expect(what, ...)
 }
 \arguments{
 	\item{what}{The name of the expectation, without the "expect_" prefix}
 	\item{...}{Arguments passed to the expectation}
 }
 \examples{
-assert("equal",1 , 1)
-assert("error", stop())
+expect("equal",1 , 1)
+expect("error", stop())
 }

@@ -41,11 +41,11 @@ as.assertion =
 			tryCatch({tmp(...); TRUE} , error = function(e) FALSE)}}
 
 library(testthat)
-assert.names = grep("^expect_", ls("package:testthat"), value = TRUE)
-assert.funs = lapply(assert.names, function(n) as.assertion(get(n, envir = as.environment("package:testthat"))))
-names(assert.funs) = gsub("expect_", "", assert.names)
+expect.names = grep("^expect_", ls("package:testthat"), value = TRUE)
+assert.funs = lapply(expect.names, function(n) as.assertion(get(n, envir = as.environment("package:testthat"))))
+names(assert.funs) = gsub("expect_", "", expect.names)
 	
-assert = 
+expect = 
 	function(what, ...)
 			assert.funs[[what]](...)
 
@@ -53,11 +53,20 @@ is.formula =
 	function(x)
 		class(x) == "formula"
 
+eval.args =
+	function(args, envir) {
+    args[[1]] = eval(args[[1]], envir)
+		lapply(
+			1 + seq_along(args[-1]),
+			function(i)
+				args[[i]] <<- eval(args[[i]], args[1:(i-1)], envir))
+	as.list(args)}
+	
 test =
 	function(
 		assertion,
 		sample.size = 10,
-		stop = TRUE) {
+		stop = !interactive()) {
 		if(!quickcheck.env$nested) {
 			set.seed(0)
 			quickcheck.env$nested = TRUE
@@ -89,7 +98,7 @@ test =
 					lapply(
 						1:sample.size,
 						function(i) {
-							args = lapply(formals(assertion), eval, envir = envir)
+							args = eval.args(formals(assertion), envir)
 							if(!try.assertion(args)){
 								cat(paste("FAIL: assertion:", paste(deparse(assertion), collapse = "\n"), sep = "\n"))
 								args}}))
@@ -103,6 +112,15 @@ test =
 				stop("load(\"", file.path(getwd(), tf), "\")")}
 			else test.cases}}
 
+first.failed = 
+	function(ll)
+		min(which(!sapply(ll, is.null)))
+
+repro = 
+	function(test.cases, i = first.failed(test.cases$cases), debug = TRUE) {
+		assertion = test.cases$assertion
+		if(debug) debug(assertion)
+		do.call(assertion, test.cases$cases[[i]])}
 
 ## basic types
 
