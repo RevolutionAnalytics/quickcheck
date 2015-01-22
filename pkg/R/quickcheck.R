@@ -75,11 +75,16 @@ test =
 		envir = environment(assertion)
 	
 		try.assertion =
-			function(xx)
-				tryCatch(
-					do.call(assertion, xx),
-					error =
-						function(e) {message(e); FALSE})
+			function(xx) {
+				assertion.return.value = 
+					tryCatch(
+						do.call(assertion, xx),
+						error =
+							function(e) {message(e); FALSE})
+				stopifnot(
+					is.logical(assertion.return.value), 
+					length(assertion.return.value) == 1)
+				assertion.return.value}
 		test.cases =
 			list(
 				assertion = assertion,
