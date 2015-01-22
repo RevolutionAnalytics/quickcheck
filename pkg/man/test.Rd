@@ -8,7 +8,7 @@ Run and debug tests}
 }
 \usage{
 test(assertion, sample.size = 10, stop = !interactive())
-repro(test.cases, i = first.failed(test.cases), debug = TRUE)
+repro(test.cases, i = first.failed(test.cases$cases), debug = TRUE)
 }
 \arguments{
   \item{assertion}{A function returning a length-1 logical vector and defaults for all arguments.}
