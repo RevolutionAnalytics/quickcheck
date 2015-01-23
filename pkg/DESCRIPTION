@@ -2,7 +2,7 @@ Package: quickcheck
 Type: Package
 Title: Support writing randomized unit tests
 Version: 3.0.0
-Date: 2015-01-10
+Date: 2015-01-23
 Author: Revolution Analytics
 Imports: digest, functional, testthat, pryr
 Collate: quickcheck.R
