@@ -42,7 +42,7 @@ But there is no good reason to pick those specific examples, testing on more dat
 
 ```r
 library(quickcheck)
-test(assertion = function(x = rinteger()) identical(identity(x), x))
+test(function(x = rinteger()) identical(identity(x), x))
 ```
 
 ```
@@ -59,7 +59,7 @@ What this means is that we have tested `identity` for this assertion on random i
 
 
 ```r
-test(assertion = function(x = rinteger()) identical(identity(x), x), sample.size = 100)
+test(function(x = rinteger()) identical(identity(x), x), sample.size = 100)
 ```
 
 ```
@@ -75,7 +75,7 @@ Done! You see, if you had to write down those 100 integer vectors one by one, yo
 
 
 ```r
-test(assertion = function(x = rany()) identical(identity(x), x), sample.size = 100)
+test(function(x = rany()) identical(identity(x), x), sample.size = 100)
 ```
 
 ```
@@ -92,7 +92,7 @@ Now we have more confidence that `identity` works for all types of R objects.
 
 ## Defining assertions
 
-Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with a length-one return value. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `function(x = rcharacter()) stop()` is a valid assertion but always fails. How do I express the fact that this is its correct behavior? `testthat` has a rich set of expectations to capture that and other requirements, such as printing something or generating a warning. Derived from those, `quickcheck` has a rich set of predefined assertions, returned by the function `assert`:
+Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with a length-one return value. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `function(x = rcharacter()) stop()` is a valid assertion but always fails. How do I express the fact that this is its correct behavior? `testthat` has a rich set of expectations to capture that and other requirements, such as printing something or generating a warning. Derived from those, `quickcheck` has a rich set of predefined assertions, returned by the function `expect`:
 
 
 ```r
@@ -109,7 +109,7 @@ Pass  function (x = rcharacter())
 [1] TRUE
 ```
 
-By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertions defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you'd ever want to use `expect"equal", ...)`, but we threw it in for completeness. 
+By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertions defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you'd ever want to use `expect("equal", ...)`, but we threw it in for completeness. 
 
 ## What to do when tests fail
 
@@ -117,7 +117,7 @@ By executing this test successfully we have built confidence that the function `
 
 
 ```r
-test(function(x = rdouble()) mean(x) > 0)
+test(function(x = rdouble()) mean(x) > 0, stop = TRUE)
 ```
 
 ```
@@ -138,14 +138,14 @@ mean(x) > 0
 
 ```
 Error:
-load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheck1355d478022de")
+load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheck13e3e5b630cb9")
 ```
 
-Its output shows that about half of the default 10 runs have failed and then invites us to load some debugging data. Another way to get at that data is to run the test with the option `stop = FALSE` which doesn't produce an error. This is convenient for interactive sessions, but less so when running `R CMD check`.
+Its output shows that about half of the default 10 runs have failed and then invites us to load some debugging data. Another way to get at that data is to run the test with the option `stop = FALSE` which doesn't produce an error. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
 
 
 ```r
-test(function(x = rdouble()) mean(x) > 0, stop = FALSE)
+test.out = test(function(x = rdouble()) mean(x) > 0, stop = FALSE)
 ```
 
 ```
@@ -162,6 +162,10 @@ function (x = rdouble())
 mean(x) > 0FAIL: assertion:
 function (x = rdouble()) 
 mean(x) > 0
+```
+
+```r
+test.out
 ```
 
 ```
@@ -227,27 +231,15 @@ The output is a list with three elements:
   - a list of in-scope variables that could have affected the result -- this is work in progress and shouldn't be trusted at this time
   - a list of arguments passed to the assertion
   
-My recommendation is to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and its generators. This is because the first step in fixing a bug is almost always to reproduce it, and non-deterministic bugs are more difficult to reproduce. The `test` function seeds the random number generator so that every time it is called it will rerun the same test, that is call the assertion with the same arguments, run after run. So I guess we should call it pseudo-random testing to be precise. Let's go in more detail on the `cases` element. It is a list with an element for each run, which has a value of `NULL`, if the run was successful, and a list of arguments passed to the assertion otherwise. In this case runs 2 through 7 failed. We can replicate it as follows.
+My recommendation is to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and its generators. This is because the first step in fixing a bug is almost always to reproduce it, and non-deterministic bugs are more difficult to reproduce. The `test` function seeds the random number generator so that every time it is called it will rerun the same tests, that is call the assertion with the same arguments, run after run. So I guess we should call it pseudo-random testing to be precise. Let's go in more detail on the `cases` element. It is a list with an element for each run, which has a value of `NULL`, if the run was successful, and a list of arguments passed to the assertion otherwise. In this case runs 2 through 7 failed. We can replicate it as follows.
 
 
 ```r
-repro(test(function(x  = rdouble()) mean(x) > 0, stop = FALSE))
+repro(test.out)
 ```
 
 ```
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0debugging in: (function (x = rdouble()) 
+debugging in: (function (x = rdouble()) 
 mean(x) > 0)(x = c(-0.411510832795067, 0.252223448156132, -0.891921127284569, 
 0.435683299355719, -1.23753842192996, -0.224267885278309, 0.377395645981701, 
 0.133336360814841, 0.804189509744908))
@@ -262,7 +254,7 @@ mean(x) > 0)(x = c(-0.411510832795067, 0.252223448156132, -0.891921127284569,
 [1] FALSE
 ```
 
-This opens the debugger at the beginning of a failed call to the assertion. Now it is up to developer.
+This opens the debugger at the beginning of a failed call to the assertion. Now it is up to the developer.
 
 ## Modifying or defining random data generators
 
@@ -420,6 +412,7 @@ select(1:5)()
 [1] 4
 ```
 
+The default distributions for all the generators were picked based on implementation convenience more than anything and  will be refined in future releases and based on feedback.
 
 ## Advanced topics
 
@@ -434,19 +427,19 @@ make sure that extremes of the allowed range are hit more often than the built-i
 
 
 ```r
-is.self.reverse = function(x) isTRUE(all.equal(x, 1/(1/x)))
+is.reciprocal.self.inverse = function(x) isTRUE(all.equal(x, 1/(1/x)))
 ```
 
 We can have two separate tests, one for values returned by `rdouble`:
 
 
 ```r
-test(function(x = rdouble()) is.self.reverse(x))
+test(function(x = rdouble()) is.reciprocal.self.inverse(x))
 ```
 
 ```
 Pass  function (x = rdouble())  
- is.self.reverse(x) 
+ is.reciprocal.self.inverse(x) 
 ```
 
 ```
@@ -456,12 +449,12 @@ Pass  function (x = rdouble())
 and one for the corner cases:
 
 ```r
-test(function(x = select(c(0, -Inf, Inf))()) is.self.reverse(x))
+test(function(x = select(c(0, -Inf, Inf))()) is.reciprocal.self.inverse(x))
 ```
 
 ```
 Pass  function (x = select(c(0, -Inf, Inf))())  
- is.self.reverse(x) 
+ is.reciprocal.self.inverse(x) 
 ```
 
 ```
@@ -499,12 +492,12 @@ And use it in a more general test.
 
 
 ```r
-test(function(x = rdoublex()) is.self.reverse(x))
+test(function(x = rdoublex()) is.reciprocal.self.inverse(x))
 ```
 
 ```
 Pass  function (x = rdoublex())  
- is.self.reverse(x) 
+ is.reciprocal.self.inverse(x) 
 ```
 
 ```
