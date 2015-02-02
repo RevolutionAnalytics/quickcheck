@@ -226,8 +226,9 @@ ratomic =
 		mixture(
 			lapply(
 				element,
-				function(gg)
-					Curry(gg, size = constant(size))))()}
+				function(gg){
+					hh = gg
+					Curry(hh, size = constant(size))}))()}
 
 rmatrix = 
 	function(element = ratomic, nrow = 10, ncol = 10) {
@@ -264,7 +265,7 @@ rdata.frame =
 		ncol = 5) {
 		nrow = rsize(nrow)
 		ncol = rsize(ncol)		
-		columns = replicate(ncol, ratomic(size = constant(nrow)), simplify = FALSE)
+		columns = replicate(ncol, element(size = constant(nrow)), simplify = FALSE)
 		if(length(columns) > 0)
 			names(columns) = paste("col", 1:ncol)
 		do.call(data.frame, columns)}
@@ -296,8 +297,8 @@ select =
 ##combiners
 mixture =
 	function(generators)
-		function()
-			sample(generators, 1)[[1]]()
+		function(...)
+			sample(generators, 1)[[1]](...)
 
 # combine everything
 all.generators = c(atomic.generators, list(rlist, rdata.frame, rmatrix))

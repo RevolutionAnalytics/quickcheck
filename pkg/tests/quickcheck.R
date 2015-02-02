@@ -155,6 +155,7 @@ dim.test(rmatrix, lambda = 10, ncol)
 #ratomic
 type.test(is.atomic, ratomic)
 variability.test(ratomic)
+test(function() length(unique(replicate(10, class(ratomic())))) > 1)
 length.test(ratomic, 10)
 
 
