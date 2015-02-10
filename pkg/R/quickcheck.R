@@ -81,10 +81,7 @@ test =
 						do.call(assertion, xx),
 						error =
 							function(e) {message(e); FALSE})
-				stopifnot(
-					is.logical(assertion.return.value), 
-					length(assertion.return.value) == 1)
-				assertion.return.value}
+				all(as.logical(assertion.return.value))}
 		test.cases =
 			list(
 				assertion = assertion,
