@@ -14,7 +14,7 @@ Install with:
 
 ```
 library(devtools)
-install_github("RevolutionAnalytics/quickcheck@master", subdir = "pkg")`
+install_github("RevolutionAnalytics/quickcheck@3.0.0", subdir = "pkg")`
 ```
 
 See the [tutorial](docs/tutorial.md).
