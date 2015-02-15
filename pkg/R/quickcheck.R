@@ -15,7 +15,6 @@
 
 quickcheck.env = new.env()
 
-quickcheck.env$nested = FALSE
 
 ## quirkless sample
 
@@ -67,22 +66,41 @@ test =
 		assertion,
 		sample.size = 10,
 		stop = !interactive()) {
-		if(!quickcheck.env$nested) {
-			set.seed(0)
-			quickcheck.env$nested = TRUE
-			on.exit({quickcheck.env$nested = FALSE})}
+		set.seed(0)
 		stopifnot(is.function(assertion))
 		envir = environment(assertion)
-	
+		
 		try.assertion =
 			function(xx) {
+				start = get_nanotime()
 				assertion.return.value = 
 					tryCatch(
 						do.call(assertion, xx),
 						error =
 							function(e) {message(e); FALSE})
-				all(as.logical(assertion.return.value))}
-		test.cases =
+				list(
+					pass = all(as.logical(assertion.return.value)),
+					elapsed.time = get_nanotime() - start)}
+		project = 
+			function(xx, name) 
+				lapply(xx, function(x) x[[name]]) 
+		runs =
+			lapply(
+				1:sample.size,
+				function(i) {
+					args = eval.args(formals(assertion), envir)
+					result = try.assertion(args)
+					if(!result$pass)
+						cat(
+							paste(
+								"FAIL: assertion:", 
+								paste(deparse(assertion), 
+											collapse = "\n"), 
+								sep = "\n"))
+					list(args = args, pass = result$pass, elapsed = result$elapsed)})
+		
+		
+		test.report =
 			list(
 				assertion = assertion,
 				env =
@@ -92,37 +110,42 @@ test =
 							all.vars(body(assertion)),
 							function(name)
 								tryCatch({
-									val = list(eval(as.name(name)))
+									val = 
+										list(
+											eval(
+												as.name(name), 
+												envir = environment(assertion)))
 									names(val) = name
 									val},
 									error = function(e) NULL))),
-				cases =
-					lapply(
-						1:sample.size,
-						function(i) {
-							args = eval.args(formals(assertion), envir)
-							if(!try.assertion(args)){
-								cat(paste("FAIL: assertion:", paste(deparse(assertion), collapse = "\n"), sep = "\n"))
-								args}}))
-		if(all(sapply(test.cases$cases, is.null))){
-			cat(paste ("Pass ", paste(deparse(assertion), "\n", collapse = " ")))
-			TRUE}
-		else {
-			if (stop) {
-				tf = tempfile(tmpdir=".", pattern = "quickcheck")
-				save(test.cases, file = tf)
-				stop("load(\"", file.path(getwd(), tf), "\")")}
-			else test.cases}}
+				cases = project(runs, "args"),
+				pass = unlist(project(runs, "pass")),
+				elapsed = summary(unlist(project(runs, "elapsed"))))
+		if(all(test.report$pass)){
+			cat(
+				paste(
+					"Pass ", 
+					"\n",
+					paste(
+						deparse(assertion), 
+						"\n", 
+						collapse = " ")))
+		print(test.report$elapsed)}
+		if (stop) {
+			tf = tempfile(tmpdir=".", pattern = "quickcheck")
+			save(test.report, file = tf)
+			stop("load(\"", file.path(getwd(), tf), "\")")}
+		invisible(test.report)}
 
-first.failed = 
-	function(ll)
-		min(which(!sapply(ll, is.null)))
+first.false = 
+	function(xx)
+		min(which(!xx))
 
 repro = 
-	function(test.cases, i = first.failed(test.cases$cases), debug = TRUE) {
-		assertion = test.cases$assertion
+	function(test.report, i = first.false(test.report$pass), debug = TRUE) {
+		assertion = test.report$assertion
 		if(debug) debug(assertion)
-		do.call(assertion, test.cases$cases[[i]])}
+		do.call(assertion, test.report$cases[[i]])}
 
 ## basic types
 
