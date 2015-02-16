@@ -149,6 +149,31 @@ repro =
 		if(debug) debug(assertion)
 		do.call(assertion, test.report$cases[[i]])}
 
+no.coverage = 
+	function(path = "pkg/", pc = package_coverage(path)) {
+		zc = zero_coverage(pc)
+		temp = tempfile(fileext = ".html")
+		writeLines(
+			unlist(
+				lapply(
+					unique(zc$filename),
+					function(fname) {
+						ffname = file.path(path, fname)
+						src = readLines(ffname)
+						zc = zc[zc$filename == fname, , drop = FALSE]
+						mapply(
+							function(sta, sto){
+								src[sta] <<- paste("<strong>", src[sta])
+								src[sto] <<- paste(src[sto], "</strong>")}, 
+							zc$first_line, 
+							zc$last_line)
+						c(
+							paste("<h2>", ffname , "</h2>\n<pre>"),			
+							src,
+							"</pre>")})),
+			con = temp)
+		browseURL(paste0("file://", temp))}
+
 ## basic types
 
 
