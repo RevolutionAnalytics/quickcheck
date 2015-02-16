@@ -144,6 +144,8 @@ first.false =
 repro = 
 	function(test.report, i = first.false(test.report$pass), debug = TRUE) {
 		assertion = test.report$assertion
+		if(!is.finite(i))
+			stop("All tests pass, nothing to repro here.")
 		if(debug) debug(assertion)
 		do.call(assertion, test.report$cases[[i]])}
 
