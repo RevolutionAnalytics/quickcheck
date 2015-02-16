@@ -1,22 +1,25 @@
 \name{test}
 \alias{test}
 \alias{repro}
+\alias{no.coverage}
 \title{
-Run and debug tests}
+Run and debug tests. Find out what other tests to write.}
 \description{
-\code{test} evaluates an assertion multiple times by re-evaluating its arguments, some of which are expected to be random data generators. Stops or returns a test report. \code{repro} helps reproducing any error that might have occurred. 
+\code{test} evaluates an assertion multiple times by re-evaluating its arguments, some of which are expected to be random data generators. Stops or returns a test report. \code{repro} helps reproducing any error that might have occurred. \code{no.coverage} produces an html report highlighting code that is not covered by tests. 
 }
 \usage{
 test(assertion, sample.size = 10, stop = !interactive())
 repro(test.report, i = first.false(test.report$pass), debug = TRUE)
+no.coverage(path = "pkg/")
 }
 \arguments{
   \item{assertion}{A function returning a length-1 logical vector and defaults for all arguments.}
   \item{sample.size}{How many times to check the assertion, with newly sampled data as arguments}
   \item{stop}{Whether to stop in case of error or continue}
   \item{test.report}{The valued returned by test when \code{stop} is \code{FALSE}}
-  \item{i}{A number identifying test case the developer would like to reproduce, defaults to the first failed}
+  \item{i}{A number identifying the test case the developer would like to reproduce, defaults to the first failed}
   \item{debug}{Whether to debug the assertion or just rerun it}
+  \item{path}{Path to package to analyze}
 }
 \details{
 A test is considered passed if each run passes. A run passes if the assertion, once called, returns \code{TRUE}. A run fails if the assertion returns \code{FALSE} or raises an error. \code{set.seed(0)} is performed at the beginning of each test for reproducibility.}
@@ -29,11 +32,11 @@ A test is considered passed if each run passes. A run passes if the assertion, o
 \item{A logical vector of test results}
 \item{A summary of elapsed times for each test run, in the units returned by \code{microbenchmark::get_nanotime}}
 }
-When \code{stop} is TRUE, there is no return value but the same list is stored in a file. The command to load that file into the current environment as the variable \code{test.report} is printed as the error message. This allows to replicate the error. Run time information is also printed in stderr on success. For \code{repro}, the value returned by the assertion.}
+When \code{stop} is TRUE, there is no return value but the same list is stored in a file. The command to load that file into the current environment as the variable \code{test.report} is printed as the error message. This allows to replicate the error. Run time information is also printed in stderr on success. For \code{repro}, the value returned by the assertion. For \code{no.coverage}, \code{NULL}.}
 
 \examples{
 test(function(x = rdouble(10)) all(x + 0 == x))
-#repro(test(function(x = rdouble(10)) all(x + 1 == x), stop = FALSE))
+repro(test(function(x = rdouble(10)) all(x + 1 == x), stop = FALSE))
 #stop argument set to FALSE automatically when in an interactive session
 #repro(test(function(x = rdouble(10)) all(x + 1 == x)))
 }
