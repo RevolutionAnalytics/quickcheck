@@ -106,14 +106,12 @@ distribution.test(
 
 #constant
 test(
-	function(x = rany()) 
-		test(
-			function(y = constant(x)()) identical(x, y)))
+	function(x = rany(), y = constant(x)) identical(x, y()))
 
 #select
 test(
 	function(x = rlist(size = 1000, height = 1))
-		variability.test(select(x)))
+		all(variability.test(select(x))$pass))
 
 test(
 	function(l = rlist()) 
