@@ -15,7 +15,36 @@
 
 quickcheck.env = new.env()
 
+quickcheck.env$severity = 10
+quickcheck.env$sample.size = NULL
 
+`%||%` = 
+	function(x, y) 
+		if(is.null(x)) y else x
+
+
+qc.options = 
+	function(...){
+		args = list(...)
+		ll = 
+			lapply(
+				seq_along(args),
+				function(i){
+					nargi = names(args[i])
+					if(is.null(nargi) || nargi == "" )
+						quickcheck.env[[args[[i]]]]
+					else {
+						quickcheck.env[[nargi]] == args[[i]]
+						args[[i]]}})
+		
+	names(ll) = {
+		if(is.null(names(args)))
+			args
+		else
+			ifelse(names(args) %in% list("", NA, NULL), args, names(args))}
+	ll}
+		
+		
 ## zip
 
 rzipf  = 
@@ -74,7 +103,7 @@ eval.args =
 test =
 	function(
 		assertion,
-		sample.size = 10,
+		sample.size = qc.options("sample.size") %||% qc.options("severity"),
 		stop = !interactive()) {
 		set.seed(0)
 		stopifnot(is.function(assertion))

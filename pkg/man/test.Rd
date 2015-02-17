@@ -2,15 +2,17 @@
 \alias{test}
 \alias{repro}
 \alias{no.coverage}
+\alias{qc.options}
 \title{
-Run and debug tests. Find out what other tests to write.}
+Run and debug tests. Find out what other tests to write. Fine tune testing}
 \description{
-\code{test} evaluates an assertion multiple times by re-evaluating its arguments, some of which are expected to be random data generators. Stops or returns a test report. \code{repro} helps reproducing any error that might have occurred. \code{no.coverage} produces an html report highlighting code that is not covered by tests. 
+\code{test} evaluates an assertion multiple times by re-evaluating its arguments, some of which are expected to be random data generators. Stops or returns a test report. \code{repro} helps reproducing any error that might have occurred. \code{no.coverage} produces an html report highlighting code that is not covered by tests in a package. \code{qc.options} sets and gets package options. See details for available options.
 }
 \usage{
 test(assertion, sample.size = 10, stop = !interactive())
 repro(test.report, i = first.false(test.report$pass), debug = TRUE)
 no.coverage(path = "pkg/")
+qc.options(...)
 }
 \arguments{
   \item{assertion}{A function returning a length-1 logical vector and defaults for all arguments.}
@@ -20,9 +22,14 @@ no.coverage(path = "pkg/")
   \item{i}{A number identifying the test case the developer would like to reproduce, defaults to the first failed}
   \item{debug}{Whether to debug the assertion or just rerun it}
   \item{path}{Path to package to analyze}
+  \item{...}{Options to set or get}
 }
 \details{
-A test is considered passed if each run passes. A run passes if the assertion, once called, returns \code{TRUE}. A run fails if the assertion returns \code{FALSE} or raises an error. \code{set.seed(0)} is performed at the beginning of each test for reproducibility.}
+A test is considered passed if each run passes. A run passes if the assertion, once called, returns \code{TRUE}. A run fails if the assertion returns \code{FALSE} or raises an error. \code{set.seed(0)} is performed at the beginning of each test for reproducibility. Available package options are:
+\enumerate{
+\item{severity}{A parameter that is proportional to other parameters that make the tests more sever (harder to pass), including number of runs, size of data generated as arguments to assertions and size of elements in said data. Defaults to 10.}
+\item{sample.size}{The default value for the \code{sample.size} argument to \code{test}. Overrides the "severity" option, unless set to NULL, the default}
+}}
 
 \value{For \code{test}, when \code{stop} is FALSE, a list with five elements:
 \enumerate{
