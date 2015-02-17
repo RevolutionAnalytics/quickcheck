@@ -16,6 +16,16 @@
 quickcheck.env = new.env()
 
 
+## zip
+
+rzipf  = 
+	function(n, N, s = 1) {
+		bins = cumsum(1/(1:N)^s)
+		u = runif(n, min = 0, max(bins))
+    cmp = outer(u, bins, `>=`)
+    1 + apply(cmp, 1, sum)}
+
+				 
 ## quirkless sample
 
 sample = 
