@@ -160,7 +160,8 @@ repro =
 		do.call(assertion, test.report$cases[[i]])}
 
 no.coverage = 
-	function(path = "pkg/", pc = package_coverage(path)) {
+	function(path = "pkg/") {
+		pc = package_coverage(path)
 		zc = zero_coverage(pc)
 		temp = tempfile(fileext = ".html")
 		writeLines(
