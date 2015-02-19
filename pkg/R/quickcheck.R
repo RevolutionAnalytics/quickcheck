@@ -17,6 +17,14 @@ quickcheck.env = new.env()
 
 quickcheck.env$severity = 10
 quickcheck.env$sample.size = NULL
+quickcheck.env$vector.size = NULL
+quickcheck.env$integer.size = NULL
+quickcheck.env$double.size = NULL
+quickcheck.env$char.size = NULL
+quickcheck.env$nlevels = NULL
+quickcheck.env$raw.max = NULL
+quickcheck.env$list.size = NULL
+quickcheck.env$list.height = NULL
 
 `%||%` = 
 	function(x, y) 
@@ -36,25 +44,73 @@ qc.options =
 					else {
 						quickcheck.env[[nargi]] == args[[i]]
 						args[[i]]}})
-		
-	names(ll) = {
-		if(is.null(names(args)))
-			args
-		else
-			ifelse(names(args) %in% list("", NA, NULL), args, names(args))}
-	ll}
-		
-		
-## zip
+		names(ll) = {
+			if(is.null(names(args)))
+				args
+			else
+				ifelse(names(args) %in% list("", NA, NULL), args, names(args))}
+		ll}
+
+qc.option = 
+	function(...) {
+		stopifnot(length(list(...)) == 1)
+		qc.options(...)[[1]]}
+
+
+default = 
+	function(x) {
+		x = lazy(x)
+		lazy_eval(x, as.list(quickcheck.env))}
+
+## zipf
 
 rzipf  = 
 	function(n, N, s = 1) {
-		bins = cumsum(1/(1:N)^s)
-		u = runif(n, min = 0, max(bins))
-    cmp = outer(u, bins, `>=`)
-    1 + apply(cmp, 1, sum)}
+		if(n == 0) integer()
+		else {
+			bins = cumsum(c(0, 1/(1:N)^s))
+			bins = bins/max(bins)
+			u = runif(n)
+			df = 
+				arrange(
+					rbind(
+						data.frame(sample = TRUE, data = u), 
+						data.frame(sample = FALSE, data = bins)),
+					data)
+			x = cumsum(!df$sample)[df$sample]
+			x[sample.int(length(x))]}}
 
-				 
+rzipf.range  =
+	function(n, min, max, s = 1) {
+		if(n == 0) integer()
+		else {
+			stopifnot(max >= min)
+			if(0 %in% (min + 1):(max - 1)) {
+				negative = - rzipf(n, - min + 1, s ) + 1
+				positive = rzipf(n, max + 1, s) - 1
+				ifelse(
+					sample(c(TRUE,FALSE), n, replace = TRUE),
+					positive,
+					negative)}
+			else 
+				min - 1 + rzipf(n , max - min + 1, s)}}
+
+rzeta  = 
+	function(n, s) {
+		u = runif(n)
+		N = 2
+		repeat {
+			bins = cumsum(dzeta(1:N, s - 1))
+			if(max(u) < max(bins)) break
+			N = 2 * N }
+		sample(
+			cumsum(
+				!arrange(
+					rbind(
+						data.frame(sample = TRUE, data = u), 
+						data.frame(sample = FALSE, data = bins)), 
+					data)$sample)) + 1}
+
 ## quirkless sample
 
 sample = 
@@ -62,13 +118,26 @@ sample =
 		x[base::sample(length(x), size = size, ...)]
 
 
-## argument is called assertion for user facing API, but used also on generators internally
 eval.formula.or.function= 
-	function(rng, args = list()) {
-		if(is.function(rng))
-			do.call(rng, args)
+	function(fof, args = list()) {
+		if(is.function(fof))
+			do.call(fof, args)
 		else
-			eval(tail(as.list(rng), 1)[[1]], args, environment(rng))}
+			eval(tail(as.list(fof), 1)[[1]], args, environment(fof))}
+
+eval.generator = 
+	function(rng, size = NULL) {
+		data = 
+			eval.formula.or.function(
+				rng,
+				if(is.null(size)) list()
+				else {
+				if(is.function(rng))
+					list(size)
+				else 
+					list(size = size)})
+		stopifnot(size == length(data))
+		data}
 
 ## make use of testthat expectations
 
@@ -82,10 +151,10 @@ library(testthat)
 expect.names = grep("^expect_", ls("package:testthat"), value = TRUE)
 assert.funs = lapply(expect.names, function(n) as.assertion(get(n, envir = as.environment("package:testthat"))))
 names(assert.funs) = gsub("expect_", "", expect.names)
-	
+
 expect = 
 	function(what, ...)
-			assert.funs[[what]](...)
+		assert.funs[[what]](...)
 
 is.formula = 
 	function(x)
@@ -93,17 +162,17 @@ is.formula =
 
 eval.args =
 	function(args, envir) {
-    args[[1]] = eval(args[[1]], envir)
+		args[[1]] = eval(args[[1]], envir)
 		lapply(
 			1 + seq_along(args[-1]),
 			function(i)
 				args[[i]] <<- eval(args[[i]], args[1:(i-1)], envir))
-	as.list(args)}
-	
+		as.list(args)}
+
 test =
 	function(
 		assertion,
-		sample.size = qc.options("sample.size") %||% qc.options("severity"),
+		sample.size = qc.option("sample.size") %||% qc.option("severity"),
 		stop = !interactive()) {
 		set.seed(0)
 		stopifnot(is.function(assertion))
@@ -129,8 +198,8 @@ test =
 				function(i) {
 					args = eval.args(formals(assertion), envir)
 					result = try.assertion(args)
-					if(!result$pass)
-						cat(
+					if(is.na(result$pass) || !result$pass)
+						message(
 							paste(
 								"FAIL: assertion:", 
 								paste(deparse(assertion), 
@@ -161,7 +230,7 @@ test =
 				pass = unlist(project(runs, "pass")),
 				elapsed = summary(unlist(project(runs, "elapsed"))))
 		if(all(test.report$pass)){
-			cat(
+			message(
 				paste(
 					"Pass ", 
 					"\n",
@@ -169,8 +238,8 @@ test =
 						deparse(assertion), 
 						"\n", 
 						collapse = " ")))
-		print(test.report$elapsed)}
-		tf = tempfile(tmpdir=".", pattern = "quickcheck")
+			print(test.report$elapsed)}
+		tf = tempfile(tmpdir = ".", pattern = "quickcheck")
 		save(test.report, file = tf)
 		if (stop && any(!test.report$pass)) {
 			stop("load(\"", file.path(getwd(), tf), "\")")}
@@ -216,82 +285,110 @@ no.coverage =
 
 ## basic types
 
-
 rsize = 
-	function(n) {
-		if(is.numeric(n))
-			rpois(1, lambda = n)
+	function(generator) {
+		if(is.numeric(generator)){
+			stopifnot(length(generator) <=2)
+			if(length(generator) == 1) 
+				generator = c(min = 0, max = generator)				
+			rzipf.range(1, generator[["min"]], generator[["max"]], s = 1)}
 		else
-			eval.formula.or.function(n)[[1]]}
+			as.integer(round(eval.generator(generator)))}
 
 rdata = 
-	function(element, size) {
-		size = rsize(size)
-		eval.formula.or.function(
-			element, 
-			if(is.function(element))
-				list(size)
-			else 
-				list(size = rsize(size)))}
+	function(generator, size) 
+		eval.generator(generator, rsize(size))
+
+default.vector.size = 
+	function()
+		default(vector.size %||% 4 * severity)
 
 rlogical = 
-	function(element = 0.5,	size = 10) {
-		if(is.logical(element))
-			element = as.numeric(element)
-		if(is.numeric(element)) {
-			p = element
-			element = 
+	function(generator = c(p = 0.5),	size = default.vector.size()) {
+		if(is.numeric(generator)) {
+			p = generator
+			generator = 
 				function(n) 
 					as.logical(rbinom(n, size = 1, prob = p))}
-		as.logical(rdata(element, size))}
+		as.logical(rdata(generator, size))}
+
 
 rinteger =
-	function(element = 100, size = 10) {
-		if(is.numeric(element))
-			element = Curry(rpois, lambda = element)
-		as.integer(rdata(element, size))}
+	function(generator = c(max = default(integer.size %||% 10 * severity)), size = default.vector.size()) {
+		if(is.numeric(generator)) {
+			lg = length(generator) 
+			if(lg == 0 || lg > 2) 
+				stop("generator argument can only have length 1 or 2 when numeric")
+			if(lg == 1) generator = c(min = -generator[[1]], max = generator[[1]])
+			generator = 
+				Curry(rzipf.range, min = generator[["min"]], max = generator[["max"]])}
+		as.integer(rdata(generator, size))}
 
 rdouble =
-	function(element = 0, size = 10) {
-		if(is.numeric(element))
-			element = Curry(rnorm, mean = element)
-		as.double(rdata(element, size))}
+	function(
+		generator = c(mean = 0, sd = default(double.size %||% 10 * severity)), 
+		size = default.vector.size()) {
+		if(is.numeric(generator)) {
+			stopifnot(length(generator) <=2)
+			if(length(generator) == 1) 
+				generator = c(mean = 0, sd = generator)
+			generator = Curry(rnorm, mean = generator[["mean"]], sd = generator[["sd"]])}
+		as.double(rdata(generator, size))}
 
 rnumeric = 
-	function(element = 100, size = 10)
+	function(
+		generators =
+			list(
+				integer = c(max = default(integer.size %||% 10 * severity)),
+				double = 	c(mean = 0, sd = default(double.size %||% 10 * severity))), 
+		size = default.vector.size())
 		mixture(
 			list(
-				Curry(rdouble, element = element, size = size), 
-				Curry(rinteger, element = element, size = size)))()
+				Curry(rdouble, generator = generators$double, size = size), 
+				Curry(rinteger, generator = generators$integer, size = size)))()
 
 ##rcomplex NAY
 
 rcharacter = 
-	function(element = 10, size = 10) {
-		if(is.character(element))
-			element = nchar(element)
-		if(is.numeric(element))
-			element = Curry(rpois, lambda = element)
-		unlist(
+	function(
+		nchar = default(char.size %||% severity), 
+		size = default.vector.size()) {
+		size = rsize(size)
+		nchar = {
+			if(is.numeric(nchar))
+				rpois(n = size, lambda = nchar)
+			else
+				eval.generator(nchar, size)}
+		substr(
 			sapply(
-				runif(rsize(size)),
-				function(x) substr(digest(x), 1, as.character(element(1)))))}
+				runif(size), digest), 
+			1, 
+			nchar)}
 
-rfactor = function(element = 10, size = 10)
-	as.factor(rcharacter(element, size))
+rfactor = 
+	function(
+		generator = c(nlevels = default(nlevels %||% severity)), 
+		size = default.vector.size()) {
+		if(is.numeric(generator))
+			generator = Curry(sample, x = 1:generator, replace = TRUE)
+		as.factor(rdata(generator, size))}
 
 rraw =
-	function(element = as.raw(0:255), size = 10) {
-		if(is.raw(element))
-			element_ = select(element)
-		as.raw(element_(rsize(size)))} 
+	function(
+		generator = default(raw.max %||% severity),
+		size = default.vector.size()) {
+		if(is.numeric(generator))
+			generator = as.raw(0:generator)
+		if(is.raw(generator))
+			generator = Curry(sample, x = generator, replace = TRUE )
+		as.raw(rdata(generator, size))} 
 
 rlist = 
 	function(
 		element = 
 			Curry(
 				rany, 
-				generators =
+				data.generators =
 					list(
 						rlogical, 
 						rinteger, 
@@ -301,14 +398,17 @@ rlist =
 						rDate,
 						rfactor,
 						Curry(rlist, size = size, height = rsize(height - 1)))), 
-		size = 5, 
-		height = 4) {	
+		size = default(list.size %||% round(severity / 2)), 
+		height = default(list.height %||% round(severity/3))) {	
 		if (height == 0) NULL
 		else 		
-			replicate(rsize(size), eval.formula.or.function(element), simplify = FALSE)}
+			replicate(
+				rsize(size), 
+				element(), 
+				simplify = FALSE)}
 
 ratomic = 
-	function(element = atomic.generators, size = 10) {
+	function(element = atomic.generators, size = default.vector.size()) {
 		size = rsize(size)
 		mixture(
 			lapply(
@@ -318,13 +418,13 @@ ratomic =
 					Curry(hh, size = constant(size))}))()}
 
 rmatrix = 
-	function(element = ratomic, nrow = 10, ncol = 10) {
+	function(distribution = ratomic, nrow = 10, ncol = 10) {
 		nrow = rsize(nrow)
 		ncol = rsize(ncol)
-		matrix(ratomic(size = constant(nrow*ncol)), nrow = nrow, ncol = ncol)}
+		matrix(distribution(size = constant(nrow*ncol)), nrow = nrow, ncol = ncol)}
 
 rDate =
-	function(element = list(from = as.Date("0000/01/01"), to = Sys.Date()), size = 10) {
+	function(element = list(from = as.Date("0000/01/01"), to = Sys.Date()), size = default.vector.size()) {
 		if(is.list(element)) {
 			dates = as.Date(element$from):as.Date(element$to)
 			as.Date(
@@ -333,17 +433,17 @@ rDate =
 					rsize(size), replace = TRUE),
 				origin = as.Date("1970-01-01"))}
 		else
-			as.Date(rdata(element, size))}
+			as.Date(rdata(generator, size))}
 
 atomic.generators = 
-		list(
-			rlogical = rlogical,
-			rinteger = rinteger,
-			rdouble = rdouble,
-			rcharacter = rcharacter,
-			rraw = rraw,
-			rDate = rDate,
-			rfactor = rfactor)
+	list(
+		rlogical = rlogical,
+		rinteger = rinteger,
+		rdouble = rdouble,
+		rcharacter = rcharacter,
+		rraw = rraw,
+		rDate = rDate,
+		rfactor = rfactor)
 
 rdata.frame =
 	function(
@@ -372,24 +472,25 @@ rfunction =
 ## special distributions
 
 constant =
-	function(const = NULL)
+	function(const = NULL) {
+		force(const)
 		function(...)
-			const
+			const	}
 
-select = 
-	function(from, replace = TRUE)
-		function(size = 1)
-			sample(from, size, replace = replace)
+rsample = 
+	function(from, size = length(from), replace = TRUE) {
+			sample(from, rsize(size), replace = replace)}
 
 ##combiners
 mixture =
-	function(generators)
+	function(data.generators) {
+		force(data.generators)
 		function(...)
-			sample(generators, 1)[[1]](...)
+			sample(data.generators, 1)[[1]](...)}
 
 # combine everything
-all.generators = c(atomic.generators, list(rlist, rdata.frame, rmatrix))
+all.data.generators = c(atomic.generators, list(rlist, rdata.frame, rmatrix))
 
 rany =
-	function(generators = all.generators)
-		mixture(generators)()
+	function(data.generators = all.data.generators)
+		mixture(data.generators)()

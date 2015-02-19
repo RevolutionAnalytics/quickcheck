@@ -88,7 +88,7 @@ test.out = test(function(x = rdouble()) mean(x) > 0, stop = FALSE)
 test.out
 ```
 
-The output is a list with three elements:
+The output is a list with five elements:
 
   - the assertion that failed
   - a list of in-scope variables that could have affected the result -- this is work in progress and shouldn't be trusted at this time
@@ -120,7 +120,7 @@ rdouble()
 generates some random double vector. The next expression does the same but with an expectation equal to 100
 
 ```{r}
-rdouble(element = 100)
+rdouble(generator = 100)
 ```
 and finally this extracts the elements from a uniform distribution with all parameters at default values.
 ```{r}
@@ -162,14 +162,14 @@ rdouble(size = ~3)
 
 Without the `~` it would be an expected size, with it it is deterministic.
 
-Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple constructor is `select` which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
+Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple constructor is `rsample` which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
 
 ```{r}
-select(1:5)()
-select(1:5)()
+rsample(1:5, 10)
+rsample(1:5, 10)
 ```
 
-The default distributions for all the generators were picked based on implementation convenience more than anything and  will be refined in future releases and based on feedback.
+The default distributions are still work in progress, but follows a general principle that testing larger vectors or vectors with larger elements should not be at the TODO.
 
 ## Advanced topics
 
@@ -194,7 +194,7 @@ test(function(x = rdouble()) is.reciprocal.self.inverse(x))
 
 and one for the corner cases:
 ```{r}
-test(function(x = select(c(0, -Inf, Inf))()) is.reciprocal.self.inverse(x))
+test(function(x = rsample(c(0, -Inf, Inf))) is.reciprocal.self.inverse(x))
 ```
 
 That's a start, but the two type of values never mix in the same vector. We can combine the two with a custom generator

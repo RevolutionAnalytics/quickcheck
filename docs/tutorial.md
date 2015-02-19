@@ -46,12 +46,14 @@ test(function(x = rinteger()) identical(identity(x), x))
 ```
 
 ```
-Pass  function (x = rinteger())  
+Pass  
+ function (x = rinteger())  
  identical(identity(x), x) 
 ```
 
 ```
-[1] TRUE
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  18900   19300   19600   21000   20100   29300 
 ```
 
 We have supplied an assertion, that is a function with defaults for each argument, at least some set using random data generators, and returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` means *failed*.
@@ -63,12 +65,14 @@ test(function(x = rinteger()) identical(identity(x), x), sample.size = 100)
 ```
 
 ```
-Pass  function (x = rinteger())  
+Pass  
+ function (x = rinteger())  
  identical(identity(x), x) 
 ```
 
 ```
-[1] TRUE
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  17900   19700   20100   20700   20600   56800 
 ```
 
 Done! You see, if you had to write down those 100 integer vectors one by one, you'd never have time to. But, you may object, `identity` is not supposed to work only on integer vectors, why did we test only on those? That was just a starter indeed. Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc. for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. In particular, there is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). That is exactly what we need for our identity test.
@@ -79,12 +83,14 @@ test(function(x = rany()) identical(identity(x), x), sample.size = 100)
 ```
 
 ```
-Pass  function (x = rany())  
+Pass  
+ function (x = rany())  
  identical(identity(x), x) 
 ```
 
 ```
-[1] TRUE
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  17000   19400   20100   21300   21800   46100 
 ```
 
 Now we have more confidence that `identity` works for all types of R objects. 
@@ -101,12 +107,14 @@ test(
 ```
 
 ```
-Pass  function (x = rcharacter())  
+Pass  
+ function (x = rcharacter())  
  expect("error", stop(x)) 
 ```
 
 ```
-[1] TRUE
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+2000000 2160000 2390000 2530000 2450000 4410000 
 ```
 
 By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertions defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you'd ever want to use `expect("equal", ...)`, but we threw it in for completeness. 
@@ -123,22 +131,30 @@ test(function(x = rdouble()) mean(x) > 0, stop = TRUE)
 ```
 FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
+mean(x) > 0
+FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
+mean(x) > 0
+FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
+mean(x) > 0
+FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
+mean(x) > 0
+FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
+mean(x) > 0
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
+FAIL: assertion:
 function (x = rdouble()) 
 mean(x) > 0
 ```
 
 ```
 Error:
-load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheck13e3e5b630cb9")
+load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickcheck3efe56cd8d12")
 ```
 
 Its output shows that about half of the default 10 runs have failed and then invites us to load some debugging data. Another way to get at that data is to run the test with the option `stop = FALSE` which doesn't produce an error. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
@@ -151,15 +167,23 @@ test.out = test(function(x = rdouble()) mean(x) > 0, stop = FALSE)
 ```
 FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
+mean(x) > 0
+FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
+mean(x) > 0
+FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
+mean(x) > 0
+FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
+mean(x) > 0
+FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0FAIL: assertion:
+mean(x) > 0
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
+FAIL: assertion:
 function (x = rdouble()) 
 mean(x) > 0
 ```
@@ -178,54 +202,78 @@ NULL
 
 $cases
 $cases[[1]]
-NULL
+$cases[[1]]$x
+ [1]  -32.6233  132.9799  127.2429   41.4641 -153.9950  -92.8567  -29.4720
+ [8]   -0.5767  240.4653   76.3593  -79.9009 -114.7657  -28.9462  -29.9215
+[15]  -41.1511   25.2223  -89.1921   43.5683 -123.7538  -22.4268   37.7396
+[22]   13.3336   80.4190   -5.7107   50.3608  108.5769
+
 
 $cases[[2]]
 $cases[[2]]$x
-[1] -0.4115  0.2522 -0.8919  0.4357 -1.2375 -0.2243  0.3774  0.1333  0.8042
+[1] -128.5
 
 
 $cases[[3]]
 $cases[[3]]$x
-[1]  0.50361  1.08577 -0.69095 -1.28460  0.04673 -0.23571 -0.54289 -0.43331
-[9] -0.64947
+[1] -23.57 -54.29 -43.33 -64.95
 
 
 $cases[[4]]
 $cases[[4]]$x
- [1]  1.1519  0.9922 -0.4295  1.2383 -0.2793  1.7579  0.5607 -0.4528
- [9] -0.8320 -1.1666 -1.0656 -1.5638
+ [1]  115.19   99.22  -42.95  123.83  -27.93  175.79   56.07  -45.28
+ [9]  -83.20 -116.66 -106.56 -156.38  115.65   83.20
 
 
 $cases[[5]]
 $cases[[5]]$x
- [1]  0.83205 -0.22733  0.26614 -0.37670  2.44136 -0.79534 -0.05488
- [8]  0.25014  0.61824 -0.17262 -2.22390 -1.26361  0.35873
+[1]  26.61 -37.67
 
 
 $cases[[6]]
 $cases[[6]]$x
-[1] -0.94065 -0.11583 -0.81497  0.24226 -1.42510  0.36594  0.24841  0.06529
-[9]  0.01916
+ [1]  -79.534   -5.488   25.014   61.824  -17.262 -222.390 -126.361
+ [8]   35.873   -1.105  -94.065  -11.583  -81.497   24.226 -142.510
+[15]   36.594   24.841    6.529    1.916   25.734  -64.901  -11.917
+[22]   66.414  110.097   14.377  -11.775  -91.207 -143.759  -79.709
+[29]  125.408   77.214  -21.952  -42.481  -41.898   99.699  -27.578
+[36]  125.602   64.667  129.931  -87.326
 
 
 $cases[[7]]
 $cases[[7]]$x
- [1] -0.6490 -0.1192  0.6641  1.1010  0.1438 -0.1178 -0.9121 -1.4376
- [9] -0.7971  1.2541
+[1] -88.09  59.63  11.97 -28.22
 
 
 $cases[[8]]
-NULL
+$cases[[8]]$x
+ [1]   22.902   99.654   78.186  -77.678  -61.599    4.658 -113.039
+ [8]   57.672 -128.075  162.545  -50.070  167.830  -41.252  -97.229
+[15]    2.538    2.748 -168.018  105.375 -111.960   33.562   49.480
+[22]   13.805  -11.879   19.768 -106.869  -80.321 -111.377  158.009
+[29]  149.782
+
 
 $cases[[9]]
-NULL
+$cases[[9]]$x
+[1] -123.2901   -0.3724  151.1672  -47.5698   79.7916  -97.4003   68.9373
+
 
 $cases[[10]]
-NULL
+$cases[[10]]$x
+numeric(0)
+
+
+
+$pass
+ [1]  TRUE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE    NA
+
+$elapsed
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  25600   26200   27000   29100   29500   40200 
 ```
 
-The output is a list with three elements:
+The output is a list with five elements:
 
   - the assertion that failed
   - a list of in-scope variables that could have affected the result -- this is work in progress and shouldn't be trusted at this time
@@ -240,14 +288,10 @@ repro(test.out)
 
 ```
 debugging in: (function (x = rdouble()) 
-mean(x) > 0)(x = c(-0.411510832795067, 0.252223448156132, -0.891921127284569, 
-0.435683299355719, -1.23753842192996, -0.224267885278309, 0.377395645981701, 
-0.133336360814841, 0.804189509744908))
+mean(x) > 0)(x = -128.459935387219)
 debug: mean(x) > 0
 exiting from: (function (x = rdouble()) 
-mean(x) > 0)(x = c(-0.411510832795067, 0.252223448156132, -0.891921127284569, 
-0.435683299355719, -1.23753842192996, -0.224267885278309, 0.377395645981701, 
-0.133336360814841, 0.804189509744908))
+mean(x) > 0)(x = -128.459935387219)
 ```
 
 ```
@@ -266,8 +310,7 @@ rdouble()
 ```
 
 ```
- [1] -0.50806 -0.20738 -0.39281 -0.31999 -0.27911  0.49419 -0.17733
- [8] -0.50596  1.34304 -0.21458 -0.17956 -0.10019  0.71267 -0.07356
+numeric(0)
 ```
 
 ```r
@@ -275,8 +318,7 @@ rdouble()
 ```
 
 ```
-[1] -0.68166 -0.32427  0.06016 -0.58889  0.53150 -1.51839  0.30656 -1.53645
-[9] -0.30098
+numeric(0)
 ```
 
 As you can see, both elements and length change from one call to the next and in fact they are both random and independent. This is generally true for all generators, with the exception of the trivial generators created with `constant`. Most generators take two arguments, `element` and `size` which are meant to specify the distribution of the elements and size of the returned data structures and whose exact interpretation depends on the specific generator. In general, if the argument `element` is a value it is construed as a desired expectation of the elements of the return value, if it is a function, it is called with a single argument to generate the elements of the random data structure. For example
@@ -287,19 +329,18 @@ rdouble()
 ```
 
 ```
-[1] -0.6521 -0.0569 -1.9144  1.1766 -1.6650 -0.4635 -1.1159 -0.7508
+numeric(0)
 ```
 
 generates some random double vector. The next expression does the same but with an expectation equal to 100
 
 
 ```r
-rdouble(element = 100)
+rdouble(generator = 100)
 ```
 
 ```
- [1] 100.02  98.71  98.36 100.45  99.98  99.68  99.07  98.51  98.92 101.00
-[11]  99.38  98.62 101.87 100.43  99.76 101.06
+numeric(0)
 ```
 and finally this extracts the elements from a uniform distribution with all parameters at default values.
 
@@ -308,8 +349,8 @@ rdouble(runif)
 ```
 
 ```
- [1] 0.26788 0.76215 0.98631 0.29361 0.39935 0.81213 0.07715 0.36370
- [9] 0.44259 0.15671 0.58221 0.97016
+ [1] 0.52731 0.88032 0.37306 0.04796 0.13863 0.32149 0.15483 0.13223
+ [9] 0.22131 0.22638 0.13142 0.98156 0.32701 0.50694
 ```
 
 The same is true for argument `size`. If not a function, it is construed as a length expectation, otherwise it is called with a single argument equal to 1 to generate a random length.
@@ -321,7 +362,7 @@ rdouble(size = 1)
 ```
 
 ```
-[1] -0.9290 -0.2942 -0.6150 -0.9471
+numeric(0)
 ```
 
 ```r
@@ -329,7 +370,7 @@ rdouble(size = 1)
 ```
 
 ```
-[1] -0.03473
+numeric(0)
 ```
 
 Second form:
@@ -339,7 +380,8 @@ rdouble(size = function() 10 * runif(1))
 ```
 
 ```
-[1] -0.20619 -0.57430 -1.39017 -0.07042 -0.43088 -0.59223  0.98112
+ [1]  -92.94 -148.75 -107.52  100.00  -62.13 -138.44  186.93   42.51
+ [9]  -23.86  105.85
 ```
 
 ```r
@@ -347,7 +389,7 @@ rdouble(size = function() 10 * runif(1))
 ```
 
 ```
-[1]  0.5210 -0.1588  1.4646 -0.7661 -0.4302 -0.9261 -0.1771
+[1]   77.96   71.32  -54.29   88.58  -34.86 -100.81  188.32  -92.90
 ```
 
 A shorthand for the above expression is:
@@ -358,7 +400,7 @@ rdouble(size = ~10*runif(1))
 ```
 
 ```
-[1]  2.02476 -0.70369  0.96079  1.79049 -1.06417  0.01764
+[1]  45.700  -7.715 -33.400  -3.473
 ```
 
 Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`. Nested data structures have an argument `height`. All of these are intended to be expectations as opposed to deterministic values but can be replaced by a generator, which gives you total control. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
@@ -369,7 +411,7 @@ rdouble(size = constant(3))
 ```
 
 ```
-[1] -0.3899 -0.4908 -1.0457
+[1]  78.76 207.52 102.74
 ```
 
 ```r
@@ -377,7 +419,7 @@ rdouble(size = constant(3))
 ```
 
 ```
-[1] -0.8962  1.2694  0.5938
+[1]  120.79 -123.13   98.39
 ```
 
 Or, since "conciseness is power":
@@ -388,31 +430,31 @@ rdouble(size = ~3)
 ```
 
 ```
-[1]  0.7756  1.5574 -0.3654
+[1]   21.99 -146.73   52.10
 ```
 
 Without the `~` it would be an expected size, with it it is deterministic.
 
-Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple constructor is `select` which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
+Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple constructor is `rsample` which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
 
 
 ```r
-select(1:5)()
+rsample(1:5, 10)
 ```
 
 ```
-[1] 4
+[1] 5
 ```
 
 ```r
-select(1:5)()
+rsample(1:5, 10)
 ```
 
 ```
-[1] 4
+integer(0)
 ```
 
-The default distributions for all the generators were picked based on implementation convenience more than anything and  will be refined in future releases and based on feedback.
+The default distributions are still work in progress, but follows a general principle that testing larger vectors or vectors with larger elements should not be at the TODO.
 
 ## Advanced topics
 
@@ -438,27 +480,31 @@ test(function(x = rdouble()) is.reciprocal.self.inverse(x))
 ```
 
 ```
-Pass  function (x = rdouble())  
+Pass  
+ function (x = rdouble())  
  is.reciprocal.self.inverse(x) 
 ```
 
 ```
-[1] TRUE
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  50200   52500   64800  113000   77300  502000 
 ```
 
 and one for the corner cases:
 
 ```r
-test(function(x = select(c(0, -Inf, Inf))()) is.reciprocal.self.inverse(x))
+test(function(x = rsample(c(0, -Inf, Inf))) is.reciprocal.self.inverse(x))
 ```
 
 ```
-Pass  function (x = select(c(0, -Inf, Inf))())  
+Pass  
+ function (x = rsample(c(0, -Inf, Inf)))  
  is.reciprocal.self.inverse(x) 
 ```
 
 ```
-[1] TRUE
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  50700   53900   66200   69500   67500  126000 
 ```
 
 That's a start, but the two type of values never mix in the same vector. We can combine the two with a custom generator
@@ -476,8 +522,7 @@ rdoublex()
 ```
 
 ```
- [1] 100.92  99.96 101.12 100.82 100.74  99.38   -Inf  97.79 100.39  99.98
-[11] 101.51 100.58 100.59 100.94
+[1] 25.22
 ```
 
 ```r
@@ -485,7 +530,7 @@ rdoublex()
 ```
 
 ```
-[1]  98.62   0.00  99.61 100.39    Inf  99.59  99.90  99.95
+[1]    0.00 -198.94   78.21    -Inf   91.90   82.12
 ```
 		
 And use it in a more general test.
@@ -496,10 +541,12 @@ test(function(x = rdoublex()) is.reciprocal.self.inverse(x))
 ```
 
 ```
-Pass  function (x = rdoublex())  
+Pass  
+ function (x = rdoublex())  
  is.reciprocal.self.inverse(x) 
 ```
 
 ```
-[1] TRUE
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  52300   53400   58500  256000   73400 2000000 
 ```
