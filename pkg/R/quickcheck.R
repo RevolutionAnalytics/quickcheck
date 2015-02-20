@@ -40,23 +40,28 @@ opt.assign = Curry(assign, envir = quickcheck.env)
 
 qc.options =
   function(...){
-    args = list(...)
-    ll =
-      lapply(
-        seq_along(args),
-        function(i){
-          nargi = names(args[i])
-          if(is.null(nargi) || nargi == "" )
-            quickcheck.env[[args[[i]]]]
-          else {
-            opt.assign(nargi, args[[i]])
-            args[[i]]}})
-    names(ll) = {
-      if(is.null(names(args)))
-        args
-      else
-        ifelse(names(args) %in% list("", NA, NULL), args, names(args))}
-    ll}
+    args = as.list(match.call())[-1]
+    if(!is.null(names(args))) {
+      nargs = args[names(args) != ""]
+      unargs = args[names(args) == ""]
+      names(nargs) = match.arg(names(nargs), ls(quickcheck.env), several.ok = TRUE)
+      stopifnot(all(names(nargs) %in% ls(quickcheck.env)))}
+    else {
+      unargs = args
+    }
+    unargs = match.arg(unlist(unargs),  ls(quickcheck.env), several.ok = TRUE)
+    nargs =
+      do.call(
+        c,
+        lapply(
+          names(nargs),
+          function(nargi){
+            opt.assign(nargi, nargs[[nargi]])
+            nargs[nargi]}))
+    unargs = as.list(quickcheck.env)[unlist(unargs)]
+    c(nargs, unargs)}
+
+formals(qc.options) = c(formals(qc.options), do.call(pairlist, as.list(quickcheck.env)))
 
 qc.option =
   function(...) {
