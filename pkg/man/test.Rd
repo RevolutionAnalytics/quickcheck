@@ -1,4 +1,4 @@
-\name{test}
+\name{quickcheck}
 \alias{test}
 \alias{repro}
 \alias{no.coverage}
@@ -27,8 +27,21 @@ qc.options(...)
 \details{
 A test is considered passed if each run passes. A run passes if the assertion, once called, returns \code{TRUE}. A run fails if the assertion returns \code{FALSE} or raises an error. \code{set.seed(0)} is performed at the beginning of each test for reproducibility. Available package options are:
 \enumerate{
-\item{severity}{A parameter that is proportional to other parameters that make the tests more sever (harder to pass), including number of runs, size of data generated as arguments to assertions and size of elements in said data. Defaults to 10.}
-\item{sample.size}{The default value for the \code{sample.size} argument to \code{test}. Overrides the "severity" option, unless set to NULL, the default}
+  \item{severity}{A parameter that is proportional to other parameters that make the tests more sever (harder to pass), including number of runs, size of data generated as arguments to assertions and size of elements in said data. Defaults to 10.}
+  \item{sample.size}{The default value for the \code{sample.size} argument to \code{test}. Overrides the "severity" option, unless set to NULL, the default}
+  \item{vector.size}{Default vector size for a variety of generators}
+  \item{integer.size}{Max element size in \code{\link{rinteger}}}
+  \item{double.size}{Standard deviation of elements in \code{\link{rdouble}}}
+  \item{nchar.size}{Max string length in \code{\link{rcharacter}}}
+  \item{character.max}{Max number of distinct strings in \code{\link{rcharacter}}}
+  \item{nlevels}{Max number of levels in \code{\link{rfactor}}}
+  \item{raw.max}{Max number of distinct elements in \code{\link{rraw}}}
+  \item{list.size}{Max list size for \code{\link{rlist}}}
+  \item{list.height}{Parameter increasing with list height in \code{\link{rlist}}}
+  \item{matrix.ncol}{Max number of columns in \code{\link{rmatrix}}}
+  \item{matrix.nrow}{Max number of rows in\code{\link{rmatrix}}}
+  \item{data.frame.ncol}{Max number of columns in\code{\link{rdata.frame}}}
+  \item{data.frame.nrow}{Max number of rows in\code{\link{rdata.frame}}}
 }}
 
 \value{For \code{test}, when \code{stop} is FALSE, a list with five elements:
