@@ -50,7 +50,7 @@ rsize =
       stopifnot(length(rng) <= 2)
       if(length(rng) == 1)
         rng = c(min = 0, max = rng)
-      rzipf.range(1, rng[["min"]], rng[["max"]], s = 1)}
+      rzipf.range(1, min(rng), max(rng), s = 1)}
     else
       as.integer(round(eval.rng(rng, 1)))}
 
@@ -88,7 +88,7 @@ rinteger =
         stop("elements argument can only have length 1 or 2 when numeric")
       if(lelements == 1) elements = c(min = -elements[[1]], max = elements[[1]])
       elements =
-        Curry(rzipf.range, min = elements[["min"]], max = elements[["max"]])}
+        Curry(rzipf.range, min = min(elements), max = max(elements))}
     as.integer(rdata(elements, size))}
 
 rdouble =
@@ -146,7 +146,7 @@ rfactor =
 
 rraw =
   function(
-    elements = default(raw.max %||% severity),
+    elements = c(max = default(raw.max %||% severity)),
     size = default.vector.size()) {
     if(is.numeric(elements))
       elements = as.raw(0:elements)
