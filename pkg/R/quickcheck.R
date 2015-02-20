@@ -225,10 +225,12 @@ test =
             "\n",
             collapse = " ")))
       print(test.report$elapsed)}
-    tf = tempfile(tmpdir = ".", pattern = "quickcheck")
+    tmpdir = file.path("/tmp", Sys.getpid())
+    dir.create(tmpdir, showWarnings = FALSE)
+    tf = tempfile(tmpdir = tmpdir, pattern = "quickcheck")
     save(test.report, file = tf)
     if (stop && any(!test.report$pass)) {
-      stop("load(\"", file.path(getwd(), tf), "\")")}
+      stop("load(\"", tf, "\")")}
     invisible(test.report)}
 
 first.false =

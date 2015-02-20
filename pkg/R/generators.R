@@ -252,10 +252,11 @@ constant =
       const	}
 
 rsample =
-  function(from, size = length(from), replace = TRUE) {
-    sample(from, rsize(size), replace = replace)}
+  function(elements, size = round(length(elements)/2), replace = TRUE) {
+    sample(elements, rsize(size), replace = replace)}
 
 ##combiners
+
 mixture =
   function(generators) {
     force(generators)
