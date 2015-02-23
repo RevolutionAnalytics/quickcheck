@@ -42,8 +42,8 @@ qc.options =
   function(...){
     args = as.list(match.call())[-1]
     if(!is.null(names(args))) {
-      nargs = args[names(args) != ""]
-      unargs = args[names(args) == ""]
+      nargs = args[names(args) != ""] #for named args
+      unargs = args[names(args) == ""] #for unnamed args
       names(nargs) = match.arg(names(nargs), ls(quickcheck.env), several.ok = TRUE)
       stopifnot(all(names(nargs) %in% ls(quickcheck.env)))}
     else {
@@ -69,7 +69,6 @@ qc.option =
   function(...) {
     stopifnot(length(list(...)) == 1)
     qc.options(...)[[1]]}
-
 
 default =
   function(x) {
