@@ -49,7 +49,9 @@ qc.options =
     else {
       unargs = args
     }
-    unargs = match.arg(unlist(unargs),  ls(quickcheck.env), several.ok = TRUE)
+    if(length(unargs) > 0)
+      unargs = match.arg(unlist(unargs),  ls(quickcheck.env), several.ok = TRUE)
+    stopifnot(all(unargs %in% ls(quickcheck.env)))
     nargs =
       do.call(
         c,
