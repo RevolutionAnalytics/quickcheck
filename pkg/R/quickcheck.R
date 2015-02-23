@@ -66,9 +66,11 @@ qc.options =
 formals(qc.options) = c(formals(qc.options), do.call(pairlist, as.list(quickcheck.env)))
 
 qc.option =
-  function(...) {
+  function() {
     stopifnot(length(list(...)) == 1)
     qc.options(...)[[1]]}
+
+formals(qc.option) = formals(qc.options)
 
 default =
   function(x) {

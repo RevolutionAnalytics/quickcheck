@@ -19,9 +19,7 @@
 \value{The value returned by the assertion.}
 
 \examples{
-  test(function(x = rdouble(10)) all(x + 0 == x))
   repro(test(function(x = rdouble(10)) all(x + 1 == x), stop = FALSE))
   #stop argument set to FALSE automatically when in an interactive session
   #repro(test(function(x = rdouble(10)) all(x + 1 == x)))
-  qc.options(severity = 20, "raw.max")
-}
+  }
