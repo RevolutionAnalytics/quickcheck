@@ -164,7 +164,7 @@ eval.args =
 test =
   function(
     assertion,
-    sample.size = qc.option("sample.size") %||% qc.option("severity"),
+    sample.size = default(sample.size %||% severity),
     stop = !interactive()) {
     set.seed(cksum(digest(match.call()))%%(2^31 - 1))
     stopifnot(is.function(assertion))
