@@ -58,7 +58,7 @@ rsample(elements, size = round(length(elements)/2), replace =
 mixture(generators)
 constant(const = NULL)}
 \arguments{
- \item{elements}{Specify the distribution of elements of the returned data structure, either as a vector of distribution parameters or by passing a random number generator. Different generators accept different parameters. Using names in the vectors is optional when no ambiguity arises.
+ \item{elements}{Specify the distribution of elements of the returned data structure, either as a vector of distribution parameters or as a random number generator function or a formula that will be used as a random number generator. Different generators accept different parameters. Using names in the vectors is optional when no ambiguity arises.
  \describe{
   \item{rcharacter}{\code{nchar}, the maximum length of each string and \code{string}, the maximum number of distinct strings generated. }
   \item{rdouble}{\code{mean} and \code{sd} are the mean and standard deviation}
@@ -68,8 +68,7 @@ constant(const = NULL)}
  \item{rraw}{\code{max} is the maximum value for an element, as an integer. Alternately, one can specify a raw vector whose elements will be sampled}
  \item{rsample}{A vector or list of elements to sample from.}
  }
- A random number generator can be also passed, such as \code{rnorm} or \code{runif}.  Also, this argument accepts formulas that contain the \code{size} variable and whose right side evaluates to exactly \code{size} elements, as is \code{~10*runif(size). If the formula or function evaluates to the wrong class, a conversion will be attempted; if it evaluate to the wrong size, a warning will be issued and recycling will be attempted.}
- }
+ A random number generator can be also passed, such as \code{rnorm} or \code{runif}.  Also, this argument accepts formulas that contain the \code{size} variable and whose right side evaluates to exactly \code{size} elements, as is \code{~10*runif(size)}. If the formula or function evaluates to the wrong class, a conversion will be attempted; if it evaluate to the wrong size, a warning will be issued and recycling will be attempted.}
  \item{size}{The maximum size of the returned data structure. Alternatively, a random number generator taking a single argument and returning exactly one integer or a formula whose right side evaluates to the same (see also the \code{elements} argument)}
  \item{nrow}{The maximum number of rows for the returned data frame. Alternatively, a function or a formula (see \code{size})}
  \item{ncol}{The maximum number of columns for the returned data frame. Alternatively, a function specifying its distribution (see \code{size})}
@@ -83,21 +82,21 @@ constant(const = NULL)}
 The defaults for the \code{elements} and \code{size} refer to variables that are defined only as package options, such as \code{nchar.size} and \code{severity}. See \code{\link{qc.options}}.
 }
 \value{
-\code{rcharacter}, \code{rfactor}, \code{rdata.frame}, \code{rdouble}, \code{rinteger}, \code{rnumeric}, \code{rraw}, \code{rlogical} and \code{rlist} follow an obvious naming convention with an "r" prefix followed by a class name and generate random data of the type specified by the name. \code{rany} generates an R object of any type. In practice, it's a mixture of the available generators, but may be enriched with more generators in the future. \code{constant} is a constructor for a degenerate random data generator that always returns the same object. It's useful for testing, say, corner cases that a developer needs to make sure they are going to be hit, not just with a certain probability. It's a bridge to deterministic testing. \code{rsample} returns a generator that picks among a list of possible values. \code{mixture} creates a random generator that follows a mixture distribution of the generators provided as arguments (equally weighted).
+\code{rcharacter}, \code{rfactor}, \code{rdata.frame}, \code{rdouble}, \code{rinteger}, \code{rnumeric}, \code{rraw}, \code{rlogical} and \code{rlist} follow a naming convention with an "r" prefix followed by a class name and generate random data of the type specified by the name. \code{rany} generates an R object of any type. In practice, it's a mixture of the available generators, but may be enriched with more generators in the future. \code{constant} is a constructor for a degenerate random data generator that always returns the same object. It's useful for testing, say, corner cases that a developer needs to make sure they are going to be hit, not just with a certain probability. It's a bridge to deterministic testing. \code{rsample} returns a generator that picks among a list of possible values. \code{mixture} creates a random generator that follows a mixture distribution of the generators provided as arguments (equally weighted).
 }
 
 \examples{
-#generate random integer vectors of expected size 4
+#generate random integer vectors of size 4 or less
 rinteger(size = 4)
-#generate random integer vectors of expected size 4 and expected value 5
+#generate random integer vectors of maximum size 4 and elements between -5 and 5.
 rinteger(element = 5, size = 4)
 #pick from a given vector (not unlike sample)
-rsample(1:5, 3)
+rsample(1:5, c(max = 3))
 #generate random numeric vector
 mixture(list(rinteger, rdouble))()
 #always return 1
 constant(1)()
-# generate random integer vector of size exactly 4, note the composition of generators
+# generate random integer vector of size exactly 4
 rinteger(size = constant(4))
 #same with formulas
 rinteger(size = ~4)}
