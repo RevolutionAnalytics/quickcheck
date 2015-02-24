@@ -23,44 +23,55 @@ These functions are divided into two groups, random data generators, and constru
 }
 \usage{
 rany(generators = all.generators)
-ratomic(generators = atomic.generators, size =
-                 default.vector.size())
-rcharacter(elements = c(nchar = default(nchar.size \%||\%
+ratomic(generators = atomic.generators, size = c(min = 0, max
+                 = default(vector.size \%||\% 10 * severity)))
+rcharacter(elements = list(nchar = default(nchar.size \%||\%
                  severity), string = default(character.max \%||\%
-                 severity)), size = default.vector.size())
-rdata.frame(generator = ratomic, nrow = default(data.frame.nrow
-                 \%||\% 4 * severity), ncol = default(data.frame.ncol
-                 \%||\% severity))
+                 severity)), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
+rdata.frame(generator = ratomic, nrow = c(min = 0, max =
+                 default(data.frame.nrow \%||\% 4 * severity)), ncol =
+                 c(min = 0, max = default(data.frame.ncol \%||\%
+                 severity)))
+rDate(elements = c(from = as.Date("1950/01/01"), to = as.Date("2050/01/01")),
+                 size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
 rdouble(elements = c(mean = 0, sd = default(double.size \%||\%
-                 10 * severity)), size = default.vector.size())
+                 10 * severity)), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
 rfactor(elements = c(nlevels = default(nlevels \%||\%
-                 severity)), size = default.vector.size())
-rinteger(elements = c(max = default(integer.size \%||\% 10 *
-                 severity)), size = default.vector.size())
+                 severity)), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
+rinteger(elements = c(min = 0, max = default(integer.size \%||\%
+                 10 * severity)), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
 rlist(generator = Curry(rany, generators = list(rlogical,
                  rinteger, rdouble, rcharacter, rraw, rDate, rfactor,
-                 Curry(rlist, size = size, height = rsize(height -
-                 1)))), size = default(list.size \%||\%
-                 round(severity/2)), height = default(list.height \%||\%
+                 Curry(rlist, size = size, height = max(0, height -
+                 1)))), size = c(min = 0, max = default(list.size \%||\%
+                 round(severity/2))), height = default(list.height \%||\%
                  round(severity/3)))
-rlogical(elements = c(p = 0.5), size = default.vector.size())
-rmatrix(generator = ratomic, nrow = default(matrix.nrow \%||\% 4
-                 * severity), ncol = default(matrix.ncol \%||\%
-                 severity))
+rlogical(elements = c(p = 0.5), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
+rmatrix(generator = ratomic, nrow = c(min = 0, max =
+                 default(matrix.nrow \%||\% 4 * severity)), ncol = c(min
+                 = 0, max = default(matrix.ncol \%||\% severity))
 rnumeric(generators = list(integer = c(max =
                  default(integer.size \%||\% 10 * severity)), double =
                  c(mean = 0, sd = default(double.size \%||\% 10 *
-                 severity))), size = default.vector.size())
-rraw(elements = c(max = default(raw.max \%||\% severity)), size =
-                 default.vector.size())
-rsample(elements, size = round(length(elements)/2), replace =
-                 TRUE)
+                 severity))), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
+rraw(elements = c(min = 0, max = default(raw.max \%||\%
+                 severity)), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
+rsample(elements, size = c(min = 0, max =
+                 round(length(elements)/2)), replace = TRUE)
 mixture(generators)
 constant(const = NULL)}
 \arguments{
  \item{elements}{Specify the distribution of elements of the returned data structure, either as a vector of distribution parameters or as a random number generator function or a formula that will be used as a random number generator. Different generators accept different parameters. Using names in the vectors is optional when no ambiguity arises.
  \describe{
   \item{rcharacter}{\code{nchar}, the maximum length of each string and \code{string}, the maximum number of distinct strings generated. }
+  \item{rDate}{\code{from}, \code{to}, the earliest and latest possible dates, as class Date objects or strings amenable to conversion}
   \item{rdouble}{\code{mean} and \code{sd} are the mean and standard deviation}
  \item{rfactor}{\code{nlevels} is the maximum number of levels}
  \item{rinteger}{\code{min} and \code{max} values; when \code{min} is omitted, \code{-max} is assumed, that is a symmetric distribution centered at 0}
@@ -82,7 +93,7 @@ constant(const = NULL)}
 The defaults for the \code{elements} and \code{size} refer to variables that are defined only as package options, such as \code{nchar.size} and \code{severity}. See \code{\link{qc.options}}.
 }
 \value{
-\code{rcharacter}, \code{rfactor}, \code{rdata.frame}, \code{rdouble}, \code{rinteger}, \code{rnumeric}, \code{rraw}, \code{rlogical} and \code{rlist} follow a naming convention with an "r" prefix followed by a class name and generate random data of the type specified by the name. \code{rany} generates an R object of any type. In practice, it's a mixture of the available generators, but may be enriched with more generators in the future. \code{constant} is a constructor for a degenerate random data generator that always returns the same object. It's useful for testing, say, corner cases that a developer needs to make sure they are going to be hit, not just with a certain probability. It's a bridge to deterministic testing. \code{rsample} returns a generator that picks among a list of possible values. \code{mixture} creates a random generator that follows a mixture distribution of the generators provided as arguments (equally weighted).
+\code{rcharacter}, \code{rfactor}, \code{rdata.frame}, \code{rDate}, \code{rdouble}, \code{rinteger}, \code{rnumeric}, \code{rraw}, \code{rlogical} and \code{rlist} follow a naming convention with an "r" prefix followed by a class name and generate random data of the type specified by the name. \code{rany} generates an R object of any type. In practice, it's a mixture of the available generators, but may be enriched with more generators in the future. \code{constant} is a constructor for a degenerate random data generator that always returns the same object. It's useful for testing, say, corner cases that a developer needs to make sure they are going to be hit, not just with a certain probability. It's a bridge to deterministic testing. \code{rsample} returns a generator that picks among a list of possible values. \code{mixture} creates a random generator that follows a mixture distribution of the generators provided as arguments (equally weighted).
 }
 
 \examples{
