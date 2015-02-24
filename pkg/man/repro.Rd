@@ -19,7 +19,6 @@
 \value{The value returned by the assertion.}
 
 \examples{
-  repro(test(function(x = rdouble(10)) all(x + 1 == x), stop = FALSE))
+  #repro(test(function(x = rdouble(10)) all(x + 1 == x), stop = FALSE))
   #stop argument set to FALSE automatically when in an interactive session
-  #repro(test(function(x = rdouble(10)) all(x + 1 == x)))
   }
