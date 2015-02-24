@@ -15,26 +15,45 @@
 
 #generators common
 
-#evals a function with a list of args or a formula in an expanded env
-eval.formula.or.function=
-  function(fof, args = list()) {
-    if(is.function(fof))
-      do.call(fof, args)
-    else
-      eval(tail(as.list(fof), 1)[[1]], args, environment(fof))}
+#workaround for R bug
+as.list.Date =
+  function(x, ...) {
+    dd = base::as.list.Date(x)
+    names(dd) = names(x)
+    dd}
+
+#perform function argument like matching for vectors
+#macro-like, call only one level deep
+
+arg.match =
+  function(arg) {
+    if(is.function(arg) || is.formula(arg))
+      arg
+    else {
+      name = as.character(substitute(arg))
+      defaults =
+        as.list(
+          eval.parent(
+            formals(sys.function(sys.parent()))[[name]]))
+      default.names = names(defaults)
+      default.length = length(defaults)
+      ff = function() mget(names(formals()), sys.frame(sys.nframe()))
+      formals(ff) = do.call(pairlist, defaults)
+      defaults = do.call(ff, as.list(arg))
+      if(length(defaults) > default.length)
+        stop("Argument can have elements ", default.names, " only")
+      defaults}}
 
 #takes a rng in the R sense (rnorm, rpois etc) and extracts size data
 # accepts also formula
 # rng function needs a single argument, rng formula contains only size free var
 eval.rng =
   function(rng, size) {
-    data =
-      eval.formula.or.function(
-        rng,
-        if(is.function(rng))
-          list(size)
-        else
-          list(size = size))
+    data = {
+      if(is.function(rng))
+        do.call(rng, list(size))
+      else
+        eval(tail(as.list(rng), 1)[[1]], list(size = size), environment(rng))}
     if(size != length(data)) {
       warning('recycling random numbers')
       rep_len(data, size)}
@@ -43,63 +62,52 @@ eval.rng =
 
 # accepts max or min, max or an rng function or formula (size spec)
 # returns random nonnegative integer,  from bilateral zipf by default
+#
 
 rsize =
-  function(rng) {
-    if(is.numeric(rng)){
-      stopifnot(length(rng) <= 2)
-      if(length(rng) == 1)
-        rng = c(min = 0, max = rng)
-      rzipf.range(1, min(rng), max(rng), s = 1)}
+  function(size) {
+    if(is.formula(size) || is.function(size))
+      as.integer(round(eval.rng(size, 1)))
     else
-      as.integer(round(eval.rng(rng, 1)))}
+      rzipf.range(1, size$min, size$max, s = 1)}
 
 # takes rng function or formula and size spec
 # returns random data
+
 rdata =
   function(rng, size)
-    eval.rng(rng, rsize(size))
-
-default.vector.size =
-  function()
-    default(vector.size %||% 10 * severity)
+    eval.rng(rng, size)
 
 ## basic types
 
 rlogical =
   function(
     elements = c(p = 0.5),
-    size = default.vector.size()) {
+    size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
     if(is.numeric(elements)) {
-      p = elements
+      p = arg.match(elements)$p
       elements =
         function(n)
           as.logical(rbinom(n, size = 1, prob = p))}
+    size = rsize(arg.match(size))
     as.logical(rdata(elements, size))}
-
 
 rinteger =
   function(
-    elements = c(max = default(integer.size %||% 10 * severity)),
-    size = default.vector.size()) {
-    if(is.numeric(elements)) {
-      lelements = length(elements)
-      if(lelements == 0 || lelements > 2)
-        stop("elements argument can only have length 1 or 2 when numeric")
-      if(lelements == 1) elements = c(min = -elements[[1]], max = elements[[1]])
-      elements =
-        Curry(rzipf.range, min = min(elements), max = max(elements))}
+    elements = c(min = 0, max = default(integer.size %||% 10 * severity)),
+    size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
+    if(is.numeric(elements))
+      elements = do.call(Curry, c(list(rzipf.range), arg.match(elements)))
+    size = rsize(arg.match(size))
     as.integer(rdata(elements, size))}
 
 rdouble =
   function(
     elements = c(mean = 0, sd = default(double.size %||% 10 * severity)),
-    size = default.vector.size()) {
-    if(is.numeric(elements)) {
-      stopifnot(length(elements) <=2)
-      if(length(elements) == 1)
-        elements = c(mean = 0, sd = elements)
-      elements = Curry(rnorm, mean = elements[["mean"]], sd = elements[["sd"]])}
+    size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
+    if(is.numeric(elements))
+      elements = do.call(Curry, c(list(rnorm), arg.match(elements)))
+    size = rsize(arg.match(size))
     as.double(rdata(elements, size))}
 
 rnumeric =
@@ -108,7 +116,7 @@ rnumeric =
       list(
         integer = c(max = default(integer.size %||% 10 * severity)),
         double = 	c(mean = 0, sd = default(double.size %||% 10 * severity))),
-    size = default.vector.size())
+    size = c(min = 0, max = default(vector.size %||% 10 * severity)))
     mixture(
       list(
         Curry(rdouble, generator = generators$double, size = size),
@@ -119,39 +127,43 @@ rnumeric =
 rcharacter =
   function(
     elements =
-      c(
+      list(
         nchar = default(nchar.size %||% severity),
         string = default(character.max %||% severity)),
-    size = default.vector.size()) {
+    size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
+    elements = arg.match(elements)
     nchar = elements[["nchar"]]
     string = elements[["string"]]
     if(is.numeric(nchar))
       nchar = Curry(rpois, lambda = nchar)
     if(is.numeric(string))
       string = Curry(rzipf, N = string)
-    size = rsize(size)
+    size = rsize(arg.match(size))
     substr(
       sapply(
-        rdata(string, constant(size)), digest),
+        rdata(string, size), digest),
       1,
-      rdata(nchar, constant(size)))}
+      rdata(nchar, size))}
 
 rfactor =
   function(
     elements = c(nlevels = default(nlevels %||% severity)),
-    size = default.vector.size()) {
+    size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
     if(is.numeric(elements))
-      elements = Curry(sample, x = 1:elements, replace = TRUE)
+      elements = Curry(sample, x = 1:arg.match(elements)$nlevels, replace = TRUE)
+    size = rsize(arg.match(size))
     as.factor(rdata(elements, size))}
 
 rraw =
   function(
-    elements = c(max = default(raw.max %||% severity)),
-    size = default.vector.size()) {
-    if(is.numeric(elements))
-      elements = as.raw(0:elements)
+    elements = c(min = 0, max = default(raw.max %||% severity)),
+    size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
+    if(is.numeric(elements)) {
+      elements = arg.match(elements)
+      elements = as.raw(elements$min:elements$max)}
     if(is.raw(elements))
       elements = Curry(sample, x = elements, replace = TRUE )
+    size = rsize(arg.match(size))
     as.raw(rdata(elements, size))}
 
 rlist =
@@ -168,45 +180,49 @@ rlist =
             rraw,
             rDate,
             rfactor,
-            Curry(rlist, size = size, height = rsize(height - 1)))),
-    size = default(list.size %||% round(severity / 2)),
+            Curry(rlist, size = size, height = max(0, height - 1)))),
+    size = c(min = 0, max = default(list.size %||% round(severity / 2))),
     height = default(list.height %||% round(severity/3))) {
     if (height == 0) NULL
     else
       replicate(
-        rsize(size),
+        rsize(arg.match(size)),
         generator(),
         simplify = FALSE)}
 
 ratomic =
   function(
     generators = atomic.generators,
-    size = default.vector.size())
+    size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
+    if(is.numeric(size))
+      size = arg.match(size)
     mixture(
       lapply(
         generators,
         function(gg){
           hh = gg
-          Curry(hh, size = size)}))()
+          Curry(hh, size = size)}))()}
 
 rmatrix =
   function(
     generator = ratomic,
-    nrow = default(matrix.nrow %||% 4 * severity),
-    ncol = default(matrix.ncol %||% severity)) {
-    nrow = rsize(nrow)
-    ncol = rsize(ncol)
+    nrow = c(min = 0, max = default(matrix.nrow %||% 4 * severity)),
+    ncol = c(min = 0, max = default(matrix.ncol %||% severity))) {
+    nrow = rsize(arg.match(nrow))
+    ncol = rsize(arg.match(ncol))
     matrix(generator(size = constant(nrow*ncol)), nrow = nrow, ncol = ncol)}
 
 rDate =
   function(
     elements = c(from = as.Date("1950/01/01"), to = as.Date("2050/01/01")),
-    size = default.vector.size()) {
+    size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
     if(is.character(elements))
       elements = as.Date(elements)
     if(class(elements) == "Date") {
+      elements = arg.match(elements)
       dates = as.Date(elements[["from"]]:elements[["to"]], origin = as.Date("1970-01-01"))
       elements = Curry(sample, x = dates, replace = TRUE)}
+    size = rsize(arg.match(size))
     as.Date(rdata(elements, size), origin = as.Date("1970-01-01"))}
 
 atomic.generators =
@@ -222,10 +238,10 @@ atomic.generators =
 rdata.frame =
   function(
     generator = ratomic,
-    nrow = default(data.frame.nrow %||% 4 * severity),
-    ncol = default(data.frame.ncol %||% severity)) {
-    nrow = rsize(nrow)
-    ncol = rsize(ncol)
+    nrow = c(min = 0, max = default(data.frame.nrow %||% 4 * severity)),
+    ncol = c(min = 0, max = default(data.frame.ncol %||% severity))) {
+    nrow = rsize(arg.match(nrow))
+    ncol = rsize(arg.match(ncol))
     columns = replicate(ncol, generator(size = constant(nrow)), simplify = FALSE)
     if(length(columns) > 0)
       names(columns) = paste("col", 1:ncol)
@@ -252,8 +268,8 @@ constant =
       const	}
 
 rsample =
-  function(elements, size = round(length(elements)/2), replace = TRUE) {
-    sample(elements, rsize(size), replace = replace)}
+  function(elements, size = c(min = 0, max = round(length(elements)/2)), replace = TRUE) {
+    sample(elements, rsize(arg.match(size)), replace = replace)}
 
 ##combiners
 
@@ -264,7 +280,9 @@ mixture =
       sample(generators, 1)[[1]](...)}
 
 # combine everything
-all.generators = c(atomic.generators, list(rlist, rdata.frame, rmatrix))
+all.generators =
+  c(atomic.generators,
+    list(rlist = rlist, rdata.frame = rdata.frame, rmatrix = rmatrix))
 
 rany =
   function(generators = all.generators)
