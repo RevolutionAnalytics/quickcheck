@@ -67,8 +67,9 @@ formals(qc.options) = c(formals(qc.options), do.call(pairlist, as.list(quickchec
 
 qc.option =
   function() {
-    stopifnot(length(list(...)) == 1)
-    qc.options(...)[[1]]}
+    args = eval.parent(as.list(match.call())[-1])
+    stopifnot(length(args) == 1)
+    do.call(qc.options, args)[[1]]}
 
 formals(qc.option) = formals(qc.options)
 
