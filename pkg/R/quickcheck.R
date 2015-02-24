@@ -202,7 +202,6 @@ test =
                 sep = "\n"))
           list(args = args, pass = result$pass, elapsed = result$elapsed)})
 
-
     test.report =
       list(
         assertion = assertion,
