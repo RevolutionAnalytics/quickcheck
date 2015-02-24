@@ -16,11 +16,16 @@
 #generators common
 
 #workaround for R bug
-as.list.Date =
-  function(x, ...) {
-    dd = base::as.list.Date(x)
-    names(dd) = names(x)
-    dd}
+fix.as.list =
+  function(as.fun) {
+    force(as.fun)
+    function(x, ...) {
+      dd = as.fun(x)
+      names(dd) = names(x)
+      dd}}
+
+as.list.Date = fix.as.list(base::as.list.Date)
+as.list.factor = fix.as.list(base::as.list.factor)
 
 #perform function argument like matching for vectors
 #macro-like, call only one level deep
