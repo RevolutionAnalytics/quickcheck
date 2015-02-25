@@ -30,20 +30,25 @@ as.list.factor = fix.as.list(base::as.list.factor)
 #perform function argument like matching for vectors
 #macro-like, call only one level deep
 
+is.fofun =
+  function(x)
+    is.function(x) || is.formula(x)
+
 arg.match =
-  function(arg) {
-    if(is.function(arg) || is.formula(arg))
+  function(arg, defaults = NULL) {
+    if(is.fofun(arg))
       arg
     else {
       name = as.character(substitute(arg))
-      defaults =
+      if(is.null(defaults))
+        defaults =
         as.list(
           eval.parent(
             formals(sys.function(sys.parent()))[[name]]))
       default.names = names(defaults)
       default.length = length(defaults)
       ff = function() mget(names(formals()), sys.frame(sys.nframe()))
-      formals(ff) = do.call(pairlist, defaults)
+      formals(ff) = do.call(pairlist, as.list(defaults))
       defaults = do.call(ff, as.list(arg))
       if(length(defaults) > default.length)
         stop("Argument can have elements ", default.names, " only")
@@ -52,7 +57,7 @@ arg.match =
 #takes a rng in the R sense (rnorm, rpois etc) and extracts size data
 # accepts also formula
 # rng function needs a single argument, rng formula contains only size free var
-eval.rng =
+rdata =
   function(rng, size) {
     data = {
       if(is.function(rng))
@@ -60,8 +65,10 @@ eval.rng =
       else
         eval(tail(as.list(rng), 1)[[1]], list(size = size), environment(rng))}
     if(size != length(data)) {
-      warning('recycling random numbers')
-      rep_len(data, size)}
+      if(length(data) > 0) {
+        warning('recycling random numbers')
+        rep_len(data, size)}
+      else stop("can't recycle no data")}
     else
       data}
 
@@ -71,17 +78,10 @@ eval.rng =
 
 rsize =
   function(size) {
-    if(is.formula(size) || is.function(size))
-      as.integer(round(eval.rng(size, 1)))
+    if(is.fofun(size))
+      as.integer(round(rdata(size, 1)))
     else
       rzipf.range(1, size$min, size$max, s = 1)}
-
-# takes rng function or formula and size spec
-# returns random data
-
-rdata =
-  function(rng, size)
-    eval.rng(rng, size)
 
 ## basic types
 
@@ -89,7 +89,7 @@ rlogical =
   function(
     elements = c(p = 0.5),
     size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
-    if(is.numeric(elements)) {
+    if(!is.fofun(elements)) {
       p = arg.match(elements)$p
       elements =
         function(n)
@@ -101,7 +101,7 @@ rinteger =
   function(
     elements = c(min = 0, max = default(integer.size %||% 10 * severity)),
     size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
-    if(is.numeric(elements))
+    if(!is.fofun(elements))
       elements = do.call(Curry, c(list(rzipf.range), arg.match(elements)))
     size = rsize(arg.match(size))
     as.integer(rdata(elements, size))}
@@ -110,7 +110,7 @@ rdouble =
   function(
     elements = c(mean = 0, sd = default(double.size %||% 10 * severity)),
     size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
-    if(is.numeric(elements))
+    if(!is.fofun(elements))
       elements = do.call(Curry, c(list(rnorm), arg.match(elements)))
     size = rsize(arg.match(size))
     as.double(rdata(elements, size))}
@@ -133,28 +133,47 @@ rcharacter =
   function(
     elements =
       list(
-        nchar = default(nchar.size %||% severity),
-        string = default(character.max %||% severity)),
+        nchar = c(min = 0, max = default(nchar.size %||% severity)),
+        string = c(min = 0, max = default(character.max %||% severity))),
     size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
     elements = arg.match(elements)
     nchar = elements[["nchar"]]
     string = elements[["string"]]
-    if(is.numeric(nchar))
-      nchar = Curry(rpois, lambda = nchar)
-    if(is.numeric(string))
-      string = Curry(rzipf, N = string)
     size = rsize(arg.match(size))
-    substr(
-      sapply(
-        rdata(string, size), digest),
-      1,
-      rdata(nchar, size))}
+    if(!is.fofun(nchar)) {
+      nn = nchar
+      nchar =
+        function(n)
+          rinteger(
+            elements =
+              arg.match(
+                nn,
+                c(min = 0, max = default(nchar.size %||% severity))),
+            size = ~n)}
+    if(!is.fofun(string)) {
+      ss = string
+      string =
+        function(n)
+          sapply(
+            rinteger(
+              elements =
+                arg.match(
+                  ss,
+                  c(min = 0, max = default(character.max %||% severity))),
+              size = ~n),
+            digest)}
+    unname(
+      substr(
+        sapply(
+          rdata(string, size), digest),
+        1,
+        rdata(nchar, size)))}
 
 rfactor =
   function(
     elements = c(nlevels = default(nlevels %||% severity)),
     size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
-    if(is.numeric(elements))
+    if(!is.fofun(elements))
       elements = Curry(sample, x = 1:arg.match(elements)$nlevels, replace = TRUE)
     size = rsize(arg.match(size))
     as.factor(rdata(elements, size))}
@@ -163,7 +182,7 @@ rraw =
   function(
     elements = c(min = 0, max = default(raw.max %||% severity)),
     size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
-    if(is.numeric(elements)) {
+    if(is.numeric(elements[[1]])) {
       elements = arg.match(elements)
       elements = as.raw(elements$min:elements$max)}
     if(is.raw(elements))
@@ -199,7 +218,7 @@ ratomic =
   function(
     generators = atomic.generators,
     size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
-    if(is.numeric(size))
+    if(!is.fofun(size))
       size = arg.match(size)
     mixture(
       lapply(

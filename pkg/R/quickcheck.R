@@ -113,7 +113,7 @@ rzipf.range =
     if(n == 0) integer()
     else {
       stopifnot(max >= min)
-      if(0 %in% (min + 1):(max - 1)) {
+      if(min < 0 && max > 0) {
         negative = - rzipf(n, - min + 1, s ) + 1
         positive = rzipf(n, max + 1, s) - 1
         ifelse(
@@ -122,22 +122,6 @@ rzipf.range =
           negative)}
       else
         min - 1 + rzipf(n , max - min + 1, s)}}
-
-rzeta =
-  function(n, s) {
-    u = runif(n)
-    N = 2
-    repeat {
-      bins = cumsum(dzeta(1:N, s - 1))
-      if(max(u) < max(bins)) break
-      N = 2 * N }
-    sample(
-      cumsum(
-        !arrange(
-          rbind(
-            data.frame(sample = TRUE, data = u),
-            data.frame(sample = FALSE, data = bins)),
-          data)$sample)) + 1}
 
 ## quirkless sample
 
@@ -268,6 +252,7 @@ repro =
 no.coverage =
   function(path = "pkg/") {
     pc = package_coverage(path)
+    print(pc)
     zc = zero_coverage(pc)
     temp = tempfile(fileext = ".html")
     writeLines(

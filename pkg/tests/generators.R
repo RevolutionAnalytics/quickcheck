@@ -1,4 +1,4 @@
-# Copyright 2011 Revolution Analytics
+# Copyright 2015 Revolution Analytics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -103,8 +103,27 @@ test(
 type.test(is.character, rcharacter)
 variability.test(rcharacter)
 size.test(rcharacter)
+test(
+  function(
+    nchar = rinteger(elements = c(min = 0), size = ~1),
+    string = rinteger(elements = c(min = 0), size = ~1),
+    data = rcharacter(elements = list(nchar = c(max = nchar), string = c(max = string))))
+    all(sapply(data, nchar) <= nchar)
+  # && all(length(unique(data)) <= string))
+    )
+
+##rfactor
+type.test(is.factor, rfactor)
+variability.test(rfactor)
+size.test(rfactor)
+test(
+  function(
+    nlevels = rinteger(elements = c(min = 1), size = ~1),
+    data = rfactor(elements =  c(nlevels = nlevels)))
+    length(unique(data)) <= nlevels)
 
 
+##rDate
 
 ##rraw
 type.test(is.raw, rraw)
@@ -176,3 +195,4 @@ variability.test(ratomic)
 #rfunction
 type.test(is.function, quickcheck:::rfunction)
 variability.test(quickcheck:::rfunction)
+

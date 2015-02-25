@@ -25,10 +25,11 @@ These functions are divided into two groups, random data generators, and constru
 rany(generators = all.generators)
 ratomic(generators = atomic.generators, size = c(min = 0, max
                  = default(vector.size \%||\% 10 * severity)))
-rcharacter(elements = list(nchar = default(nchar.size \%||\%
-                 severity), string = default(character.max \%||\%
-                 severity)), size = c(min = 0, max =
-                 default(vector.size \%||\% 10 * severity)))
+rcharacter(elements = list(nchar = c(min = 0, max =
+                 default(nchar.size \%||\% severity)), string = c(min =
+                 0, max = default(character.max \%||\% severity))), size
+                 = c(min = 0, max = default(vector.size \%||\% 10 *
+                 severity)))
 rdata.frame(generator = ratomic, nrow = c(min = 0, max =
                  default(data.frame.nrow \%||\% 4 * severity)), ncol =
                  c(min = 0, max = default(data.frame.ncol \%||\%
@@ -70,7 +71,7 @@ constant(const = NULL)}
 \arguments{
  \item{elements}{Specify the distribution of elements of the returned data structure, either as a vector of distribution parameters or as a random number generator function or a formula that will be used as a random number generator. Different generators accept different parameters. Using names in the vectors is optional when no ambiguity arises.
  \describe{
-  \item{rcharacter}{\code{nchar}, the maximum length of each string and \code{string}, the maximum number of distinct strings generated. }
+  \item{rcharacter}{\code{nchar}, the range of lengths of each string and \code{string}, the range of distinct strings generated. }
   \item{rDate}{\code{from}, \code{to}, the earliest and latest possible dates, as class Date objects or strings amenable to conversion}
   \item{rdouble}{\code{mean} and \code{sd} are the mean and standard deviation}
  \item{rfactor}{\code{nlevels} is the maximum number of levels}
