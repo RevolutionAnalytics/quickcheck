@@ -14,6 +14,50 @@
 
 
 #generators common
+default =
+  function(x) {
+    x = lazy(x)
+    lazy_eval(x, as.list(quickcheck.env))}
+
+## zipf
+
+rzipf =
+  function(n, N, s = 1) {
+    if(n == 0) integer()
+    else {
+      bins = cumsum(c(0, 1/(1:N)^s))
+      bins = bins/max(bins)
+      u = runif(n)
+      df =
+        arrange(
+          rbind(
+            data.frame(sample = TRUE, data = u),
+            data.frame(sample = FALSE, data = bins)),
+          data)
+      x = cumsum(!df$sample)[df$sample]
+      x[sample.int(length(x))]}}
+
+rzipf.range =
+  function(n, min, max, s = 1) {
+    if(n == 0) integer()
+    else {
+      stopifnot(max >= min)
+      if(min < 0 && max > 0) {
+        negative = - rzipf(n, - min + 1, s ) + 1
+        positive = rzipf(n, max + 1, s) - 1
+        ifelse(
+          sample(c(TRUE,FALSE), n, replace = TRUE),
+          positive,
+          negative)}
+      else
+        min - 1 + rzipf(n , max - min + 1, s)}}
+
+## quirkless sample
+
+sample =
+  function(x, size, ...)
+    x[base::sample(length(x), size = size, ...)]
+
 
 #workaround for R bug
 fix.as.list =
