@@ -12,25 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#the appeasment
+# define all these awful globals to appease R CMD check
+
+severity = 10
+sample.size = NULL
+vector.size = NULL
+integer.size = NULL
+double.size = NULL
+nchar.size = NULL
+character.max = NULL
+nlevels = NULL
+raw.max = NULL
+list.size = NULL
+list.height = NULL
+matrix.ncol = NULL
+matrix.nrow = NULL
+data.frame.ncol = NULL
+data.frame.nrow = NULL
 
 quickcheck.env =
   list2env(
-    list(
-      severity = 10,
-      sample.size = NULL,
-      vector.size = NULL,
-      integer.size = NULL,
-      double.size = NULL,
-      nchar.size = NULL,
-      character.max = NULL,
-      nlevels = NULL,
-      raw.max = NULL,
-      list.size = NULL,
-      list.height = NULL,
-      matrix.ncol = NULL,
-      matrix.nrow = NULL,
-      data.frame.ncol = NULL,
-      data.frame.nrow = NULL))
+    do.call(
+      c,
+      lapply(
+        ls(),
+        function(x) {
+          l = list(eval(as.name(x)))
+          names(l) = x
+          l})))
 
 `%||%` =
   function(x, y)
@@ -63,7 +73,9 @@ qc.options =
     unargs = as.list(quickcheck.env)[unlist(unargs)]
     c(nargs, unargs)}
 
-formals(qc.options) = c(formals(qc.options), do.call(pairlist, as.list(quickcheck.env)))
+formals(qc.options) =
+  c(formals(qc.options),
+    do.call(pairlist, as.list(quickcheck.env)[sort(ls(quickcheck.env))]))
 
 qc.option =
   function() {

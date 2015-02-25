@@ -6,18 +6,18 @@
 \title{Set and get package options}
 \description{\code{qc.options} and \code{qc.option} set and gets packag options, which allow to fine tune testing, particularly the number of runs or the parameters of most data generators. \code{default} is just a shorthand to write expression involving multiple package options and operator \code{\%||\%} a convenient way to combine multiple defaults.}
 \usage{
-  qc.options(..., data.frame.nrow = NULL, data.frame.ncol = NULL,
-             matrix.nrow = NULL, matrix.ncol = NULL, list.height =
-               NULL, list.size = NULL, raw.max = NULL, nlevels =
-               NULL, character.max = NULL, nchar.size = NULL,
-             double.size = NULL, integer.size = NULL, vector.size =
-               NULL, sample.size = NULL, severity = 10)
-  qc.option(..., data.frame.nrow = NULL, data.frame.ncol = NULL,
-             matrix.nrow = NULL, matrix.ncol = NULL, list.height =
-               NULL, list.size = NULL, raw.max = NULL, nlevels =
-               NULL, character.max = NULL, nchar.size = NULL,
-             double.size = NULL, integer.size = NULL, vector.size =
-               NULL, sample.size = NULL, severity = 10)
+  qc.options(..., character.max = NULL, data.frame.ncol = NULL,
+                 data.frame.nrow = NULL, double.size = NULL,
+                 integer.size = NULL, list.height = NULL, list.size =
+                 NULL, matrix.ncol = NULL, matrix.nrow = NULL,
+                 nchar.size = NULL, nlevels = NULL, raw.max = NULL,
+                 sample.size = NULL, severity = 10, vector.size = NULL)
+  qc.option(..., character.max = NULL, data.frame.ncol = NULL,
+                 data.frame.nrow = NULL, double.size = NULL,
+                 integer.size = NULL, list.height = NULL, list.size =
+                 NULL, matrix.ncol = NULL, matrix.nrow = NULL,
+                 nchar.size = NULL, nlevels = NULL, raw.max = NULL,
+                 sample.size = NULL, severity = 10, vector.size = NULL)
   default(x)
   x \%||\% y
 }
