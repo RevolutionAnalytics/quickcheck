@@ -12,297 +12,282 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#the appeasment
+# define all these awful globals to appease R CMD check
 
-quickcheck.env = new.env()
+severity = 10
+sample.size = NULL
+vector.size = NULL
+integer.size = NULL
+double.size = NULL
+nchar.size = NULL
+character.max = NULL
+nlevels = NULL
+raw.max = NULL
+list.size = NULL
+list.height = NULL
+matrix.ncol = NULL
+matrix.nrow = NULL
+data.frame.ncol = NULL
+data.frame.nrow = NULL
 
-quickcheck.env$nested = FALSE
+quickcheck.env =
+  list2env(
+    do.call(
+      c,
+      lapply(
+        ls(),
+        function(x) {
+          l = list(eval(as.name(x)))
+          names(l) = x
+          l})))
+
+`%||%` =
+  function(x, y)
+    if(is.null(x)) y else x
+
+opt.assign = Curry(assign, envir = quickcheck.env)
+
+qc.options =
+  function(...){
+    args = as.list(match.call())[-1]
+    if(!is.null(names(args))) {
+      nargs = args[names(args) != ""] #for named args
+      unargs = args[names(args) == ""] #for unnamed args
+      names(nargs) = match.arg(names(nargs), ls(quickcheck.env), several.ok = TRUE)
+      stopifnot(all(names(nargs) %in% ls(quickcheck.env)))}
+    else {
+      unargs = args
+    }
+    if(length(unargs) > 0)
+      unargs = match.arg(unlist(unargs),  ls(quickcheck.env), several.ok = TRUE)
+    stopifnot(all(unargs %in% ls(quickcheck.env)))
+    nargs =
+      do.call(
+        c,
+        lapply(
+          names(nargs),
+          function(nargi){
+            opt.assign(nargi, nargs[[nargi]])
+            nargs[nargi]}))
+    unargs = as.list(quickcheck.env)[unlist(unargs)]
+    c(nargs, unargs)}
+
+formals(qc.options) =
+  c(formals(qc.options),
+    do.call(pairlist, as.list(quickcheck.env)[sort(ls(quickcheck.env))]))
+
+qc.option =
+  function() {
+    args = eval.parent(as.list(match.call())[-1])
+    stopifnot(length(args) == 1)
+    do.call(qc.options, args)[[1]]}
+
+formals(qc.option) = formals(qc.options)
+
+default =
+  function(x) {
+    x = lazy(x)
+    lazy_eval(x, as.list(quickcheck.env))}
+
+## zipf
+
+rzipf =
+  function(n, N, s = 1) {
+    if(n == 0) integer()
+    else {
+      bins = cumsum(c(0, 1/(1:N)^s))
+      bins = bins/max(bins)
+      u = runif(n)
+      df =
+        arrange(
+          rbind(
+            data.frame(sample = TRUE, data = u),
+            data.frame(sample = FALSE, data = bins)),
+          data)
+      x = cumsum(!df$sample)[df$sample]
+      x[sample.int(length(x))]}}
+
+rzipf.range =
+  function(n, min, max, s = 1) {
+    if(n == 0) integer()
+    else {
+      stopifnot(max >= min)
+      if(0 %in% (min + 1):(max - 1)) {
+        negative = - rzipf(n, - min + 1, s ) + 1
+        positive = rzipf(n, max + 1, s) - 1
+        ifelse(
+          sample(c(TRUE,FALSE), n, replace = TRUE),
+          positive,
+          negative)}
+      else
+        min - 1 + rzipf(n , max - min + 1, s)}}
+
+rzeta =
+  function(n, s) {
+    u = runif(n)
+    N = 2
+    repeat {
+      bins = cumsum(dzeta(1:N, s - 1))
+      if(max(u) < max(bins)) break
+      N = 2 * N }
+    sample(
+      cumsum(
+        !arrange(
+          rbind(
+            data.frame(sample = TRUE, data = u),
+            data.frame(sample = FALSE, data = bins)),
+          data)$sample)) + 1}
 
 ## quirkless sample
 
-sample = 
-	function(x, size, ...) 
-		x[base::sample(length(x), size = size, ...)]
+sample =
+  function(x, size, ...)
+    x[base::sample(length(x), size = size, ...)]
 
-
-## argument is called assertion for user facing API, but used also on generators internally
-eval.formula.or.function= 
-	function(rng, args = list()) {
-		if(is.function(rng))
-			do.call(rng, args)
-		else
-			eval(tail(as.list(rng), 1)[[1]], args, environment(rng))}
 
 ## make use of testthat expectations
 
 as.assertion =
-	function(an.exp) {
-		tmp = an.exp
-		function(...) {
-			tryCatch({tmp(...); TRUE} , error = function(e) FALSE)}}
+  function(an.exp) {
+    tmp = an.exp
+    function(...) {
+      tryCatch({tmp(...); TRUE} , error = function(e) FALSE)}}
 
 library(testthat)
 expect.names = grep("^expect_", ls("package:testthat"), value = TRUE)
 assert.funs = lapply(expect.names, function(n) as.assertion(get(n, envir = as.environment("package:testthat"))))
 names(assert.funs) = gsub("expect_", "", expect.names)
-	
-expect = 
-	function(what, ...)
-			assert.funs[[what]](...)
 
-is.formula = 
-	function(x)
-		class(x) == "formula"
+expect =
+  function(what, ...)
+    assert.funs[[what]](...)
+
+is.formula =
+  function(x)
+    class(x) == "formula"
 
 eval.args =
-	function(args, envir) {
+  function(args, envir) {
     args[[1]] = eval(args[[1]], envir)
-		lapply(
-			1 + seq_along(args[-1]),
-			function(i)
-				args[[i]] <<- eval(args[[i]], args[1:(i-1)], envir))
-	as.list(args)}
-	
+    lapply(
+      1 + seq_along(args[-1]),
+      function(i)
+        args[[i]] <<- eval(args[[i]], args[1:(i-1)], envir))
+    as.list(args)}
+
 test =
-	function(
-		assertion,
-		sample.size = 10,
-		stop = !interactive()) {
-		if(!quickcheck.env$nested) {
-			set.seed(0)
-			quickcheck.env$nested = TRUE
-			on.exit({quickcheck.env$nested = FALSE})}
-		stopifnot(is.function(assertion))
-		envir = environment(assertion)
-	
-		try.assertion =
-			function(xx) {
-				assertion.return.value = 
-					tryCatch(
-						do.call(assertion, xx),
-						error =
-							function(e) {message(e); FALSE})
-				stopifnot(
-					is.logical(assertion.return.value), 
-					length(assertion.return.value) == 1)
-				assertion.return.value}
-		test.cases =
-			list(
-				assertion = assertion,
-				env =
-					do.call(
-						c,
-						lapply(
-							all.vars(body(assertion)),
-							function(name)
-								tryCatch({
-									val = list(eval(as.name(name)))
-									names(val) = name
-									val},
-									error = function(e) NULL))),
-				cases =
-					lapply(
-						1:sample.size,
-						function(i) {
-							args = eval.args(formals(assertion), envir)
-							if(!try.assertion(args)){
-								cat(paste("FAIL: assertion:", paste(deparse(assertion), collapse = "\n"), sep = "\n"))
-								args}}))
-		if(all(sapply(test.cases$cases, is.null))){
-			cat(paste ("Pass ", paste(deparse(assertion), "\n", collapse = " ")))
-			TRUE}
-		else {
-			if (stop) {
-				tf = tempfile(tmpdir=".", pattern = "quickcheck")
-				save(test.cases, file = tf)
-				stop("load(\"", file.path(getwd(), tf), "\")")}
-			else test.cases}}
+  function(
+    assertion,
+    sample.size = default(sample.size %||% severity),
+    stop = !interactive()) {
+    set.seed(cksum(digest(assertion))%%(2^31 - 1))
+    stopifnot(is.function(assertion))
+    envir = environment(assertion)
 
-first.failed = 
-	function(ll)
-		min(which(!sapply(ll, is.null)))
+    try.assertion =
+      function(xx) {
+        start = get_nanotime()
+        assertion.return.value =
+          tryCatch(
+            do.call(assertion, xx),
+            error =
+              function(e) {message(e); FALSE})
+        list(
+          pass = all(as.logical(assertion.return.value)),
+          elapsed.time = get_nanotime() - start)}
+    project =
+      function(xx, name)
+        lapply(xx, function(x) x[[name]])
+    runs =
+      lapply(
+        1:sample.size,
+        function(i) {
+          args = eval.args(formals(assertion), envir)
+          result = try.assertion(args)
+          if(!isTRUE(result$pass))
+            message(
+              paste(
+                "FAIL: assertion:",
+                paste(deparse(assertion),
+                      collapse = "\n"),
+                sep = "\n"))
+          list(args = args, pass = result$pass, elapsed = result$elapsed)})
 
-repro = 
-	function(test.cases, i = first.failed(test.cases$cases), debug = TRUE) {
-		assertion = test.cases$assertion
-		if(debug) debug(assertion)
-		do.call(assertion, test.cases$cases[[i]])}
+    test.report =
+      list(
+        assertion = assertion,
+        env =
+          do.call(
+            c,
+            lapply(
+              all.vars(body(assertion)),
+              function(name)
+                tryCatch({
+                  val =
+                    list(
+                      eval(
+                        as.name(name),
+                        envir = environment(assertion)))
+                  names(val) = name
+                  val},
+                  error = function(e) NULL))),
+        cases = project(runs, "args"),
+        pass = unlist(project(runs, "pass")),
+        elapsed = summary(unlist(project(runs, "elapsed"))))
+    if(all(test.report$pass)){
+      message(
+        paste(
+          "Pass ",
+          "\n",
+          paste(
+            deparse(assertion),
+            "\n",
+            collapse = " ")))
+      print(test.report$elapsed)}
+    tmpdir = file.path("/tmp", Sys.getpid())
+    dir.create(tmpdir, showWarnings = FALSE)
+    tf = tempfile(tmpdir = tmpdir, pattern = "quickcheck")
+    save(test.report, file = tf)
+    if (stop && any(!test.report$pass)) {
+      stop("load(\"", tf, "\")")}
+    invisible(test.report)}
 
-## basic types
+first.false =
+  function(xx)
+    min(which(!xx))
 
+repro =
+  function(test.report, i = first.false(test.report$pass), debug = TRUE) {
+    assertion = test.report$assertion
+    if(!is.finite(i))
+      stop("All tests pass, nothing to repro here.")
+    if(debug) debug(assertion)
+    do.call(assertion, test.report$cases[[i]])}
 
-rsize = 
-	function(n) {
-		if(is.numeric(n))
-			rpois(1, lambda = n)
-		else
-			eval.formula.or.function(n)[[1]]}
+no.coverage =
+  function(path = "pkg/") {
+    pc = package_coverage(path)
+    zc = zero_coverage(pc)
+    temp = tempfile(fileext = ".html")
+    writeLines(
+      unlist(
+        lapply(
+          unique(zc$filename),
+          function(fname) {
+            ffname = file.path(path, fname)
+            src = readLines(ffname)
+            zc = zc[zc$filename == fname, , drop = FALSE]
+            mapply(
+              function(sta, sto){
+                src[sta] <<- paste("<strong>", src[sta])
+                src[sto] <<- paste(src[sto], "</strong>")},
+              zc$first_line,
+              zc$last_line)
+            c(
+              paste("<h2>", ffname , "</h2>\n<pre>"),
+              src,
+              "</pre>")})),
+      con = temp)
+    browseURL(paste0("file://", temp))}
 
-rdata = 
-	function(element, size) {
-		size = rsize(size)
-		eval.formula.or.function(
-			element, 
-			if(is.function(element))
-				list(size)
-			else 
-				list(size = rsize(size)))}
-
-rlogical = 
-	function(element = 0.5,	size = 10) {
-		if(is.logical(element))
-			element = as.numeric(element)
-		if(is.numeric(element)) {
-			p = element
-			element = 
-				function(n) 
-					as.logical(rbinom(n, size = 1, prob = p))}
-		as.logical(rdata(element, size))}
-
-rinteger =
-	function(element = 100, size = 10) {
-		if(is.numeric(element))
-			element = Curry(rpois, lambda = element)
-		as.integer(rdata(element, size))}
-
-rdouble =
-	function(element = 0, size = 10) {
-		if(is.numeric(element))
-			element = Curry(rnorm, mean = element)
-		as.double(rdata(element, size))}
-
-rnumeric = 
-	function(element = 100, size = 10)
-		mixture(
-			list(
-				Curry(rdouble, element = element, size = size), 
-				Curry(rinteger, element = element, size = size)))()
-
-##rcomplex NAY
-
-rcharacter = 
-	function(element = 10, size = 10) {
-		if(is.character(element))
-			element = nchar(element)
-		if(is.numeric(element))
-			element = Curry(rpois, lambda = element)
-		unlist(
-			sapply(
-				runif(rsize(size)),
-				function(x) substr(digest(x), 1, as.character(element(1)))))}
-
-rfactor = function(element = 10, size = 10)
-	as.factor(rcharacter(element, size))
-
-rraw =
-	function(element = as.raw(0:255), size = 10) {
-		if(is.raw(element))
-			element_ = select(element)
-		as.raw(element_(rsize(size)))} 
-
-rlist = 
-	function(
-		element = 
-			Curry(
-				rany, 
-				generators =
-					list(
-						rlogical, 
-						rinteger, 
-						rdouble, 
-						rcharacter, 
-						rraw,
-						rDate,
-						rfactor,
-						Curry(rlist, size = size, height = rsize(height - 1)))), 
-		size = 5, 
-		height = 4) {	
-		if (height == 0) NULL
-		else 		
-			replicate(rsize(size), eval.formula.or.function(element), simplify = FALSE)}
-
-ratomic = 
-	function(element = atomic.generators, size = 10) {
-		size = rsize(size)
-		mixture(
-			lapply(
-				element,
-				function(gg){
-					hh = gg
-					Curry(hh, size = constant(size))}))()}
-
-rmatrix = 
-	function(element = ratomic, nrow = 10, ncol = 10) {
-		nrow = rsize(nrow)
-		ncol = rsize(ncol)
-		matrix(ratomic(size = constant(nrow*ncol)), nrow = nrow, ncol = ncol)}
-
-rDate =
-	function(element = list(from = as.Date("0000/01/01"), to = Sys.Date()), size = 10) {
-		if(is.list(element)) {
-			dates = as.Date(element$from):as.Date(element$to)
-			as.Date(
-				sample(
-					dates,
-					rsize(size), replace = TRUE),
-				origin = as.Date("1970-01-01"))}
-		else
-			as.Date(rdata(element, size))}
-
-atomic.generators = 
-		list(
-			rlogical = rlogical,
-			rinteger = rinteger,
-			rdouble = rdouble,
-			rcharacter = rcharacter,
-			rraw = rraw,
-			rDate = rDate,
-			rfactor = rfactor)
-
-rdata.frame =
-	function(
-		element = ratomic,
-		nrow = 10, 
-		ncol = 5) {
-		nrow = rsize(nrow)
-		ncol = rsize(ncol)		
-		columns = replicate(ncol, element(size = constant(nrow)), simplify = FALSE)
-		if(length(columns) > 0)
-			names(columns) = paste("col", 1:ncol)
-		do.call(data.frame, columns)}
-
-rfunction =
-	function()
-		sample(
-			do.call(
-				c, 
-				lapply(
-					unlist(sapply(search(), ls)), 
-					function(x) {
-						x = get(x)
-						if (is.function(x)) list(x) else list()})),
-			1)[[1]]
-
-## special distributions
-
-constant =
-	function(const = NULL)
-		function(...)
-			const
-
-select = 
-	function(from, replace = TRUE)
-		function(size = 1)
-			sample(from, size, replace = replace)
-
-##combiners
-mixture =
-	function(generators)
-		function(...)
-			sample(generators, 1)[[1]](...)
-
-# combine everything
-all.generators = c(atomic.generators, list(rlist, rdata.frame, rmatrix))
-
-rany =
-	function(generators = all.generators)
-		mixture(generators)()

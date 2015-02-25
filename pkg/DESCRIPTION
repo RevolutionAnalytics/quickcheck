@@ -1,12 +1,12 @@
 Package: quickcheck
 Type: Package
 Title: Support for randomized software testing
-Version: 3.0.0
-Date: 2015-01-23
+Version: 3.1.0
+Date: 2015-02-23
 Author: Revolution Analytics
-Imports: digest, functional, testthat, pryr
-Collate: quickcheck.R
+Imports: digest, functional, testthat, pryr, microbenchmark, covr, VGAM, lazyeval, dplyr, bitops
+Collate: quickcheck.R generators.R
 Maintainer: Revolution Analytics <rhadoop@revolutionanalytics.com>
 URL: https://github.com/RevolutionAnalytics/quickcheck
-Description: Provides functions to test and reproduce failures of assertions on random data. Also provides a variety of random data generators. 
+Description: Provides functions to test and reproduce failures of assertions on random data. Also provides a variety of random data generators.
 License: Apache License (== 2.0)

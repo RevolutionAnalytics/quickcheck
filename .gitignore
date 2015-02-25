@@ -5,3 +5,5 @@ quickcheck[0-9a-z]*
 pkg.Rcheck
 quickcheck.Rcheck
 quickcheck.Rproj
+*tar.gz
+*zip

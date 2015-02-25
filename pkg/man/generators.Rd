@@ -1,4 +1,4 @@
-\name{rany}
+\name{generators}
 \alias{rany}
 \alias{rcharacter}
 \alias{rfactor}
@@ -14,56 +14,100 @@
 \alias{mixture}
 \alias{rraw}
 \alias{rDate}
-\alias{select}
+\alias{rsample}
 \title{
 Generators and generator constructors for random data of many types
 }
 \description{
-These functions are divided into two groups, random data generators, and constructors for such functions. Random data generators, prefixed with "r",  are functions with no mandatory arguments that generate random data of the desired type, to be used for the \code{generators} argument to the \code{\link{test}} function. All arguments are given a default and can be modified with \code{\link{Curry}}, thus defining customized data generators. In cases when no reasonable defaults could be defined, instead of a random data generator, a constructor is available that returns a valid random data generator.
+These functions are divided into two groups, random data generators, and constructors for such functions. Random data generators, prefixed with "r",  are functions with no mandatory arguments that generate random data of the type indicated in their names. Their use is typically as default values for the arguments of the \code{assertion} function, which itself is the main argument to \code{test}. That is, these data generators are called for each test run and fed into the assertion. All arguments are given a default but can also be modified, thus defining customized data generators. In cases when no reasonable defaults could be defined, instead of a random data generator, a constructor is available that returns a random data generator.
 }
 \usage{
 rany(generators = all.generators)
-rcharacter(element = 10, size = 10)
-rfactor(element = 10, size = 10)
-constant(const = NULL)  
-rdata.frame(element = ratomic, nrow = 10, ncol = 5)
-rmatrix(element, nrow, ncol)
-ratomic(element = atomic.generators, size = 10)
-rdouble(element = 0, size = 10)
-rinteger(element = 100, size = 10)  
-rnumeric(element = 100, size = 10)
-rlist(element =	Curry(rany, generators =	list(rlogical, rinteger, rdouble, rcharacter, rraw, rDate, rfactor, Curry(rlist,size = size, height = rsize(height - 1)))), size = 5, height = 4)
-rlogical(element = 0.5, size = 10)  
-mixture(generators)  
-rraw(element = as.raw(0:255), size = 10)  
-select(from, replace = TRUE)}
+ratomic(generators = atomic.generators, size = c(min = 0, max
+                 = default(vector.size \%||\% 10 * severity)))
+rcharacter(elements = list(nchar = default(nchar.size \%||\%
+                 severity), string = default(character.max \%||\%
+                 severity)), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
+rdata.frame(generator = ratomic, nrow = c(min = 0, max =
+                 default(data.frame.nrow \%||\% 4 * severity)), ncol =
+                 c(min = 0, max = default(data.frame.ncol \%||\%
+                 severity)))
+rDate(elements = c(from = as.Date("1950/01/01"), to = as.Date("2050/01/01")),
+                 size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
+rdouble(elements = c(mean = 0, sd = default(double.size \%||\%
+                 10 * severity)), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
+rfactor(elements = c(nlevels = default(nlevels \%||\%
+                 severity)), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
+rinteger(elements = c(min = 0, max = default(integer.size \%||\%
+                 10 * severity)), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
+rlist(generator = Curry(rany, generators = list(rlogical,
+                 rinteger, rdouble, rcharacter, rraw, rDate, rfactor,
+                 Curry(rlist, size = size, height = max(0, height -
+                 1)))), size = c(min = 0, max = default(list.size \%||\%
+                 round(severity/2))), height = default(list.height \%||\%
+                 round(severity/3)))
+rlogical(elements = c(p = 0.5), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
+rmatrix(generator = ratomic, nrow = c(min = 0, max =
+                 default(matrix.nrow \%||\% 4 * severity)), ncol = c(min
+                 = 0, max = default(matrix.ncol \%||\% severity)))
+rnumeric(generators = list(integer = c(max =
+                 default(integer.size \%||\% 10 * severity)), double =
+                 c(mean = 0, sd = default(double.size \%||\% 10 *
+                 severity))), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
+rraw(elements = c(min = 0, max = default(raw.max \%||\%
+                 severity)), size = c(min = 0, max =
+                 default(vector.size \%||\% 10 * severity)))
+rsample(elements, size = c(min = 0, max =
+                 round(length(elements)/2)), replace = TRUE)
+mixture(generators)
+constant(const = NULL)}
 \arguments{
- \item{element}{The expectation for the element of the random data structure (for numeric types). For logical, the probability of \code{TRUE}. For character, the expected length of each element of the returned character vector. For factor, TODO. For raw, a raw vector from which to pick. Alternatively, a function specifying the distribution of the elements in the form of a single argument function. Its single argument -- at least, single mandatory argument -- is the size of the sample (e.g. \code{rnorm}). Alternatively, a formula that will evaluate to the desired distribution. The formula must contain the name \code{size} and return \code{size} items}
- \item{size}{The average size of the returned data structure. Alternatively, a function specifying its distribution in the form of a argument-less random non-negative integer number generator with a sample size of one.}
- \item{nrow}{The average number of rows for the returned data frame. Alternatively, a function specifying its distribution (see \code{size})}
- \item{ncol}{The average number of columns for the returned data frame. Alternatively, a function specifying its distribution (see \code{size})}
- \item{height}{A parameter monotonically increasing with the average height (amount of nesting) of the returned list, for a fixed \code{size} argument. The goal is to make this parameter the expected height of the returned list, but this needs more work on the algorithm or its analysis.}
- \item{from}{Vector of items to randomly sample from.}
+ \item{elements}{Specify the distribution of elements of the returned data structure, either as a vector of distribution parameters or as a random number generator function or a formula that will be used as a random number generator. Different generators accept different parameters. Using names in the vectors is optional when no ambiguity arises.
+ \describe{
+  \item{rcharacter}{\code{nchar}, the maximum length of each string and \code{string}, the maximum number of distinct strings generated. }
+  \item{rDate}{\code{from}, \code{to}, the earliest and latest possible dates, as class Date objects or strings amenable to conversion}
+  \item{rdouble}{\code{mean} and \code{sd} are the mean and standard deviation}
+ \item{rfactor}{\code{nlevels} is the maximum number of levels}
+ \item{rinteger}{\code{min} and \code{max} values; when \code{min} is omitted, \code{-max} is assumed, that is a symmetric distribution centered at 0}
+ \item{rlogical}{\code{p} is the probability of \code{TRUE}}
+ \item{rraw}{\code{max} is the maximum value for an element, as an integer. Alternately, one can specify a raw vector whose elements will be sampled}
+ \item{rsample}{A vector or list of elements to sample from.}
+ }
+ A random number generator can be also passed, such as \code{rnorm} or \code{runif}.  Also, this argument accepts formulas that contain the \code{size} variable and whose right side evaluates to exactly \code{size} elements, as is \code{~10*runif(size)}. If the formula or function evaluates to the wrong class, a conversion will be attempted; if it evaluate to the wrong size, a warning will be issued and recycling will be attempted.}
+ \item{size}{The maximum size of the returned data structure. Alternatively, a random number generator taking a single argument and returning exactly one integer or a formula whose right side evaluates to the same (see also the \code{elements} argument)}
+ \item{nrow}{The maximum number of rows for the returned data frame. Alternatively, a function or a formula (see \code{size})}
+ \item{ncol}{The maximum number of columns for the returned data frame. Alternatively, a function specifying its distribution (see \code{size})}
+ \item{height}{A parameter monotonically increasing with the average height (amount of nesting) of the returned list, for a fixed \code{size} argument. We plan to make the interpretation of this parameter more direct in a future release.}
  \item{replace}{Whether to sample with replacement}
- \item{generators}{List of random data generators to use in generating each column of a data frame or to combine in a mixture}
- \item{const}{Any R object} \item{...}{Random generators to combine in a mixture distribution with equal weights}
+ \item{generator}{A random data generator}
+ \item{generators}{List of random data generators}
+ \item{const}{Any R object}
 }
 \details{
-\code{rcharacter}, \code{rfactor}, \code{rdata.frame}, \code{rdouble}, \code{rinteger}, \code{rnumeric}, \code{rraw}, \code{rlogical} and \code{rlist} follow an obvious naming convention with an "r" prefix followed by a class name and generate random data of the type specified by the name. \code{rany} generates an R object of any type. In practice, it's a mixture of the available generators, but may be enriched with more generators in the future. \code{constant} is a constructor for a degenerate random data generator that always returns the same object. It's useful for testing, say, corner cases that a developer needs to make sure they are going to be hit, not just with a certain probability. It's a bridge to deterministic testing. \code{select} returns a generator that picks among a list of possible values. \code{mixture} creates a random generator that follows a mixture distribution of the generators provided as arguments (equally weighted). 
+The defaults for the \code{elements} and \code{size} refer to variables that are defined only as package options, such as \code{nchar.size} and \code{severity}. See \code{\link{qc.options}}.
+}
+\value{
+\code{rcharacter}, \code{rfactor}, \code{rdata.frame}, \code{rDate}, \code{rdouble}, \code{rinteger}, \code{rnumeric}, \code{rraw}, \code{rlogical} and \code{rlist} follow a naming convention with an "r" prefix followed by a class name and generate random data of the type specified by the name. \code{rany} generates an R object of any type. In practice, it's a mixture of the available generators, but may be enriched with more generators in the future. \code{constant} is a constructor for a degenerate random data generator that always returns the same object. It's useful for testing, say, corner cases that a developer needs to make sure they are going to be hit, not just with a certain probability. It's a bridge to deterministic testing. \code{rsample} returns a generator that picks among a list of possible values. \code{mixture} creates a random generator that follows a mixture distribution of the generators provided as arguments (equally weighted).
 }
 
 \examples{
-#generate random integer vectors of expected size 4
+#generate random integer vectors of size 4 or less
 rinteger(size = 4)
-#generate random integer vectors of expected size 4 and expected value 5
+#generate random integer vectors of maximum size 4 and elements between -5 and 5.
 rinteger(element = 5, size = 4)
 #pick from a given vector (not unlike sample)
-select(1:5)(3)
+rsample(1:5, c(max = 3))
 #generate random numeric vector
 mixture(list(rinteger, rdouble))()
 #always return 1
 constant(1)()
-# generate random integer vector of size exactly 4, note the composition of generators
+# generate random integer vector of size exactly 4
 rinteger(size = constant(4))
 #same with formulas
 rinteger(size = ~4)}
