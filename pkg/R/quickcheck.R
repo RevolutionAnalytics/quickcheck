@@ -50,7 +50,11 @@ opt.assign = Curry(assign, envir = quickcheck.env)
 
 qc.options =
   function(...){
-    args = as.list(match.call())[-1]
+    args =
+      lapply(
+        as.list(match.call())[-1],
+        eval,
+        envir = sys.frame(sys.parent()))
     if(!is.null(names(args))) {
       nargs = args[names(args) != ""] #for named args
       unargs = args[names(args) == ""] #for unnamed args
@@ -79,7 +83,11 @@ formals(qc.options) =
 
 qc.option =
   function() {
-    args = eval.parent(as.list(match.call())[-1])
+    args =
+      lapply(
+        as.list(match.call())[-1],
+        eval,
+        envir = sys.frame(sys.parent()))
     stopifnot(length(args) == 1)
     do.call(qc.options, args)[[1]]}
 

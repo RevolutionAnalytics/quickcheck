@@ -99,6 +99,11 @@ test(
     data = rdouble(elements = c(mean = mean, sd = 0)))
     all(data == mean))
 
+## rnumeric
+type.test(is.numeric, rnumeric)
+variability.test(rnumeric)
+size.test(rnumeric)
+
 ##rcharacter:
 type.test(is.character, rcharacter)
 variability.test(rcharacter)

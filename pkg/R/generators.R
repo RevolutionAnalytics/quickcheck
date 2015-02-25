@@ -143,7 +143,9 @@ rlogical =
 
 rinteger =
   function(
-    elements = c(min = 0, max = default(integer.size %||% 10 * severity)),
+    elements = {
+      r = default(integer.size %||% 10 * severity);
+      c(min = -r, max = r)},
     size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
     if(!is.fofun(elements))
       elements = do.call(Curry, c(list(rzipf.range), arg.match(elements)))
@@ -161,15 +163,15 @@ rdouble =
 
 rnumeric =
   function(
-    generators =
+    elements  =
       list(
         integer = c(max = default(integer.size %||% 10 * severity)),
         double = 	c(mean = 0, sd = default(double.size %||% 10 * severity))),
     size = c(min = 0, max = default(vector.size %||% 10 * severity)))
     mixture(
       list(
-        Curry(rdouble, generator = generators$double, size = size),
-        Curry(rinteger, generator = generators$integer, size = size)))()
+        Curry(rdouble, elements = elements$double, size = size),
+        Curry(rinteger, elements = elements$integer, size = size)))()
 
 ##rcomplex NAY
 
