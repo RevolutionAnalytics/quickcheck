@@ -129,10 +129,10 @@ minhash =
     min(
       cksum(
         mapply(
-          function(x, i,j) paste(x[i:j], collapse = " "),
+          function(x, i, j) paste(x[i:j], collapse = " "),
           MoreArgs = list(x = tokens),
-          1:(length(tokens)-6),
-          7:length(tokens))))
+          1:max(0, (length(tokens) - 6)),
+          min(7, length(tokens)):length(tokens))))%%(2^31 - 1)
 
 test =
   function(
