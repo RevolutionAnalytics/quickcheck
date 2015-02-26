@@ -21,7 +21,7 @@ stopifnot(expect("error", test(function(x = rcharacter()) stop(x))))
 
 stopifnot(expect("error", repro(test(function() TRUE))))
 
-stopifnot(!expect("error", repro(test(function() FALSE), debug = FALSE)))
+stopifnot(!expect("error", repro(test(function() FALSE, stop = FALSE), debug = FALSE)))
 
 stopifnot(expect("warning", rinteger(elements= ~1)))
 
