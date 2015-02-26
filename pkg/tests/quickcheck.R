@@ -14,6 +14,8 @@
 
 ## expect
 ## test (failure)
+library(quickcheck)
+
 
 stopifnot(expect("error", test(function(x = rcharacter()) stop(x))))
 
