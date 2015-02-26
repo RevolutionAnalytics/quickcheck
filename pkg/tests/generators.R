@@ -38,10 +38,10 @@ range.test =
         all(data >= min(range)) && all(data <= max(range)))
 
 size.test =
-  function(generator)
+  function(generator, size  = c(min = 0, max = default(vector.size %||% 4 * severity)))
     test(
       function(
-        size = sort(rinteger(elements = c(min = 0), size = ~2)),
+        size = sort(rinteger(elements = size, size = ~2)),
         data = generator(size = size))
         length(data) >= min(size) && length(data) <= max(size))
 

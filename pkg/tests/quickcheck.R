@@ -32,9 +32,12 @@ stopifnot(expect("warning", rinteger(elements= ~1)))
 
 test(
 function(
-  n = rsize(size = c(min = 1, max = length(formals(qc.options)) - 1)),
-  opts = rsample(names(formals(qc.options))[-1], ~n, replace = FALSE),
-  values = rinteger(size = ~n)) {
+  opts =
+    rsample(
+      names(formals(qc.options))[-1],
+      size = c(min = 1, max = length(formals(qc.options))),
+      replace = FALSE),
+  values = rinteger(size = ~length(opts))) {
   args = as.list(values)
   names(args) = opts
   before = do.call(qc.options,  as.list(names(args)))

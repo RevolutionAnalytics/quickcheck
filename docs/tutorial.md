@@ -57,7 +57,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  19100   19400   20400   22700   25200   33500 
+  18900   19100   19600   21000   20200   31900 
 ```
 
 We have supplied an assertion, that is a function with defaults for each argument, at least some set using random data generators, and returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` means *failed*.
@@ -76,7 +76,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  18000   19300   20400   21900   22000   55000 
+  17900   19200   20000   21800   20700   46900 
 ```
 
 Done! You see, if you had to write down those 100 integer vectors one by one, you'd never have time to. But, you may object, `identity` is not supposed to work only on integer vectors, why did we test only on those? That was just a starter indeed. Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc. for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. In particular, there is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). That is exactly what we need for our identity test.
@@ -94,7 +94,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  18300   20000   21100   22800   22900   71600 
+  18200   19200   19900   22000   22500   86800 
 ```
 
 Now we have more confidence that `identity` works for all types of R objects. 
@@ -118,7 +118,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-2080000 2350000 3010000 2980000 3340000 4640000 
+1930000 2140000 2180000 2480000 2380000 5140000 
 ```
 
 By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertions defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you'd ever want to use `expect("equal", ...)`, but we threw it in for completeness. 
@@ -151,14 +151,10 @@ mean(x) > 0
 FAIL: assertion:
 function (x = rdouble()) 
 mean(x) > 0
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0
 ```
 
 ```
-Error:
-load("/Users/antonio/Projects/Revolution/quickcheck/docs/./quickchecka34646eb9a48")
+Error: load("/tmp/95980/quickcheck176ec1e6e13fe")
 ```
 
 Its output shows that about half of the default 10 runs have failed and then invites us to load some debugging data. Another way to get at that data is to run the test with the option `stop = FALSE` which doesn't produce an error. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
@@ -169,21 +165,6 @@ test.out = test(function(x = rdouble()) mean(x) > 0, stop = FALSE)
 ```
 
 ```
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0
 FAIL: assertion:
 function (x = rdouble()) 
 mean(x) > 0
@@ -210,83 +191,83 @@ NULL
 $cases
 $cases[[1]]
 $cases[[1]]$x
- [1]  -98.975   28.273 -220.198  -49.237   -4.334  -28.163 -123.364
- [8]  -78.192   96.678  -99.423  104.382  -70.641 -153.486  -71.128
-[15] -101.230   43.694  -96.047   77.706   68.739  142.194  -16.872
-[22]   24.769  158.837   51.807  161.301  -50.542   56.489 -128.373
-[29] -272.990  107.036 -219.462  -19.479
+[1] 6.501
 
 
 $cases[[2]]
 $cases[[2]]$x
- [1] -174.838   94.992  -15.013    5.838 -124.245   32.476 -155.967
- [8]  144.174  -53.300  -79.188   61.380  -51.076 -110.643    5.273
-[15]  -89.603  123.701 -211.628  -38.357   63.937  -19.068  -81.012
-[22]   12.270    5.886   92.719 -110.506  -39.363   -6.268    6.469
-[29]  -42.415  -23.826    7.260 -176.220  -49.952
+[1]  20.79 152.31 -72.67 179.33
 
 
 $cases[[3]]
 $cases[[3]]$x
- [1]  -17.783  -12.893  -76.531 -123.870   76.085  -56.670   -7.878
- [8]   30.638   -6.847   92.127  -64.241  -27.820  -75.772  -19.513
-[15]   54.588   51.492  -31.787   23.318  -31.250
+ [1] -149.472    5.802  142.713   -2.421 -168.728  175.137   74.703
+ [8] -213.602  -30.324   50.191  -17.942 -179.265  110.803  -58.134
+[15]   38.496  -58.666  -23.815   18.178 -109.916  167.573  -25.986
+[22]   85.258   -4.724   -6.630
 
 
 $cases[[4]]
 $cases[[4]]$x
- [1]  -95.132 -229.090   19.809   69.598  159.529  -30.570   -1.485
- [8]   63.200   73.980   51.582  -40.716  -65.305  172.748    2.284
-[15]  100.199   16.705   -4.799  -76.972   65.983  -42.567   42.980
+[1] 56.34
 
 
 $cases[[5]]
 $cases[[5]]$x
-[1] 119.74  19.58  55.11 148.65 166.24 -97.69
+ [1]  -88.671   32.703  -35.948   28.460  102.032   35.691   71.906
+ [8]  113.423   84.343  224.496   23.432   -5.049    5.378 -214.799
+[15]   91.946
 
 
 $cases[[6]]
 $cases[[6]]$x
-[1]  22.56  26.83 -97.71
+ [1]  109.000  -17.385 -121.661  -54.348  -64.869   34.382 -111.817
+ [8] -185.236  195.518  -51.609   53.958   28.365  -95.117 -152.919
+[15]  132.506  -13.893  140.272 -111.009   75.332  186.363  -29.579
+[22]  -47.431   59.905   -3.385   21.666   48.881  -37.620   81.415
+[29]  -16.331   41.649  -77.097   36.828   79.194  -50.813 -187.398
+[36]  195.431  -63.890  -69.753  -17.075  -84.768
 
 
 $cases[[7]]
 $cases[[7]]$x
-numeric(0)
+ [1]   55.99 -280.04  137.61   68.05   42.23   96.11  -28.56   61.52
+ [9]   62.65   85.74
 
 
 $cases[[8]]
 $cases[[8]]$x
- [1]   54.82 -207.05  -50.88  168.61 -140.40   10.46  -80.71 -152.07
- [9] -122.32 -181.86   43.37   71.40  188.82   82.60
+ [1]  -75.0611  -54.1539   63.2853   93.0066   12.2372 -136.3754   79.4539
+ [8]  -59.7427  -18.7482   69.8092  -74.7152   49.0744   -9.8768  -97.3525
+[15]    1.7548   -1.0646 -114.9410  168.7972  104.8447   37.7048  166.4863
+[22]  -71.2445   48.0203   80.2498  -93.5185  -62.1018  -88.4403   29.3684
+[29]  278.0700  117.2480  -74.2692 -158.1255  -92.7926   21.9017    2.0331
+[36]   28.4028    4.9102  166.7208  122.0102  158.0508 -136.6660 -135.4718
+[43]  -41.9699   -0.2347   65.8879  205.8819   68.1533  -88.6746   62.5711
+[50]   37.9426  -20.9251  -66.0746  147.3807  -50.5599   39.6705  -33.6563
+[57]  -19.9922   50.9942 -119.8879  -32.7671  101.8846  231.4199  168.7200
+[64]  -17.5883   22.3975   66.5353 -150.8258 -164.6217 -149.1752  -20.8496
+[71]  -43.0050  -63.9007   -5.2606   12.3264  223.9019   77.2305 -101.4042
+[78]  -50.0144   21.5667
 
 
 $cases[[9]]
 $cases[[9]]$x
- [1]  -99.27  -47.55   33.64   43.27  -80.83 -131.12   59.11 -192.07
- [9]  -71.09 -124.08  -91.49   11.96  -12.18  -27.88   49.14  150.01
-[17]   45.69  -40.79  120.51   59.39  -54.47 -215.99 -119.35   35.10
-[25]  221.71   72.26   39.78  -26.70  -24.95
+[1] -124.9 -120.2   80.2  199.3  127.1 -216.0  110.7
 
 
 $cases[[10]]
 $cases[[10]]$x
- [1] -131.565 -217.195  159.040    9.273   31.712   81.374  -26.818
- [8]  -51.663  -30.218  -61.646 -114.093  106.943  169.283   49.032
-[15]   12.010 -167.584  -64.031   30.099  -10.723    2.993 -134.190
-[22]  -68.134  104.171   36.005 -164.881   -8.686 -120.895  -57.921
-[29]   52.073  -66.182   71.486  260.397   50.395 -130.245  -92.195
-[36]  -13.636   90.362  -88.513   92.725    5.652  -67.213  -30.696
-[43]  -20.203   59.226   56.710   41.287 -182.754   11.385  -83.507
+numeric(0)
 
 
 
 $pass
- [1] FALSE FALSE FALSE  TRUE  TRUE FALSE    NA FALSE FALSE FALSE
+ [1]  TRUE  TRUE FALSE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE    NA
 
 $elapsed
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  26000   26800   27100   27900   27300   36700 
+  25300   26400   31600   32700   38100   45400 
 ```
 
 The output is a list with five elements:
@@ -306,26 +287,22 @@ repro(test.out)
 
 ```
 debugging in: (function (x = rdouble()) 
-mean(x) > 0)(x = c(-98.975472647153, 28.2734948113111, -220.198135504239, 
--49.2366475437378, -4.33416209229328, -28.1626021552711, -123.363690410084, 
--78.1915278468566, 96.6784022810993, -99.4231593716358, 104.382113839079, 
--70.6407624976424, -153.485529470173, -71.1277390664433, -101.229891452784, 
-43.693816436269, -96.0473379327379, 77.7060240406356, 68.7394422574265, 
-142.194247061591, -16.8718277749083, 24.769161276441, 158.837095768532, 
-51.8074423625048, 161.30101240996, -50.5417979160663, 56.4891215049301, 
--128.372941766827, -272.989898631072, 107.035838064454, -219.461820379847, 
--19.4787031281759))
+mean(x) > 0)(x = c(-149.472027829401, 5.80232484081566, 142.712804617082, 
+-2.42114600788036, -168.727650036898, 175.13728003114, 74.7026696377599, 
+-213.601851559202, -30.3242426360314, 50.1905193158911, -17.9422305811301, 
+-179.265373319932, 110.803085742297, -58.1341803467617, 38.4957635427599, 
+-58.6658830181767, -23.8154303092674, 18.1777757112529, -109.915809485638, 
+167.572998250351, -25.9855740047145, 85.257718667166, -4.72390910353835, 
+-6.63028079845378))
 debug: mean(x) > 0
 exiting from: (function (x = rdouble()) 
-mean(x) > 0)(x = c(-98.975472647153, 28.2734948113111, -220.198135504239, 
--49.2366475437378, -4.33416209229328, -28.1626021552711, -123.363690410084, 
--78.1915278468566, 96.6784022810993, -99.4231593716358, 104.382113839079, 
--70.6407624976424, -153.485529470173, -71.1277390664433, -101.229891452784, 
-43.693816436269, -96.0473379327379, 77.7060240406356, 68.7394422574265, 
-142.194247061591, -16.8718277749083, 24.769161276441, 158.837095768532, 
-51.8074423625048, 161.30101240996, -50.5417979160663, 56.4891215049301, 
--128.372941766827, -272.989898631072, 107.035838064454, -219.461820379847, 
--19.4787031281759))
+mean(x) > 0)(x = c(-149.472027829401, 5.80232484081566, 142.712804617082, 
+-2.42114600788036, -168.727650036898, 175.13728003114, 74.7026696377599, 
+-213.601851559202, -30.3242426360314, 50.1905193158911, -17.9422305811301, 
+-179.265373319932, 110.803085742297, -58.1341803467617, 38.4957635427599, 
+-58.6658830181767, -23.8154303092674, 18.1777757112529, -109.915809485638, 
+167.572998250351, -25.9855740047145, 85.257718667166, -4.72390910353835, 
+-6.63028079845378))
 ```
 
 ```
@@ -401,7 +378,7 @@ rdouble(elements = 100)
 ```
 
 ```
-[1]  -11.78  -91.21 -143.76  -79.71  125.41   77.21  -21.95  -42.48  -41.90
+[1]  88.225   8.793 -43.759  20.291 225.408 177.214  78.048  57.519  58.102
 ```
 and finally this extracts the elements from a uniform distribution with all parameters at default values.
 
@@ -450,7 +427,9 @@ Warning: recycling random numbers
 ```
 
 ```
- [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+  [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ [36] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ [71] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 ```
 
 The same is true for argument `size`. If numeric,  it is construed as a maximum size or a support range, depending on its length, otherwise it is called with a single argument equal to 1 .
@@ -462,9 +441,21 @@ rdouble(size = 100)
 ```
 
 ```
- [1]   13.8053  -11.8792   19.7684 -106.8693  -80.3213 -111.3765  158.0092
- [8]  149.7819   26.2645 -123.2901   -0.3724  151.1672  -47.5698   79.7916
-[15]  -97.4003   68.9373  -95.5839 -123.1707  -95.6892
+  [1]   13.8053  -11.8792   19.7684 -106.8693  -80.3213 -111.3765  158.0092
+  [8]  149.7819   26.2645 -123.2901   -0.3724  151.1672  -47.5698   79.7916
+ [15]  -97.4003   68.9373  -95.5839 -123.1707  -95.6892  -86.9783  -91.0681
+ [22]   74.1276    6.8512  -32.3751 -108.6503 -101.5929  -76.7790 -111.9720
+ [29]  -44.8174   47.1736 -118.0491  147.0257 -131.1421   -9.6525  236.9720
+ [36]   89.0626  -25.2183  -86.5764   58.2586   -1.2529  -37.4855   31.7886
+ [43]  -48.8806  265.8658  168.0278   77.9584   71.3241  -54.2882   88.5778
+ [50]  -34.8595 -100.8055  188.3183  -92.8971  -29.4196  -61.4950  -94.7076
+ [57]   59.8975 -152.3615  -20.6189  -57.4295 -139.0166   -7.0417  -43.0880
+ [64]  -59.2225   98.1116   53.2409   -9.0456   15.6490  -73.7312  -20.1341
+ [71]  110.2177   -1.6748   16.1789  202.4761  -70.3694   96.0792  179.0485
+ [78] -106.4165    1.7637  -38.9909  -49.0833 -104.5718  -89.6211  126.9387
+ [85]   59.3841   77.5634  155.7370  -36.5402   81.6556   -6.0635  -50.1378
+ [92]   92.6063    3.6938 -106.6200  -23.8456  149.5223  117.2159 -145.7707
+ [99]    9.5056   84.7665
 ```
 
 Second form:
@@ -474,7 +465,7 @@ rdouble(size = c(min = 3, max = 4))
 ```
 
 ```
-[1] -91.068  74.128   6.851
+[1] 140.86 -54.18  27.87
 ```
 
 RNG:
@@ -485,7 +476,7 @@ rdouble(size = function(n) 10 * runif(n))
 ```
 
 ```
-[1] -166.50  -46.35 -111.59  -75.08
+[1]  -34.10 -115.66  180.31  -33.11
 ```
 
 With the formula syntax:
@@ -496,8 +487,7 @@ rdouble(size = ~10*runif(1))
 ```
 
 ```
- [1]  -44.817   47.174 -118.049  147.026 -131.142   -9.652  236.972
- [8]   89.063  -25.218  -86.576
+[1] 40.65
 ```
 
 Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`, with the same possibile values. Nested data structures have an argument `height`. All of these are intended to be expectations as opposed to deterministic values but can be replaced by a generator, which gives you total control. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
@@ -508,7 +498,7 @@ rdouble(size = constant(3))
 ```
 
 ```
-[1]  58.259  -1.253 -37.485
+[1]  222.926 -151.450   -6.171
 ```
 
 ```r
@@ -516,7 +506,7 @@ rdouble(size = constant(3))
 ```
 
 ```
-[1]  31.79 -48.88 265.87
+[1] -14.73 154.16 -98.19
 ```
 
 Or, since ["succintness is power"](http://www.paulgraham.com/power.html):
@@ -527,14 +517,14 @@ rdouble(size = ~3)
 ```
 
 ```
-[1] 168.03  77.96  71.32
+[1]  49.66 169.69 -26.07
 ```
 
 Without the `~` it would be a max size, with it it is deterministic. Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple generator is `rsample`, which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
 
 
 ```r
-rsample(1:5, 10)
+rsample(elements = 1:5, c(max = 10))
 ```
 
 ```
@@ -542,11 +532,11 @@ integer(0)
 ```
 
 ```r
-rsample(1:5, 10)
+rsample(elements = 1:5, c(max = 10))
 ```
 
 ```
-[1] 2 3 1 3 5 5
+[1] 4
 ```
 
 The default distributions are still work in progress, but follow a general principle that testing larger vectors or vectors with larger elements should not be at the expense of skipping the small ones. Programs need to walk before they can run. We intend to adjust the default distributions based on user feedback.
@@ -582,7 +572,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  52000   69300   73400  107000   81000  439000 
+  55000   73500   77000  111000   85100  406000 
 ```
 
 and one for the corner cases:
@@ -599,7 +589,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  51100   53800   55800   58300   58300   76600 
+  47300   48700   50100   55800   56300   86300 
 ```
 
 That's a start, but the two type of values never mix in the same vector. We can combine the two with a custom generator
@@ -617,7 +607,19 @@ rdoublex()
 ```
 
 ```
-numeric(0)
+ [1]  279.657  291.963  202.648   52.734   76.336    3.277  109.215
+ [8]  181.009  143.225  -86.984  -61.526  174.678  242.583  119.444
+[15]   24.033   64.065   67.008  253.185  134.176  101.699   76.711
+[22]  133.447   68.497    7.465  175.478  153.857  206.425  193.252
+[29]   56.890  263.055   98.299  119.352   56.892  132.321  170.423
+[36]  257.138  105.329  -19.598  211.302  164.084  126.694  -38.436
+[43]  165.653  111.645 -112.783  150.413  200.248  185.765  126.683
+[50]   73.710  -29.130  311.507   19.766  106.864  -12.649  145.763
+[57]   32.298  184.751   81.291  172.574   65.625      Inf    0.000
+[64]  -89.647   31.485  144.076  229.041  217.171   72.907   80.114
+[71]  125.128   59.955 -125.129  200.671  195.660  165.462     -Inf
+[78]  133.273  193.314  275.649  -76.322   71.642  126.627   91.914
+[85]  121.586  118.830   72.753   15.944 -121.239  154.091  160.252
 ```
 
 ```r
@@ -625,7 +627,14 @@ rdoublex()
 ```
 
 ```
-[1] -Inf
+ [1]  252.424  246.280   75.704   88.751  227.244      Inf   29.693
+ [8]    0.000  102.764   25.555   27.209  101.024  -39.749   81.983
+[15]   63.004  152.292  161.167  -27.487   35.389   15.769  303.020
+[22]  106.453   17.602  118.964  276.810 -121.675  -41.006  254.404
+[29]  108.026   98.510  128.823    2.229   63.007  150.943   11.900
+[36]  -89.212     -Inf  -22.450   87.645   -7.139  -23.736  230.368
+[43]  -51.131  370.301  339.720    9.569   67.234  278.934   98.661
+[50]   87.700
 ```
 		
 And use it in a more general test.
@@ -643,5 +652,5 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  50000   51100   55200   61000   66500   86900 
+  65900   73300   79800   81700   88800  108000 
 ```

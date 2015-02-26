@@ -122,11 +122,14 @@ rdata =
 
 rsize =
   function(size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
-    if(is.fofun(size))
-      as.integer(round(rdata(size, 1)))
-    else {
-      size = arg.match(size)
-      rzipf.range(1, size$min, size$max, s = 1)}}
+    retval = {
+      if(is.fofun(size))
+        as.integer(round(rdata(size, 1)))
+      else {
+        size = arg.match(size)
+        rzipf.range(1, size$min, size$max, s = 1)}}
+    stopifnot(retval >= 0)
+    retval}
 
 ## basic types
 
@@ -252,9 +255,9 @@ rlist =
             rraw,
             rDate,
             rfactor,
-            Curry(rlist, size = size, height = height))),
-    size = c(min = 0, max = default(list.size %||% round(severity / 2))),
-    height = default(list.height %||% round(severity/3))) {
+            Curry(rlist, size = size, height = height - 1))),
+    size = c(min = 0, max = default(list.size %||% severity)),
+    height = default(list.height %||% round(severity/2))) {
     if (height == 0) NULL
     else
       replicate(

@@ -209,8 +209,8 @@ rdouble(size = ~3)
 Without the `~` it would be a max size, with it it is deterministic. Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple generator is `rsample`, which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
 
 ```{r}
-rsample(1:5, 10)
-rsample(1:5, 10)
+rsample(elements = 1:5, c(max = 10))
+rsample(elements = 1:5, c(max = 10))
 ```
 
 The default distributions are still work in progress, but follow a general principle that testing larger vectors or vectors with larger elements should not be at the expense of skipping the small ones. Programs need to walk before they can run. We intend to adjust the default distributions based on user feedback.
