@@ -110,8 +110,8 @@ variability.test(rcharacter)
 size.test(rcharacter)
 test(
   function(
-    nchar = rinteger(elements = c(min = 0), size = ~1),
-    string = rinteger(elements = c(min = 0), size = ~1),
+    nchar = rsize(),
+    string = rsize(),
     data = rcharacter(elements = list(nchar = c(max = nchar), string = c(max = string))))
     all(sapply(data, nchar) <= nchar)
   # && all(length(unique(data)) <= string))
@@ -123,7 +123,7 @@ variability.test(rfactor)
 size.test(rfactor)
 test(
   function(
-    nlevels = rinteger(elements = c(min = 1), size = ~1),
+    nlevels = rsize(c(min = 1)),
     data = rfactor(elements =  c(nlevels = nlevels)))
     length(unique(data)) <= nlevels)
 
@@ -136,7 +136,7 @@ variability.test(rraw)
 size.test(rraw)
 test(
   function(
-    n = rinteger(elements = c(min = 0), size = ~1),
+    n = rsize(),
     data = rraw(elements = c(min = n, max = n)))
     all(data == as.raw(n)))
 

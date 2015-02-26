@@ -121,11 +121,12 @@ rdata =
 #
 
 rsize =
-  function(size) {
+  function(size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
     if(is.fofun(size))
       as.integer(round(rdata(size, 1)))
-    else
-      rzipf.range(1, size$min, size$max, s = 1)}
+    else {
+      size = arg.match(size)
+      rzipf.range(1, size$min, size$max, s = 1)}}
 
 ## basic types
 

@@ -30,7 +30,7 @@ stopifnot(expect("warning", rinteger(elements= ~1)))
 
 tr = test(
 function(
-  n = rinteger(elements = c(min=1, max = length(formals(qc.options)) - 1), size = ~1),
+  n = rsize(size = c(min = 1, max = length(formals(qc.options)) - 1)),
   opts = rsample(names(formals(qc.options))[-1], ~n, replace = FALSE),
   values = rinteger(size = ~n)) {
   args = as.list(values)
