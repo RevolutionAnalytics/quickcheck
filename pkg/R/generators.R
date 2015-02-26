@@ -252,7 +252,7 @@ rlist =
             rraw,
             rDate,
             rfactor,
-            Curry(rlist, size = size, height = max(0, height - 1)))),
+            Curry(rlist, size = size, height = height))),
     size = c(min = 0, max = default(list.size %||% round(severity / 2))),
     height = default(list.height %||% round(severity/3))) {
     if (height == 0) NULL
