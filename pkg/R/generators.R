@@ -340,7 +340,7 @@ constant =
       const	}
 
 rsample =
-  function(elements, size = c(min = 0, max = round(length(elements)/2)), replace = TRUE) {
+  function(elements, size = c(min = 0, max = ceiling(length(elements)/2)), replace = TRUE) {
     sample(elements, rsize(arg.match(size)), replace = replace)}
 
 ##combiners
