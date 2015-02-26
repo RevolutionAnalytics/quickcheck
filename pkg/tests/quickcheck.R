@@ -30,7 +30,7 @@ stopifnot(expect("warning", rinteger(elements= ~1)))
 ## qc.options
 ## qc.option
 
-tr = test(
+test(
 function(
   n = rsize(size = c(min = 1, max = length(formals(qc.options)) - 1)),
   opts = rsample(names(formals(qc.options))[-1], ~n, replace = FALSE),
