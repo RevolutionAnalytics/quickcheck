@@ -148,8 +148,9 @@ rinteger =
       r = default(integer.size %||% 10 * severity);
       c(min = -r, max = r)},
     size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
-    if(!is.fofun(elements))
-      elements = do.call(Curry, c(list(rzipf.range), arg.match(elements)))
+    if(!is.fofun(elements)){
+      args = arg.match(elements)
+      elements = function(n) floor(runif(n, args$min, args$max + 1))}
     size = rsize(arg.match(size))
     as.integer(rdata(elements, size))}
 
