@@ -124,12 +124,26 @@ eval.args =
         args[[i]] <<- eval(args[[i]], args[1:(i-1)], envir))
     as.list(args)}
 
+minhash =
+  function(tokens)
+    min(
+      cksum(
+        mapply(
+          function(x, i,j) paste(x[i:j], collapse = " "),
+          MoreArgs = list(x = tokens),
+          1:(length(tokens)-6),
+          7:length(tokens))))
+
 test =
   function(
     assertion,
     sample.size = default(sample.size %||% severity),
     stop = !interactive()) {
-    set.seed(cksum(digest(assertion))%%(2^31 - 1))
+    tokens = unlist(strsplit(deparse(assertion), split = "[ \t(){},]"))
+    tokens = tokens[tokens != ""]
+    seed = minhash(tokens)
+    message("Using seed ", seed)
+    set.seed(seed)
     stopifnot(is.function(assertion))
     envir = environment(assertion)
 
