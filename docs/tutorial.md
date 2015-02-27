@@ -58,7 +58,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  33000   38000   40000   42700   47100   57100 
+  31700   33600   36100   36800   40100   42500 
 ```
 
 We have supplied an assertion, that is a function with defaults for each argument, at least some set using random data generators, and returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` or error means *failed*. Random data generators are related to random number generators in R, but they also vary the size of the return value randomly, and in same cases even its type. Quickcheck provides a selection of random data generators for most common R types and they are highly configurable.
@@ -79,7 +79,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  30200   32600   34400   35400   36900   47000 
+  29600   31900   33300   48000   35800 1390000 
 ```
 
 Done! You see, if you had to write down those 100 matrices one by one, you would never have time to.  Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc. for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. There even is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). 
@@ -105,7 +105,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-2030000 2180000 2270000 2370000 2340000 3270000 
+1940000 2100000 2160000 2320000 2330000 3680000 
 ```
 
 By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertions defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you would ever want to use `expect("equal", ...)`, but we threw it in for completeness. 
@@ -136,7 +136,7 @@ mean(x) > 0
 ```
 
 ```
-Error: load("/tmp/17419/quickcheck440b3d94f3ae")
+Error: load("/tmp/15042/quickcheck3ac2b73e2af")
 ```
 
 This output shows that about half of the default 10 runs have failed and then invites us to load some debugging data. Another way to get at that data is to run the test with the option `stop = `FALSE` which doesn't produce an error and returns the same debugging data. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
@@ -267,7 +267,7 @@ $pass
 
 $elapsed
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  26200   27300   28400   29100   30800   32700 
+  26300   26500   27100  247000   29800 2210000 
 ```
 
 The output is a list with five elements:
@@ -642,7 +642,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  51300   55100   71200  106000   80700  450000 
+  51400   51700   69800  104000   80300  456000 
 ```
 
 and one for the corner cases:
@@ -660,7 +660,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  53400   54400   59800   67500   69400  106000 
+  47200   49300   50400   55600   59100   79800 
 ```
 
 That's a start, but the two type of values never mix in the same vector. We can combine the two with a custom generator
@@ -668,8 +668,8 @@ That's a start, but the two type of values never mix in the same vector. We can 
 
 ```r
 rdoublex = 
-	function(element = c(mean = 100), size = c(max = 10)) {
-		data = rdouble(element, size)
+	function(elements = c(mean = 100), size = c(max = 10)) {
+		data = rdouble(elements, size)
 		sample(
 			c(data, c(0, -Inf, Inf)), 
 			size = length(data), 
@@ -705,7 +705,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  47700   50000   57500   60200   68800   78700 
+  50300   54000   71100   69400   81100   90300 
 ```
 
 ### Composition of generators

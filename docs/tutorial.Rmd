@@ -267,8 +267,8 @@ That's a start, but the two type of values never mix in the same vector. We can 
 
 ```{r}
 rdoublex = 
-	function(element = c(mean = 100), size = c(max = 10)) {
-		data = rdouble(element, size)
+	function(elements = c(mean = 100), size = c(max = 10)) {
+		data = rdouble(elements, size)
 		sample(
 			c(data, c(0, -Inf, Inf)), 
 			size = length(data), 
