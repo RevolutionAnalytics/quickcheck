@@ -229,9 +229,14 @@ repro =
 
 no.coverage =
   function(path = "pkg/") {
-    pc = package_coverage(path)
+    if(!requireNamespace("covr"))
+      stop(
+        "Need to install covr to use this feature
+         library(devtools)
+         install_github(\"jimhester/covr@b181831f0fd4299f70c330b87a73d9ec2d13433\")")
+    pc = covr::package_coverage(path)
     print(pc)
-    zc = zero_coverage(pc)
+    zc = covr::zero_coverage(pc)
     temp = tempfile(fileext = ".html")
     writeLines(
       unlist(
