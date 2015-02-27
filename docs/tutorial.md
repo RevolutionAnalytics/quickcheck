@@ -19,7 +19,7 @@ Quickcheck was originally a package for the language Haskell aimed at simplifyin
   
 ## First example
 
-Let's start with something very simple. Let's say we just wrote the function `identity`. Using the widely used testing package `testthat`, one would like to write a test like:
+Let's start with something very simple. Let's say we just wrote the function `t` for transpose. Using the widely used testing package `testthat`, one would like to write a test like:
 
 
 ```r
@@ -28,16 +28,16 @@ library(testthat)
 
 
 ```r
-test_that("identity test", expect_identical(identity(x), x))
+test_that("transpose self inverse test", expect_identical(t(t(x)), x))
 ```
 
-That in general doesn't work because `x` is not defined. What was meant was something like a quantifier *for all legal values of `x`*, but there isn't any easy way of implementing that. So a developer has to enter some values for `x`.
+That in general doesn't work because `x` is not defined. What I meant was something like a universally quantified statement *for all legal values of `x`*, but there isn't any easy way of implementing that. So a developer has to enter some values for `x`.
 
 
 
 ```r
-for(x in c(1L, 1, list(1), NULL, factor(1)))
-  test_that("identity test", expect_identical(identity(x),x))
+for(x in list(matrix(c(1,2,3,4), ncol =2), matrix(c(5:10), ncol = 3)))
+  test_that("transpose self inverse test", expect_identical(t(t(x)),x))
 rm(x)
 ```
 
@@ -46,63 +46,49 @@ But there is no good reason to pick those specific examples, testing on more dat
 
 ```r
 library(quickcheck)
-test(function(x = rinteger()) identical(identity(x), x))
+test(function(x = rmatrix()) identical(t(t(x)), x))
 ```
 
 ```
+Using seed 2055293039
 Pass  
- function (x = rinteger())  
- identical(identity(x), x) 
+ function (x = rmatrix())  
+ identical(t(t(x)), x) 
 ```
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  18900   19100   19600   21000   20200   31900 
+  33000   38000   40000   42700   47100   57100 
 ```
 
-We have supplied an assertion, that is a function with defaults for each argument, at least some set using random data generators, and returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` means *failed*.
-What this means is that we have tested `identity` for this assertion on random integer vectors. We don't have to write them down one by one and later we will see how we can affect the distribution of such vectors, to make them say large in size or value, or more likely to hit corner cases. We can also repeat the test multiple times on different values with the least amount of effort, in fact, we have already executed this test 10 times, which is the default. But if 100 times is required, no problem:
+We have supplied an assertion, that is a function with defaults for each argument, at least some set using random data generators, and returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` or error means *failed*. Random data generators are related to random number generators in R, but they also vary the size of the return value randomly, and in same cases even its type. Quickcheck provides a selection of random data generators for most common R types and they are highly configurable.
+
+What this test success means is that we have tested that `t` satisfies this assertion on a sample of random matrices, including a variety of sizes, element types and, of course, element values. We don't have to write them down one by one and later we will see how we can affect the distribution of such vectors, to make them, say, larger in size or value, or more likely to hit corner cases.  We can also repeat the test multiple times on different values with the least amount of effort -- in fact, we have already executed this test 10 times, which is the default. But if 100 times is required, no problem:
 
 
 ```r
-test(function(x = rinteger()) identical(identity(x), x), sample.size = 100)
+test(function(x = rmatrix()) identical(t(t(x)), x), sample.size = 100)
 ```
 
 ```
+Using seed 2055293039
 Pass  
- function (x = rinteger())  
- identical(identity(x), x) 
+ function (x = rmatrix())  
+ identical(t(t(x)), x) 
 ```
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  17900   19200   20000   21800   20700   46900 
+  30200   32600   34400   35400   36900   47000 
 ```
 
-Done! You see, if you had to write down those 100 integer vectors one by one, you'd never have time to. But, you may object, `identity` is not supposed to work only on integer vectors, why did we test only on those? That was just a starter indeed. Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc. for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. In particular, there is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). That is exactly what we need for our identity test.
+Done! You see, if you had to write down those 100 matrices one by one, you would never have time to.  Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc. for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. There even is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). 
 
-
-```r
-test(function(x = rany()) identical(identity(x), x), sample.size = 100)
-```
-
-```
-Pass  
- function (x = rany())  
- identical(identity(x), x) 
-```
-
-```
-   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  18200   19200   19900   22000   22500   86800 
-```
-
-Now we have more confidence that `identity` works for all types of R objects. 
-
+You may have noticed in the output some performance information. That's a first step toward adding performance testing capabilities in future releases.
 
 ## Defining assertions
 
-Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with a length-one return value. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns TRUE, it is considered a success. If an assertion returns FALSE or generates an error, it is  considered a failure. For instance, `function(x = rcharacter()) stop()` is a valid assertion but always fails. How do I express the fact that this is its correct behavior? `testthat` has a rich set of expectations to capture that and other requirements, such as printing something or generating a warning. Derived from those, `quickcheck` has a rich set of predefined assertions, returned by the function `expect`:
+Unlike `testhat` where you need to construct specially defined *expectations*, `quickcheck` accepts run of the mill logical-valued functions, with a length-one return value. For example `function(x) all(x + 0 == x)` or `function(x) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. If an assertion returns `TRUE`, it is considered a success. If an assertion returns `FALSE` or generates an error, it is  considered a failure. For instance, `function(x = rcharacter()) stop(x)` is a valid assertion but always fails. How do I express the fact that this is its correct behavior? `testthat` has a rich set of expectations to capture that and other requirements, such as printing something or generating a warning. Derived from those, `quickcheck` has an equivalent set of predefined assertion helpers, returned by the function `expect`:
 
 
 ```r
@@ -111,6 +97,7 @@ test(
 ```
 
 ```
+Using seed 770024200
 Pass  
  function (x = rcharacter())  
  expect("error", stop(x)) 
@@ -118,10 +105,10 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-1930000 2140000 2180000 2480000 2380000 5140000 
+2030000 2180000 2270000 2370000 2340000 3270000 
 ```
 
-By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertions defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you'd ever want to use `expect("equal", ...)`, but we threw it in for completeness. 
+By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertions defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you would ever want to use `expect("equal", ...)`, but we threw it in for completeness. 
 
 ## What to do when tests fail
 
@@ -133,12 +120,7 @@ test(function(x = rdouble()) mean(x) > 0, stop = TRUE)
 ```
 
 ```
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0
+Using seed 494012268
 FAIL: assertion:
 function (x = rdouble()) 
 mean(x) > 0
@@ -154,10 +136,10 @@ mean(x) > 0
 ```
 
 ```
-Error: load("/tmp/95980/quickcheck176ec1e6e13fe")
+Error: load("/tmp/17419/quickcheck440b3d94f3ae")
 ```
 
-Its output shows that about half of the default 10 runs have failed and then invites us to load some debugging data. Another way to get at that data is to run the test with the option `stop = FALSE` which doesn't produce an error. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
+This output shows that about half of the default 10 runs have failed and then invites us to load some debugging data. Another way to get at that data is to run the test with the option `stop = `FALSE` which doesn't produce an error and returns the same debugging data. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
 
 
 ```r
@@ -165,6 +147,10 @@ test.out = test(function(x = rdouble()) mean(x) > 0, stop = FALSE)
 ```
 
 ```
+Using seed 494012268
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
 FAIL: assertion:
 function (x = rdouble()) 
 mean(x) > 0
@@ -191,83 +177,97 @@ NULL
 $cases
 $cases[[1]]
 $cases[[1]]$x
-[1] 6.501
+ [1]   30.23  -90.35  147.54   84.67   24.44  147.40   69.66   12.13
+ [9]  130.66 -142.24  -22.43 -120.56   62.23 -129.12  -21.71  157.95
+[17]   41.74  -47.86  -25.48   78.70  147.21  109.47   16.92  -94.71
 
 
 $cases[[2]]
 $cases[[2]]$x
-[1]  20.79 152.31 -72.67 179.33
+[1] -12.74 180.93  94.25 103.14 -44.39 217.95
 
 
 $cases[[3]]
 $cases[[3]]$x
- [1] -149.472    5.802  142.713   -2.421 -168.728  175.137   74.703
- [8] -213.602  -30.324   50.191  -17.942 -179.265  110.803  -58.134
-[15]   38.496  -58.666  -23.815   18.178 -109.916  167.573  -25.986
-[22]   85.258   -4.724   -6.630
+ [1]   95.422  160.247  -45.794   25.387   23.795  -64.653   17.253
+ [8]  -12.464  203.773  -52.115   92.438  -53.802  -40.604    5.535
+[15]  -96.459 -109.683   58.029   16.353 -126.000  -53.255  -14.273
+[22]  -96.816  -69.660  125.992  -90.196   60.196   18.600    4.994
+[29]    4.584   23.623  -17.451   27.210  -90.159  -29.591 -116.876
+[36]   13.173  177.219   22.919   62.227 -184.341  -17.959  144.827
+[43]   35.883   78.835   40.414  -47.551 -109.144   20.106 -176.666
+[50]  125.194 -307.372 -179.329  116.614   72.302   70.832   83.026
+[57]   49.849  -20.496  -70.845 -142.589 -126.418  -85.420 -136.640
+[64]  -98.673   12.549   24.594
 
 
 $cases[[4]]
 $cases[[4]]$x
-[1] 56.34
+ [1]  -70.25 -225.29   60.52  -53.84  160.15   53.08   61.51   33.07
+ [9] -143.24  -67.33   67.84  101.34 -274.27   10.05   80.51
 
 
 $cases[[5]]
 $cases[[5]]$x
- [1]  -88.671   32.703  -35.948   28.460  102.032   35.691   71.906
- [8]  113.423   84.343  224.496   23.432   -5.049    5.378 -214.799
-[15]   91.946
+numeric(0)
 
 
 $cases[[6]]
 $cases[[6]]$x
- [1]  109.000  -17.385 -121.661  -54.348  -64.869   34.382 -111.817
- [8] -185.236  195.518  -51.609   53.958   28.365  -95.117 -152.919
-[15]  132.506  -13.893  140.272 -111.009   75.332  186.363  -29.579
-[22]  -47.431   59.905   -3.385   21.666   48.881  -37.620   81.415
-[29]  -16.331   41.649  -77.097   36.828   79.194  -50.813 -187.398
-[36]  195.431  -63.890  -69.753  -17.075  -84.768
+ [1]   83.8874   41.3460  -56.1588   74.6893    9.6191  -47.2369  -26.6739
+ [8]   13.6375   -5.8388   50.4788  223.1645  -72.4229   19.9486 -242.4169
+[15]   -0.1925   52.3147  -90.3645  -67.9644  -72.8291  114.1604 -217.3861
+[22]   36.5910    8.5331 -120.1570    3.7068  -87.6672  -76.8738  -94.1695
+[29]   68.7986  -49.3409  125.5676  -16.0159   89.2088  180.3242   31.3395
+[36]   17.9524  -27.7861   -0.2758   71.7291 -105.0380    1.6056  255.0941
+[43]  -13.3981   96.0800 -147.5796   -4.4352  164.2116  103.1424  112.8283
+[50]  -14.6528  -27.5456  -23.9791  173.6533  150.6851  153.1711 -129.9755
+[57]  164.5737   72.1590
 
 
 $cases[[7]]
 $cases[[7]]$x
- [1]   55.99 -280.04  137.61   68.05   42.23   96.11  -28.56   61.52
- [9]   62.65   85.74
+[1] -108.1 -102.5
 
 
 $cases[[8]]
 $cases[[8]]$x
- [1]  -75.0611  -54.1539   63.2853   93.0066   12.2372 -136.3754   79.4539
- [8]  -59.7427  -18.7482   69.8092  -74.7152   49.0744   -9.8768  -97.3525
-[15]    1.7548   -1.0646 -114.9410  168.7972  104.8447   37.7048  166.4863
-[22]  -71.2445   48.0203   80.2498  -93.5185  -62.1018  -88.4403   29.3684
-[29]  278.0700  117.2480  -74.2692 -158.1255  -92.7926   21.9017    2.0331
-[36]   28.4028    4.9102  166.7208  122.0102  158.0508 -136.6660 -135.4718
-[43]  -41.9699   -0.2347   65.8879  205.8819   68.1533  -88.6746   62.5711
-[50]   37.9426  -20.9251  -66.0746  147.3807  -50.5599   39.6705  -33.6563
-[57]  -19.9922   50.9942 -119.8879  -32.7671  101.8846  231.4199  168.7200
-[64]  -17.5883   22.3975   66.5353 -150.8258 -164.6217 -149.1752  -20.8496
-[71]  -43.0050  -63.9007   -5.2606   12.3264  223.9019   77.2305 -101.4042
-[78]  -50.0144   21.5667
+ [1]  -96.074   15.607  172.231   -3.361  -24.872  150.884  -39.833
+ [8]   35.353   37.796   78.716  198.692  -39.817  -17.504  249.590
+[15]   12.658   -9.146  223.155  -32.314  158.819  -48.906   71.488
+[22]  142.401  -59.159   57.753  156.502 -103.347  -30.921
 
 
 $cases[[9]]
 $cases[[9]]$x
-[1] -124.9 -120.2   80.2  199.3  127.1 -216.0  110.7
+ [1] -182.4152  -43.0800   -0.7844   54.7517  -44.6931  -32.0640   22.5682
+ [8]  219.9938   28.9261  134.4991   67.6724
 
 
 $cases[[10]]
 $cases[[10]]$x
-numeric(0)
+ [1] -133.6441  -14.0297 -143.0724  118.8524 -114.6992  242.4669  -37.3830
+ [8]    3.0691   79.2102  -85.3620  -53.0852   20.1529 -148.2454   86.0312
+[15]  -45.3053  140.1637   23.9451  186.2628   89.9620   77.7193   54.0741
+[22]  -44.3657  145.7331  184.3038  121.2508   42.1546 -243.3366  140.8445
+[29] -100.4693   -6.3112   -4.0823 -178.1115 -133.9058  -13.9660  -46.5035
+[36]  164.0090  152.8117   -0.5749   91.7690   43.7919    8.2102   93.0675
+[43] -215.6150   81.7335   58.2618  -42.6668  106.7141  -39.1231   78.3340
+[50] -253.7700   21.9546   82.2783   92.2768   28.5932  -24.7575 -262.5270
+[57]  -27.8361  -97.7953  -66.2059   28.6508  -70.3984  -19.3608  142.4069
+[64] -247.1285   89.7244  128.4257  208.6695   33.8146  -50.1988   79.2563
+[71]   -1.7874   57.4255   96.3371  -10.8953   12.6059   33.8523   -9.1788
+[78]  232.8219   64.2209   16.2955   51.5385  101.8698  -16.2072   59.9606
+[85]   -8.2975  -12.4083   90.6222
 
 
 
 $pass
- [1]  TRUE  TRUE FALSE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE    NA
+ [1]  TRUE  TRUE FALSE FALSE    NA  TRUE FALSE  TRUE  TRUE  TRUE
 
 $elapsed
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  25300   26400   31600   32700   38100   45400 
+  26200   27300   28400   29100   30800   32700 
 ```
 
 The output is a list with five elements:
@@ -276,9 +276,10 @@ The output is a list with five elements:
   - a list of in-scope variables that could have affected the result -- this is work in progress and shouldn't be trusted at this time
   - a list of lists of arguments passed to the assertion in each run 
   - the outcome of each run
-  - some performance stats (step towards a more complete performance harness support in future releases)
+  - some performance stats
   
-My recommendation is to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and its generators. This is because the first step in fixing a bug is almost always to reproduce it, and non-deterministic bugs are more difficult to reproduce. The `test` function seeds the random number generator so that every time it is called it will rerun the same tests, that is call the assertion with the same arguments, run after run. So I guess we should call it pseudo-random testing to be precise. Let's go in more detail on the `cases` element. It is a list with an element for each run, which has a value of `NULL`, if the run was successful, and a list of arguments passed to the assertion otherwise. In this case runs 2 through 7 failed. We can replicate it as follows.
+My recommendation is to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and its generators. This is because the first step in fixing a bug is almost always to reproduce it, and non-deterministic bugs are more difficult to reproduce. The `test` function seeds the random number generator so that every time it is called it will rerun the same tests, that is call the assertion with the same arguments, run after run. Different assertions should have different seeds, but small edits to an assertion should not change the seed in most cases, which is helpful for developing the assertion itself. In most cases all we need to do with the output of `test` is to pass it to another function, `repro`:
+
 
 
 ```r
@@ -287,49 +288,71 @@ repro(test.out)
 
 ```
 debugging in: (function (x = rdouble()) 
-mean(x) > 0)(x = c(-149.472027829401, 5.80232484081566, 142.712804617082, 
--2.42114600788036, -168.727650036898, 175.13728003114, 74.7026696377599, 
--213.601851559202, -30.3242426360314, 50.1905193158911, -17.9422305811301, 
--179.265373319932, 110.803085742297, -58.1341803467617, 38.4957635427599, 
--58.6658830181767, -23.8154303092674, 18.1777757112529, -109.915809485638, 
-167.572998250351, -25.9855740047145, 85.257718667166, -4.72390910353835, 
--6.63028079845378))
+mean(x) > 0)(x = c(95.4220841095448, 160.246710415966, -45.794324713949, 
+25.3869065691574, 23.7946291303444, -64.6528676719553, 17.2532503680657, 
+-12.4640292985689, 203.772824804286, -52.1154926680255, 92.4381620907306, 
+-53.8018711197192, -40.6044884240434, 5.53494104755664, -96.4591445419219, 
+-109.683471253244, 58.0287678728267, 16.3525969901045, -126.000189107398, 
+-53.255300164802, -14.2731714455475, -96.816445430208, -69.659853319032, 
+125.992306242745, -90.1956918321312, 60.1962863666949, 18.6002068439976, 
+4.99428030800119, 4.58402264147253, 23.623411052165, -17.4508456991157, 
+27.209622142362, -90.1588911365441, -29.5911341572048, -116.876063189637, 
+13.1728185982359, 177.218919685008, 22.918513324043, 62.2273004400145, 
+-184.340606782764, -17.9591518749144, 144.826739712447, 35.8834848574434, 
+78.835223509374, 40.414151866309, -47.5514286265603, -109.144147376676, 
+20.1060240788122, -176.666011435914, 125.194260988087, -307.37210087961, 
+-179.328859839397, 116.614258802597, 72.3015207164044, 70.8316830826215, 
+83.0263255157706, 49.8493399679659, -20.4958968102388, -70.8449904349165, 
+-142.588780669802, -126.418333050793, -85.41982546496, -136.639818355124, 
+-98.673091366056, 12.5492398761927, 24.5937200252946))
 debug: mean(x) > 0
 exiting from: (function (x = rdouble()) 
-mean(x) > 0)(x = c(-149.472027829401, 5.80232484081566, 142.712804617082, 
--2.42114600788036, -168.727650036898, 175.13728003114, 74.7026696377599, 
--213.601851559202, -30.3242426360314, 50.1905193158911, -17.9422305811301, 
--179.265373319932, 110.803085742297, -58.1341803467617, 38.4957635427599, 
--58.6658830181767, -23.8154303092674, 18.1777757112529, -109.915809485638, 
-167.572998250351, -25.9855740047145, 85.257718667166, -4.72390910353835, 
--6.63028079845378))
+mean(x) > 0)(x = c(95.4220841095448, 160.246710415966, -45.794324713949, 
+25.3869065691574, 23.7946291303444, -64.6528676719553, 17.2532503680657, 
+-12.4640292985689, 203.772824804286, -52.1154926680255, 92.4381620907306, 
+-53.8018711197192, -40.6044884240434, 5.53494104755664, -96.4591445419219, 
+-109.683471253244, 58.0287678728267, 16.3525969901045, -126.000189107398, 
+-53.255300164802, -14.2731714455475, -96.816445430208, -69.659853319032, 
+125.992306242745, -90.1956918321312, 60.1962863666949, 18.6002068439976, 
+4.99428030800119, 4.58402264147253, 23.623411052165, -17.4508456991157, 
+27.209622142362, -90.1588911365441, -29.5911341572048, -116.876063189637, 
+13.1728185982359, 177.218919685008, 22.918513324043, 62.2273004400145, 
+-184.340606782764, -17.9591518749144, 144.826739712447, 35.8834848574434, 
+78.835223509374, 40.414151866309, -47.5514286265603, -109.144147376676, 
+20.1060240788122, -176.666011435914, 125.194260988087, -307.37210087961, 
+-179.328859839397, 116.614258802597, 72.3015207164044, 70.8316830826215, 
+83.0263255157706, 49.8493399679659, -20.4958968102388, -70.8449904349165, 
+-142.588780669802, -126.418333050793, -85.41982546496, -136.639818355124, 
+-98.673091366056, 12.5492398761927, 24.5937200252946))
 ```
 
 ```
 [1] FALSE
 ```
 
-This opens the debugger at the beginning of a failed call to the assertion. Now it is up to the developer.
+This opens the debugger at the beginning of a failed call to the assertion. Now it is up to the developer to fix any bugs.
 
 ## What tests should I write
 
 This is a difficult question, as you can imagine. One possible criterion is that of *test coverage*, the fraction of code that has been executed during the execution of tests. The other is the strictness of your assertions. The conjunction of all the assertions in your test set should imply the correctness of your program, in the ideal case and when universally quantified over their inputs. For instance `test(function(x = rinteger()) identical(x,x))` tests one important property of the `identical` function for all integer vectors. That doesn't mean it runs the test for all integer vectors, which is impossible, but it means two related concepts:
 
  - The developer meant that the function should work for all integer vectors
- - The test can in principle run on any subset of integer vectors and should pass in each case.
+ - The test can in principle run on any integer vector and should pass in each case.
  
-The attentive reader may have already noticed that this is not the most stringent test we could  have written, even if it achieves 100% coverage. `identical` is supposed to work with any R object, so `test(function(x = rany()) identical(x,x))` is also expected to pass, implies the previous test, if universally quantified over all inputs, that is it is strictly more stringent given infinite time to try all possible inputs and better captures the developer's intent. Finally, there is practical and some theoretical evidence that shorter programs can be tested more effectively, provided that the tests are also short. To summarize
+The attentive reader may have already noticed that this is not the most stringent test we could  have written, even if it achieves 100% coverage. `identical` is supposed to work with any R object, so `test(function(x = rany()) identical(x,x))` is also expected to pass, implies the previous test, if universally quantified over all inputs, that is it is strictly more stringent given infinite time to try all possible inputs and better captures the developer's intent.
+
+Finally, there is practical and some theoretical evidence that shorter programs can be tested more effectively, provided that the tests are also short. To summarize
 
  - Write the strictest set of tests possible. Only a correct program should be able to pass them, given infinite time to run the tests
  - Aim for 100% coverage
- - Keep code and tests simple. 
+ - Keep code and tests short. 
  
 Quickcheck can help with the second point. Function `no.coverage` will generate a simple coverage report highlighting areas of your code, with line-level detail, that is not covered by any test. At this time it works only for packages, that is it runs all the tests implied by `R CMD check` and compiles its report based on that, but we hope to make it work at the file or function level in the future. Based on package `covr` by @jimhester.
-
+Quickcheck own tests achieve 90% coverage, with the function `no.coverage` itself representing most of the left out lines.
 
 ## Modifying or defining random data generators
 
-There are built in random data generators for most built-in data types. They follow a simple naming conventions, "r" followed by the class name. For instance `rinteger` generates a random integer vector. Another characteristic of random data generators as defined in this package is that they have defaults for every argument, that is they can be called without arguments. That's one difference with R random number generators, such as `rnorm` and `rpois`, the other being that those return a sample of a specific size, whereas for random data generators even that is random, unless specified otherwise. Like RNGs, quickcheck's generators promise statistical independence between calls. I said "promise" because it's hard to guarantee such a property, but that's the goal.
+There are built in random data generators for most built-in data types. They follow a simple naming conventions, "r" followed by the class name. For instance `rinteger` generates a random integer vector. Another characteristic of random data generators as defined in this package is that they have defaults for every argument, that is they can be called without arguments. That's one difference with R random number generators, such as `rnorm` and `rpois`, the other being that those return a sample of a specific size, whereas for random data generators even that is random, unless specified otherwise. Like RNGs, quickcheck's generators promise statistical independence between calls -- whatever that means in the pseudo-random setting.
 
 
 ```r
@@ -357,7 +380,7 @@ rdouble()
 numeric(0)
 ```
 
-As you can see, both elements and length change from one call to the next and in fact they are both random and independent (I set the seed to have something deterministic to comment upon. I am pseudo-honest in doing that). This is generally true for all generators, with the exception of the trivial generators created with `constant`. Most generators take two arguments, `generator` and `size` which are meant to specify the distribution of the elements and size of the returned data structures and whose exact interpretation depends on the specific generator. In general, if the argument `element` is a value it is construed as a parameter of the default RNG invoked to draw the elements, if it is a function, it is called with a single argument to generate the elements of the random data structure. For example
+As you can see, both elements and length change from one call to the next and in fact they are both random and independent (I set the seed to have something deterministic to comment upon. I am pseudo-honest in doing that). This is generally `TRUE` for all generators, with the exception of the trivial generators created with `constant`. Most generators take two arguments, `elements` and `size` which are meant to specify the distribution of the elements and size of the returned data structures and whose exact interpretation depends on the specific generator. In general, if the argument `element` is a numeric it is cons`TRUE`d as providing parameters of the default RNG invoked to draw the elements, if it is a function, it is called with a single argument to generate the elements of the random data structure. For example
 
 
 ```r
@@ -374,11 +397,11 @@ generates some random double vector. The next expression does the same but with 
 
 
 ```r
-rdouble(elements = 100)
+rdouble(elements = c(mean = 100, sd  = 20))
 ```
 
 ```
-[1]  88.225   8.793 -43.759  20.291 225.408 177.214  78.048  57.519  58.102
+[1]  97.64  81.76  71.25  84.06 125.08 115.44  95.61  91.50  91.62
 ```
 and finally this extracts the elements from a uniform distribution with all parameters at default values.
 
@@ -394,7 +417,46 @@ rdouble(elements = runif)
 [41] 0.9480 0.8186 0.3083
 ```
 
-There is also a formula syntax, if you want for instance to modify the parameters of `runif`, as in 
+For other generators the paramters may have different names and semantics, for instance
+
+
+```r
+rinteger(elements = c(min = 3, max = 7))
+```
+
+```
+ [1] 7 4 4 3 4 5 7 5 4 3 5 7 4 3 4
+```
+
+As a little convenience, the vector of parameters is subject to argument matching as if they were argument to a function, for instance
+
+
+```r
+rinteger(elements = c(3, 7))
+```
+
+```
+ [1] 6 6 5 5 5 4 5 7 3 5 4 5 3 5
+```
+
+is equivalent to the previous one, and 
+
+
+```r
+rinteger(elements = c(max = 7))
+```
+
+```
+ [1]   0 -50 -35 -48 -89 -74 -47 -60   0 -44 -66 -70 -15 -25 -83 -94 -19
+[18] -33 -82 -94 -89 -59 -82 -68 -80 -73 -81 -49 -17 -97 -44  -5 -60 -95
+[35] -86 -66 -84 -86 -77 -76 -86   6 -65 -46 -27 -90 -88 -95   0 -28 -90
+[52] -47 -51 -60   7 -81 -13 -93 -57 -85 -80 -10 -23 -72 -47 -92 -62   4
+[69] -33 -29 -67 -57   7  -8
+```
+
+leaves the `min` component at its default. The defaults are controlled by package options, see `help(qc.options)`.
+
+There is also a formula syntax, if for instance you need to modify the parameters of `runif`, as in 
 
 
 ```r
@@ -402,20 +464,40 @@ rdouble(elements = ~runif(size, min = -1))
 ```
 
 ```
- [1]  0.90747 -0.32004 -0.47505 -0.66909 -0.35566  0.02025  0.84794
- [8]  0.02192 -0.38859 -0.90708 -0.16429  0.70800 -0.30554 -0.73712
-[15] -0.25103
+ [1]  0.56436 -0.46424  0.52430  0.97262 -0.41279 -0.20130  0.62426
+ [8] -0.84570 -0.27261 -0.11482 -0.68657  0.16441  0.94032  0.97900
+[15] -0.64710  0.08426 -0.23139  0.35233 -0.46141 -0.06150 -0.65640
+[22] -0.26162  0.45081 -0.02770 -0.87240  0.56909 -0.16336  0.96204
+[29] -0.43423  0.69576 -0.83552  0.77292 -0.05614 -0.78180 -0.33344
+[36]  0.67483 -0.44630  0.17407  0.67346 -0.85769  0.40556  0.39765
+[43] -0.07208 -0.12614  0.12435  0.85697 -0.53907 -0.55637 -0.15957
+[50] -0.33296  0.72962 -0.64561 -0.01336 -0.14057  0.12853  0.31232
+[57]  0.95711 -0.53568 -0.51838  0.59367  0.66334 -0.77298  0.92662
+[64] -0.70535 -0.71275  0.85046  0.01407 -0.69030 -0.30340  0.31964
+[71] -0.37646 -0.29685 -0.70431  0.31776 -0.62986  0.90876  0.79570
+[78]  0.88739  0.44738
 ```
 
-Remember to use the variable `size` as the sample size argument to the RNG or anywhere appropriate in the formula.
-Unfortunately, different generators take parameters with different intepretations. The default is usually a named vector where the names should provide a clue as to the semantics, and it's also documented in the help. For instance, for `rinteger`, `elements` can be one of the following:
+which is the same as
 
- - an integer vector of size 1, representing the max of the support of a distribution symmetric around 0; 
- - an integer vector of size 2, representing the extremes of the support;
- - an RNG;
- - a formula containing the variable `size` and returning a length `size` vector. 
+
+```r
+library(functional)
+rdouble(elements = Curry(runif, min = -1))
+```
+
+```
+[1] -0.9777  0.8806  0.9875
+```
+
+Remember to use the variable `size` anywhere appropriate in the formula, so that it evaluates to exactly `size` elements.
+
+To summarize, `elements` can be.
+ - a named or unnamed vector of distribution parameters
+ - an RNG that takes the sample size as its first argument;
+ - a formula containing the variable `size` and evalating to a length `size` vector. 
  
- In general the RNG or forumula should return exactly `size` elements. If not, recycling will be applied after issueing a warning. Recycling random numbers in general change their stochastic properties and it is not recommended. But there are some use cases, like creating a random-length vector of 0s.
+ In general the RNG or forumula should return exactly `size` elements. If not, recycling will be applied after issueing a warning. Recycling random numbers in general changes their stochastic properties and it is not recommended. But there are some use cases, like creating a random-length vector of 0s.
  
 
 ```r
@@ -432,30 +514,20 @@ Warning: recycling random numbers
  [71] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 ```
 
-The same is true for argument `size`. If numeric,  it is construed as a maximum size or a support range, depending on its length, otherwise it is called with a single argument equal to 1 .
+The same is `TRUE` for argument `size`. It can be a range, partially or completely specified, a RNG function or a formula returning exactly a vector of length 1.
 
 First form:
 
 ```r
-rdouble(size = 100)
+rdouble(size = c(max = 100))
 ```
 
 ```
-  [1]   13.8053  -11.8792   19.7684 -106.8693  -80.3213 -111.3765  158.0092
-  [8]  149.7819   26.2645 -123.2901   -0.3724  151.1672  -47.5698   79.7916
- [15]  -97.4003   68.9373  -95.5839 -123.1707  -95.6892  -86.9783  -91.0681
- [22]   74.1276    6.8512  -32.3751 -108.6503 -101.5929  -76.7790 -111.9720
- [29]  -44.8174   47.1736 -118.0491  147.0257 -131.1421   -9.6525  236.9720
- [36]   89.0626  -25.2183  -86.5764   58.2586   -1.2529  -37.4855   31.7886
- [43]  -48.8806  265.8658  168.0278   77.9584   71.3241  -54.2882   88.5778
- [50]  -34.8595 -100.8055  188.3183  -92.8971  -29.4196  -61.4950  -94.7076
- [57]   59.8975 -152.3615  -20.6189  -57.4295 -139.0166   -7.0417  -43.0880
- [64]  -59.2225   98.1116   53.2409   -9.0456   15.6490  -73.7312  -20.1341
- [71]  110.2177   -1.6748   16.1789  202.4761  -70.3694   96.0792  179.0485
- [78] -106.4165    1.7637  -38.9909  -49.0833 -104.5718  -89.6211  126.9387
- [85]   59.3841   77.5634  155.7370  -36.5402   81.6556   -6.0635  -50.1378
- [92]   92.6063    3.6938 -106.6200  -23.8456  149.5223  117.2159 -145.7707
- [99]    9.5056   84.7665
+ [1]   -6.063  -50.138   92.606    3.694 -106.620  -23.846  149.522
+ [8]  117.216 -145.771    9.506   84.766 -162.436  140.856  -54.176
+[15]   27.866  -19.397  157.616 -147.555  -14.461 -107.501   40.654
+[22]  222.926 -151.450   -6.171  -14.727  154.159  -98.186   49.658
+[29]  169.695  -26.074  -70.593  -16.118   50.132 -101.354
 ```
 
 Second form:
@@ -465,7 +537,7 @@ rdouble(size = c(min = 3, max = 4))
 ```
 
 ```
-[1] 140.86 -54.18  27.87
+[1]    0.5642 -290.4899 -110.7165  154.7567
 ```
 
 RNG:
@@ -476,7 +548,7 @@ rdouble(size = function(n) 10 * runif(n))
 ```
 
 ```
-[1]  -34.10 -115.66  180.31  -33.11
+[1] -25.57 -16.61
 ```
 
 With the formula syntax:
@@ -487,26 +559,26 @@ rdouble(size = ~10*runif(1))
 ```
 
 ```
-[1] 40.65
+[1] -159.672   49.097   42.160  187.390  103.451    8.181   -8.252   60.607
 ```
 
-Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`, with the same possibile values. Nested data structures have an argument `height`. All of these are intended to be expectations as opposed to deterministic values but can be replaced by a generator, which gives you total control. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
+Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`, with the same possibile values. Nested data structures have an argument `height`. For now `height` can only be one number cons`TRUE`d as maximum height and applies only to `rlist`. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
 
-
-```r
-rdouble(size = constant(3))
-```
-
-```
-[1]  222.926 -151.450   -6.171
-```
 
 ```r
 rdouble(size = constant(3))
 ```
 
 ```
-[1] -14.73 154.16 -98.19
+[1] -88.74  10.54  35.29
+```
+
+```r
+rdouble(size = constant(3))
+```
+
+```
+[1]   55.04 -113.43  146.24
 ```
 
 Or, since ["succintness is power"](http://www.paulgraham.com/power.html):
@@ -517,10 +589,10 @@ rdouble(size = ~3)
 ```
 
 ```
-[1]  49.66 169.69 -26.07
+[1]   70.21  250.71 -189.00
 ```
 
-Without the `~` it would be a max size, with it it is deterministic. Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple generator is `rsample`, which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
+Without the `~` it would be a min size, with it it is deterministic. Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple generator is `rsample`, which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
 
 
 ```r
@@ -536,16 +608,13 @@ rsample(elements = 1:5, c(max = 10))
 ```
 
 ```
-[1] 4
+integer(0)
 ```
 
-The default distributions are still work in progress, but follow a general principle that testing larger vectors or vectors with larger elements should not be at the expense of skipping the small ones. Programs need to walk before they can run. We intend to adjust the default distributions based on user feedback.
+We can not exclude adjustments to the default distributions in future versions. Please don't make your tests reliant on implementation details of the generators.
 
 ## Advanced topics
 
-### Composition of generators
-
-The alert reader may have already noticed how generators can be used to define other generators. For instance, a random list of double vectors can be generated with `rlist(rdouble)` and a list thereof with `rlist(function() rlist(rdouble))`. Since typing `function()` over and over again gets old quickly and adds clutter, we can use `~` as a shortcut `rlist(~rlist(rdouble))`. 
 
 ### Custom generators
 
@@ -565,6 +634,7 @@ test(function(x = rdouble()) is.reciprocal.self.inverse(x))
 ```
 
 ```
+Using seed 1509604841
 Pass  
  function (x = rdouble())  
  is.reciprocal.self.inverse(x) 
@@ -572,7 +642,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  55000   73500   77000  111000   85100  406000 
+  51300   55100   71200  106000   80700  450000 
 ```
 
 and one for the corner cases:
@@ -582,6 +652,7 @@ test(function(x = rsample(c(0, -Inf, Inf))) is.reciprocal.self.inverse(x))
 ```
 
 ```
+Using seed 590705710
 Pass  
  function (x = rsample(c(0, -Inf, Inf)))  
  is.reciprocal.self.inverse(x) 
@@ -589,7 +660,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  47300   48700   50100   55800   56300   86300 
+  53400   54400   59800   67500   69400  106000 
 ```
 
 That's a start, but the two type of values never mix in the same vector. We can combine the two with a custom generator
@@ -597,7 +668,7 @@ That's a start, but the two type of values never mix in the same vector. We can 
 
 ```r
 rdoublex = 
-	function(element = 100, size = 10) {
+	function(element = c(mean = 100), size = c(max = 10)) {
 		data = rdouble(element, size)
 		sample(
 			c(data, c(0, -Inf, Inf)), 
@@ -607,19 +678,7 @@ rdoublex()
 ```
 
 ```
- [1]  279.657  291.963  202.648   52.734   76.336    3.277  109.215
- [8]  181.009  143.225  -86.984  -61.526  174.678  242.583  119.444
-[15]   24.033   64.065   67.008  253.185  134.176  101.699   76.711
-[22]  133.447   68.497    7.465  175.478  153.857  206.425  193.252
-[29]   56.890  263.055   98.299  119.352   56.892  132.321  170.423
-[36]  257.138  105.329  -19.598  211.302  164.084  126.694  -38.436
-[43]  165.653  111.645 -112.783  150.413  200.248  185.765  126.683
-[50]   73.710  -29.130  311.507   19.766  106.864  -12.649  145.763
-[57]   32.298  184.751   81.291  172.574   65.625      Inf    0.000
-[64]  -89.647   31.485  144.076  229.041  217.171   72.907   80.114
-[71]  125.128   59.955 -125.129  200.671  195.660  165.462     -Inf
-[78]  133.273  193.314  275.649  -76.322   71.642  126.627   91.914
-[85]  121.586  118.830   72.753   15.944 -121.239  154.091  160.252
+[1] 147.902    -Inf 149.221     Inf  19.504  -8.808
 ```
 
 ```r
@@ -627,14 +686,7 @@ rdoublex()
 ```
 
 ```
- [1]  252.424  246.280   75.704   88.751  227.244      Inf   29.693
- [8]    0.000  102.764   25.555   27.209  101.024  -39.749   81.983
-[15]   63.004  152.292  161.167  -27.487   35.389   15.769  303.020
-[22]  106.453   17.602  118.964  276.810 -121.675  -41.006  254.404
-[29]  108.026   98.510  128.823    2.229   63.007  150.943   11.900
-[36]  -89.212     -Inf  -22.450   87.645   -7.139  -23.736  230.368
-[43]  -51.131  370.301  339.720    9.569   67.234  278.934   98.661
-[50]   87.700
+[1] 162.9   Inf 103.0 143.6 130.1 104.6  -Inf 268.0
 ```
 		
 And use it in a more general test.
@@ -645,6 +697,7 @@ test(function(x = rdoublex()) is.reciprocal.self.inverse(x))
 ```
 
 ```
+Using seed 1300498190
 Pass  
  function (x = rdoublex())  
  is.reciprocal.self.inverse(x) 
@@ -652,5 +705,9 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  65900   73300   79800   81700   88800  108000 
+  47700   50000   57500   60200   68800   78700 
 ```
+
+### Composition of generators
+
+The alert reader may have already noticed how generators can be used to define other generators. For instance, a random list of double vectors can be generated with `rlist(rdouble)` and a list thereof with `rlist(function() rlist(rdouble))`. Since typing `function()` over and over again gets old quickly and adds clutter, we can use `~` as a shortcut `rlist(~rlist(rdouble))`. 
