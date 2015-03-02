@@ -217,9 +217,9 @@ test =
       message("Creating ", tmpdir, ". Use qc.options(tmpdir = <alternate-path>) to change location.")
     dir.create(tmpdir, recursive = TRUE, showWarnings = FALSE)
     tf = tempfile(tmpdir = tmpdir, pattern = "tr")
-    save(test.report, file = tf)
+    saveRDS(test.report, file = tf)
     if (stop && any(!test.report$pass)) {
-      stop("load(\"", tf, "\")")}
+      stop("repro(\"", tf, "\")")}
     invisible(test.report)}
 
 first.false =
@@ -228,6 +228,8 @@ first.false =
 
 repro =
   function(test.report, i = first.false(test.report$pass), debug = TRUE) {
+    if(is.character(test.report))
+      test.report = readRDS(test.report)
     assertion = test.report$assertion
     if(!is.finite(i))
       stop("All tests pass, nothing to repro here.")
