@@ -11,13 +11,17 @@
              integer.size = NULL, list.height = NULL, list.size =
              NULL, matrix.ncol = NULL, matrix.nrow = NULL,
              nchar.size = NULL, nlevels = NULL, raw.max = NULL,
-             sample.size = NULL, severity = 10, vector.size = NULL)
+             sample.size = NULL, severity = 10,
+             tmpdir = if(.Platform$OS.type == "windows") "." else "/tmp",
+             vector.size = NULL)
   qc.option(..., character.max = NULL, data.frame.ncol = NULL,
             data.frame.nrow = NULL, double.size = NULL,
             integer.size = NULL, list.height = NULL, list.size =
             NULL, matrix.ncol = NULL, matrix.nrow = NULL,
             nchar.size = NULL, nlevels = NULL, raw.max = NULL,
-            sample.size = NULL, severity = 10, vector.size = NULL)
+            sample.size = NULL, severity = 10,
+            tmpdir = if(.Platform$OS.type == "windows") "." else "/tmp",
+            vector.size = NULL)
   default(x)
   x \%||\% y
 }
@@ -37,6 +41,7 @@
   \item{matrix.nrow}{Max number of rows in\code{\link{rmatrix}}}
   \item{data.frame.ncol}{Max number of columns in\code{\link{rdata.frame}}}
   \item{data.frame.nrow}{Max number of rows in\code{\link{rdata.frame}}}
+  \item{tmpdir}{Directory used by \code{test} to write its test report when argument \code{stop} is \code{TRUE}}
   \item{...}{Name of option to get}
   \item{x,y}{Any R object}
 }

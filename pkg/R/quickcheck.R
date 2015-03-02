@@ -30,6 +30,11 @@ matrix.ncol = NULL
 matrix.nrow = NULL
 data.frame.ncol = NULL
 data.frame.nrow = NULL
+tmpdir = {
+  if(.Platform$OS.type == "windows")
+    "."
+  else
+    "/tmp"}
 
 quickcheck.env =
   list2env(
@@ -207,9 +212,11 @@ test =
             "\n",
             collapse = " ")))
       print(test.report$elapsed)}
-    tmpdir = file.path("/tmp", Sys.getpid())
-    dir.create(tmpdir, showWarnings = FALSE)
-    tf = tempfile(tmpdir = tmpdir, pattern = "quickcheck")
+    tmpdir = file.path(default(tmpdir), "quickcheck", Sys.getpid())
+    if(!file.exists(tmpdir))
+      message("Creating ", tmpdir, ". Use qc.options(tmpdir = <alternate-path>) to change location.")
+    dir.create(tmpdir, recursive = TRUE, showWarnings = FALSE)
+    tf = tempfile(tmpdir = tmpdir, pattern = "tr")
     save(test.report, file = tf)
     if (stop && any(!test.report$pass)) {
       stop("load(\"", tf, "\")")}
