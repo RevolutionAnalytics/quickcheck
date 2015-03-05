@@ -380,7 +380,7 @@ rdouble()
 numeric(0)
 ```
 
-As you can see, both elements and length change from one call to the next and in fact they are both random and independent (I set the seed to have something deterministic to comment upon. I am pseudo-honest in doing that). This is generally `TRUE` for all generators, with the exception of the trivial generators created with `constant`. Most generators take two arguments, `elements` and `size` which are meant to specify the distribution of the elements and size of the returned data structures and whose exact interpretation depends on the specific generator. In general, if the argument `element` is a numeric it is cons`TRUE`d as providing parameters of the default RNG invoked to draw the elements, if it is a function, it is called with a single argument to generate the elements of the random data structure. For example
+As you can see, both elements and length change from one call to the next and in fact they are both random and independent (I set the seed to have something deterministic to comment upon. I am pseudo-honest in doing that). This is generally `TRUE` for all generators, with the exception of the trivial generators created with `constant`. Most generators take two arguments, `elements` and `size` which are meant to specify the distribution of the elements and size of the returned data structures and whose exact interpretation depends on the specific generator. In general, if the argument `element` is a numeric it is construed as providing parameters of the default RNG invoked to draw the elements, if it is a function, it is called with a single argument to generate the elements of the random data structure. For example
 
 
 ```r
@@ -562,7 +562,7 @@ rdouble(size = ~10*runif(1))
 [1] -159.672   49.097   42.160  187.390  103.451    8.181   -8.252   60.607
 ```
 
-Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`, with the same possibile values. Nested data structures have an argument `height`. For now `height` can only be one number cons`TRUE`d as maximum height and applies only to `rlist`. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
+Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`, with the same possibile values. Nested data structures have an argument `height`. For now `height` can only be one number construed as maximum height and applies only to `rlist`. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
 
 
 ```r
