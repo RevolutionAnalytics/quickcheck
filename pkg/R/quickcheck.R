@@ -150,7 +150,7 @@ test =
     message("Using seed ", seed)
     set.seed(seed)
     stopifnot(is.function(assertion))
-    envir = environment(assertion)
+    envir = parent.frame()
 
     try.assertion =
       function(xx) {
