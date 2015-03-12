@@ -139,11 +139,16 @@ minhash =
           1:max(0, (length(tokens) - 6)),
           min(7, length(tokens)):length(tokens))))%%(2^31 - 1)
 
+inside =
+  function(fun)
+    any(sapply(sys.calls(), function(x) identical(as.list(x)[[1]], as.name(fun))))
+
 test =
   function(
     assertion,
     sample.size = default(sample.size %||% severity),
-    stop = !interactive()) {
+    stop = !interactive(),
+    coverage = !inside("no.coverage")) {
     tokens = unlist(strsplit(deparse(assertion), split = "[ \t(){},]"))
     tokens = tokens[tokens != ""]
     seed = minhash(tokens)
@@ -183,8 +188,12 @@ test =
                           collapse = "\n"),
                     sep = "\n"))
               list(args = args, pass = result$pass, elapsed = result$elapsed)})}
-    cov = function_coverage("assertion", run(), env = sys.frame(sys.nframe()))
-    names(cov) <- paste0("assertion", names(cov))
+    if(coverage) {
+      cov = function_coverage("assertion", run(), env = sys.frame(sys.nframe()))
+    names(cov) <- paste0("assertion", names(cov))}
+    else{
+      cov = NULL
+      run()}
     test.report =
       list(
         assertion = assertion,
@@ -216,7 +225,7 @@ test =
             assertion.text,
             "\n",
             collapse = " ")))
-      print(test.report$coverage)
+      if(coverage) print(test.report$coverage)
       print(test.report$elapsed)}
     tmpdir = file.path(default(tmpdir), "quickcheck", Sys.getpid())
     if(!file.exists(tmpdir))
