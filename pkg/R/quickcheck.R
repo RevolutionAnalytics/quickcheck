@@ -139,10 +139,13 @@ minhash =
           1:max(0, (length(tokens) - 6)),
           min(7, length(tokens)):length(tokens))))%%(2^31 - 1)
 
-inside =
-  function(fun)
-    any(sapply(sys.calls(), function(x) identical(as.list(x)[[1]], as.name(fun))))
-
+check.covr =
+  function()
+    if(!requireNamespace("covr"))
+      stop(
+        "Need to install covr to use this feature
+         library(devtools)
+         install_github(\"jimhester/covr@b181831f0fd4299f70c330b87a73d9ec2d13433\")")
 test =
   function(
     assertion,
@@ -189,8 +192,9 @@ test =
                     sep = "\n"))
               list(args = args, pass = result$pass, elapsed = result$elapsed)})}
     if(coverage) {
-      cov = function_coverage("assertion", run(), env = sys.frame(sys.nframe()))
-    names(cov) <- paste0("assertion", names(cov))}
+      check.covr()
+      cov = covr::function_coverage("assertion", run(), env = sys.frame(sys.nframe()))
+      names(cov) <- paste0("assertion", names(cov))}
     else{
       cov = NULL
       run()}
@@ -253,11 +257,7 @@ repro =
 
 no.coverage =
   function(path = "pkg/") {
-    if(!requireNamespace("covr"))
-      stop(
-        "Need to install covr to use this feature
-         library(devtools)
-         install_github(\"jimhester/covr@b181831f0fd4299f70c330b87a73d9ec2d13433\")")
+    check.covr()
     pc = covr::package_coverage(path)
     print(pc)
     zc = covr::zero_coverage(pc)
