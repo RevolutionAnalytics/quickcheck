@@ -148,7 +148,7 @@ test =
     assertion,
     sample.size = default(sample.size %||% severity),
     stop = !interactive(),
-    coverage = !inside("no.coverage")) {
+    coverage = FALSE) {
     tokens = unlist(strsplit(deparse(assertion), split = "[ \t(){},]"))
     tokens = tokens[tokens != ""]
     seed = minhash(tokens)
