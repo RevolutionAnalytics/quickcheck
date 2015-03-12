@@ -41,16 +41,8 @@ rzipf.range =
   function(n, min, max, s = 1) {
     if(n == 0) integer()
     else {
-      stopifnot(max >= min)
-      if(min < 0 && max > 0) {
-        negative = - rzipf(n, - min + 1, s ) + 1
-        positive = rzipf(n, max + 1, s) - 1
-        ifelse(
-          sample(c(TRUE,FALSE), n, replace = TRUE),
-          positive,
-          negative)}
-      else
-        min - 1 + rzipf(n , max - min + 1, s)}}
+      stopifnot(max >= min || min < 0)
+      min - 1 + rzipf(n , max - min + 1, s)}}
 
 ## quirkless sample
 
