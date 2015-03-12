@@ -58,7 +58,11 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  31700   33600   36100   36800   40100   42500 
+  29700   32300   35200   41100   45000   70100 
+```
+
+```
+Creating /tmp/quickcheck/40022. Use qc.options(tmpdir = <alternate-path>) to change location.
 ```
 
 We have supplied an assertion, that is a function with defaults for each argument, at least some set using random data generators, and returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` or error means *failed*. Random data generators are related to random number generators in R, but they also vary the size of the return value randomly, and in same cases even its type. Quickcheck provides a selection of random data generators for most common R types and they are highly configurable.
@@ -79,7 +83,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  29600   31900   33300   48000   35800 1390000 
+  29700   31400   33300   34600   35500   69100 
 ```
 
 Done! You see, if you had to write down those 100 matrices one by one, you would never have time to.  Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc. for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. There even is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). 
@@ -105,7 +109,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-1940000 2100000 2160000 2320000 2330000 3680000 
+2010000 2210000 2270000 2410000 2330000 3720000 
 ```
 
 By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertions defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you would ever want to use `expect("equal", ...)`, but we threw it in for completeness. 
@@ -136,7 +140,7 @@ mean(x) > 0
 ```
 
 ```
-Error: load("/tmp/15042/quickcheck3ac2b73e2af")
+Error: repro("/tmp/quickcheck/40022/tr9c567d855ca2")
 ```
 
 This output shows that about half of the default 10 runs have failed and then invites us to load some debugging data. Another way to get at that data is to run the test with the option `stop = `FALSE` which doesn't produce an error and returns the same debugging data. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
@@ -267,7 +271,7 @@ $pass
 
 $elapsed
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  26300   26500   27100  247000   29800 2210000 
+  26300   26500   26800  233000   28400 2090000 
 ```
 
 The output is a list with five elements:
@@ -380,7 +384,7 @@ rdouble()
 numeric(0)
 ```
 
-As you can see, both elements and length change from one call to the next and in fact they are both random and independent (I set the seed to have something deterministic to comment upon. I am pseudo-honest in doing that). This is generally `TRUE` for all generators, with the exception of the trivial generators created with `constant`. Most generators take two arguments, `elements` and `size` which are meant to specify the distribution of the elements and size of the returned data structures and whose exact interpretation depends on the specific generator. In general, if the argument `element` is a numeric it is cons`TRUE`d as providing parameters of the default RNG invoked to draw the elements, if it is a function, it is called with a single argument to generate the elements of the random data structure. For example
+As you can see, both elements and length change from one call to the next and in fact they are both random and independent (I set the seed to have something deterministic to comment upon. I am pseudo-honest in doing that). This is generally `TRUE` for all generators, with the exception of the trivial generators created with `constant`. Most generators take two arguments, `elements` and `size` which are meant to specify the distribution of the elements and size of the returned data structures and whose exact interpretation depends on the specific generator. In general, if the argument `element` is a numeric it is construed as providing parameters of the default RNG invoked to draw the elements, if it is a function, it is called with a single argument to generate the elements of the random data structure. For example
 
 
 ```r
@@ -562,7 +566,7 @@ rdouble(size = ~10*runif(1))
 [1] -159.672   49.097   42.160  187.390  103.451    8.181   -8.252   60.607
 ```
 
-Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`, with the same possibile values. Nested data structures have an argument `height`. For now `height` can only be one number cons`TRUE`d as maximum height and applies only to `rlist`. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
+Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`, with the same possibile values. Nested data structures have an argument `height`. For now `height` can only be one number construed as maximum height and applies only to `rlist`. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
 
 
 ```r
@@ -642,7 +646,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  51400   51700   69800  104000   80300  456000 
+  52300   54900   73500  108000   89300  453000 
 ```
 
 and one for the corner cases:
@@ -660,7 +664,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  47200   49300   50400   55600   59100   79800 
+  47700   48600   49500   56000   54900   82900 
 ```
 
 That's a start, but the two type of values never mix in the same vector. We can combine the two with a custom generator
@@ -705,7 +709,7 @@ Pass
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  50300   54000   71100   69400   81100   90300 
+  48300   51900   53500   62500   71800   87700 
 ```
 
 ### Composition of generators
