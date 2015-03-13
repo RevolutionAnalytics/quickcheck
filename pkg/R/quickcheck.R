@@ -255,6 +255,8 @@ repro =
     if(debug) debug(assertion)
     do.call(assertion, test.report$cases[[i]])}
 
+forall = f
+
 no.coverage =
   function(path = "pkg/") {
     check.covr()
