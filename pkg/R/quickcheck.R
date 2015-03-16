@@ -255,7 +255,10 @@ repro =
     if(debug) debug(assertion)
     do.call(assertion, test.report$cases[[i]])}
 
-forall = f
+forall =
+  function(..., .env = parent.frame()) {
+    stopifnot(all(head(names(dots(...)) != "", n = -1)))
+    do.call(f, c(dots(...), list(.env = .env)))}
 
 no.coverage =
   function(path = "pkg/") {
