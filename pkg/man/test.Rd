@@ -6,13 +6,14 @@
 \code{test} evaluates an assertion multiple times by re-evaluating its arguments, some of which are expected to be random data generators. Stops or returns a test report.
 }
 \usage{
-test(assertion, sample.size = default(sample.size \%||\% severity), stop = !interactive())
+test(assertion, sample.size = default(sample.size \%||\% severity), stop = !interactive(), coverage = FALSE)
 forall(..., .env = parent.frame())
 }
 \arguments{
   \item{assertion}{A function returning a length-1 logical vector and having defaults for all arguments.}
   \item{sample.size}{How many times to check the assertion, with newly sampled data as arguments}
   \item{stop}{Whether to stop in case of error or continue}
+  \item{coverage}{Whether to print coverage information for that test}
   \item{...}{the argument of a function, followed by its body}
   \item{.env}{environment in which to create the function}
 }
