@@ -1,5 +1,7 @@
 export(rany)
 export(mixture)
+export(named)
+export(rnamed)
 export(rsample)
 export(rcharacter)
 export(rfactor)
@@ -33,3 +35,5 @@ importFrom(lazyeval, lazy)
 importFrom(lazyeval, lazy_eval)
 importFrom(dplyr, arrange)
 importFrom(bitops, cksum)
+importFrom(pryr, dots)
+

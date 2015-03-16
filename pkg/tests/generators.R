@@ -201,3 +201,13 @@ variability.test(ratomic)
 type.test(is.function, quickcheck:::rfunction)
 variability.test(quickcheck:::rfunction)
 
+#named
+
+test(forall(x = named(ratomic)(), !is.null(names(x))))
+test(forall(x = rnamed(ratomic()), !is.null(names(x))))
+type.test(is.atomic, named(ratomic))
+
+test(forall(x = named(rlist)(), !is.null(names(x))))
+test(forall(x = rnamed(rlist()), !is.null(names(x))))
+type.test(is.list, named(rlist))
+

@@ -353,3 +353,26 @@ all.generators =
 rany =
   function(generators = all.generators)
     mixture(generators)()
+
+rnamed =
+  function(
+    x,
+    names = list(
+      nchar = c(min = 0, max = default(nchar.size %||% severity)),
+      string = c(min = 0, max = default(character.max %||% severity)))) {
+    names(x) = rcharacter(elements = names, size = ~length(x))
+    x}
+
+named =
+  function(
+    generator,
+    names = list(
+      nchar = c(min = 0, max = default(nchar.size %||% severity)),
+      string = c(min = 0, max = default(character.max %||% severity)))) {
+    function()
+      rnamed(
+        if(is.function(generator))
+          generator()
+        else
+          eval(tail(as.list(generator), 1)[[1]], environment(generator)),
+        names)}
