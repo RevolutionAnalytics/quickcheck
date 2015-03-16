@@ -207,8 +207,7 @@ rcharacter =
             digest)}
     unname(
       substr(
-        sapply(
-          rdata(string, size), digest),
+          rdata(string, size),
         1,
         rdata(nchar, size)))}
 
