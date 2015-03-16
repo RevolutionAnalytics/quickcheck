@@ -33,4 +33,6 @@ When \code{stop} is TRUE, this list is stored in a file. The command to load tha
 
 \examples{
 test(function(x = rdouble(10)) all(x + 0 == x))
+#equivalent
+test(forall(x = rdouble(10), all(x + 0 == x)))
 }
