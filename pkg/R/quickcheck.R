@@ -257,7 +257,8 @@ repro =
 
 forall =
   function(..., .env = parent.frame()) {
-    stopifnot(all(head(names(dots(...)) != "", n = -1)))
+    if(!all(head(names(dots(...)) != "", n = -1)))
+      stop("Missing default value for some of the arguments")
     do.call(f, c(dots(...), list(.env = .env)))}
 
 no.coverage =
