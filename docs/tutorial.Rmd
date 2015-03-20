@@ -2,12 +2,26 @@
 title: "Assertion-based testing with Quickcheck"
 output:
   html_document:
-    keep_md: TRUE
+    keep_md: yes
 ---
 
-```{r}
+```{r, echo=FALSE}
 library(knitr)
+read_chunk("../pkg/tests/tutorial.R")
 opts_chunk$set(echo=TRUE, tidy=FALSE, comment="", cache=FALSE, error=FALSE)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  if (!is.null(n <- options$out.lines)) {
+  	x = unlist(stringr::str_split(x, '\n'))
+		if (length(x) > n) {
+			# truncate the output
+			x = c(head(x, n), '....\n')
+		}
+		x = paste(x, collapse = '\n') # paste first n lines together
+	}
+	hook_output(x, options)
+})
+opts_chunk$set(out.lines = 5)
 ```
 
 
@@ -23,51 +37,46 @@ Quickcheck was originally a package for the language Haskell aimed at simplifyin
   
 ## First example
 
-Let's start with something very simple. Let's say we just wrote the function `t` for transpose. Using the widely used testing package `testthat`, one would like to write a test like:
+Let's start with something very simple. Let's say we just wrote the function `t` for transpose. Using the widely used testing package `testthat`, one can just write a test like that:
 
-```{r}
-library(testthat)
+```{r library-testthat}
 ```
 
-```{r, eval=FALSE}
-test_that("transpose self inverse test", expect_identical(t(t(x)), x))
+```{r test_that}
 ```
 
-That in general doesn't work because `x` is not defined. What I meant was something like a universally quantified statement *for all legal values of `x`*, but there isn't any easy way of implementing that. So a developer has to enter some values for `x`.
+That works, but has some limitations. For instance, imagine that we have to match military-grade testing which requires to run at least 10000 tests. It can be pretty laborious to write them this way. So the next step is to replace examples of what the function is supposed to do with a statement of the properties that a function is supposed to have, also known as an assertion:
 
 
-```{r}
-for(x in list(matrix(c(1,2,3,4), ncol =2), matrix(c(5:10), ncol = 3)))
-  test_that("transpose self inverse test", expect_identical(t(t(x)),x))
-rm(x)
+```{r knitr-for-test_that}
 ```
 
-But there is no good reason to pick those specific examples, testing on more data  points or larger values would increase the clutter factor, a developer may inadvertently inject unwritten assumptions in the choice of data points etc. `quickcheck` can solve or at least alleviate all those problems:
+That's progress, yet the testing points are chosen manually and arbitrarily. It's hard to have many or very large input values, and unstated assumptions my affect their choice. For instance, is `t` going to work for non-numeric matrices?`quickcheck` can solve or at least alleviate all these problems:
 
-```{r}
-library(quickcheck)
-test(forall(x = rmatrix(), identical(t(t(x)), x)))
+```{r test}
 ```
 
-We have supplied an assertion, that is a function with defaults for each argument, at least some set using random data generators, and returning a length-one logical vector, where `TRUE` means *passed* and `FALSE` or error means *failed*. Random data generators are related to random number generators in R, but they also vary the size of the return value randomly, and in same cases even its type. Quickcheck provides a selection of random data generators for most common R types and they are highly configurable.
+We recognize the assertion in the previous code snippet, modified to take into account matrices with 0 rows or columns. Here though, it becomes the body of a function, which is what is called "assertion" in `quickcheck`, which has one or more arguments, all with default values, and returns a length-one logical vector. `TRUE` means success, `FALSE` or an error mean failure. Some of those arguments are initialized randomly, in this case using what in `quickcheck` is called a Random Data Generator, or RDG -- more on these later. In this case `rmatrix` is a function that returns a random matrix. The `test` function evaluates the assertion multiple times and outputs some messages: 
 
-What this test success means is that we have tested that `t` satisfies this assertion on a sample of random matrices, including a variety of sizes, element types and, of course, element values. We don't have to write them down one by one and later we will see how we can affect the distribution of such vectors, to make them, say, larger in size or value, or more likely to hit corner cases.  We can also repeat the test multiple times on different values with the least amount of effort -- in fact, we have already executed this test 10 times, which is the default. But if 100 times is required, no problem:
+- the seed used is unique to each test, but ensures reproducibility
+- a "pass" message
+- the assertion tested -- imagine you are scanning a log of a long series of tests
+- some performance information -- harbinger of future features
+- information about a directory -- more on that later.
 
-```{r}
-test(forall(x = rmatrix(), identical(t(t(x)), x)), sample.size = 100)
+What this test success means is that we have tested that `t` satisfies this assertion on a sample of random matrices, including a variety of sizes, element types and, of course, element values. We don't have to write them down one by one and later we will see how we can affect the distribution of such inputs, to make them, say, larger in size or value, or more likely to hit corner cases.  If we need to control the number of time the assertion is run, that's very simple:
+
+```{r sample.size}
 ```
 
-Done! You see, if you had to write down those 100 matrices one by one, you would never have time to.  Quickcheck contains a whole repertoire of random data generators, including `rinteger`, `rdouble`, `rcharacter` etc. for most atomic types, and some also for non-atomic types such as `rlist` and `rdata.frame`. The library is easy to extend with your own generators and offers a number of constructors for data generators such as `constant` and `mixture`. There even is a generator `rany` that creates a mixture of all R types (in practice, the ones that `quickcheck` currently knows how to generate, but the intent is all of them). 
+Done! You see, if you had to write down those 100 matrices one by one, you would never have time to.  Let's review the advantages of this setup. We can increase the severity of the test by cranking up the number of runs of the assertion, just by changing a parameter. We can also change the distribution of matrices to test larger inputs, this will be explained later. Moreover `quickcheck` tests communicate intent. While each test is run in practice on a small set of examples, the implied promise from the authors of the package is unmistakably that it ought to pass for any matrix. You don't have to guess from a small set of inputs what the function does and what its allowable range is.
 
-You may have noticed in the output some performance information. That's a first step toward adding performance testing capabilities in future releases.
 
 ## Defining assertions
 
-Unlike `testthat` where you need to construct specially defined *expectations*, `quickcheck` accepts logical-valued functions, with a length-one return value and a default value for each argument. For example `function(x = rdouble()) all(x + 0 == x)` or `function(x = rlist()) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. For readability and safety, you can use `forall` as in `forall(x = rdouble(), all(x + 0 == x))` (`forall` checks that all arguments have a default). If an assertion returns `TRUE`, it is considered a success. If an assertion returns `FALSE` or generates an error, it is  considered a failure. For instance, `forall(x = rcharacter(), stop(x))` is a valid assertion but always fails. How do I express the fact that this is its correct behavior? `testthat` has a rich set of expectations to capture that and other requirements, such as printing something or generating a warning. Derived from those, `quickcheck` has an equivalent set of predefined assertion helpers, returned by the function `expect`:
+Unlike `testthat` where you need to construct specially defined *expectations*, `quickcheck` accepts logical-valued functions, with a length-one return value and a default value for each argument. For example `function(x = rdouble()) all(x + 0 == x)` or `function(x = rlist()) identical(x, rev(rev(x)))` are valid assertions -- independent of their success or failure. For readability and safety, you can use `forall` as in `forall(x = rdouble(), all(x + 0 == x))` (`forall` checks that all arguments have a default, as an added benefit). If an assertion returns `TRUE`, it is considered a success. If an assertion returns `FALSE` or generates an error, it is  considered a failure. For instance, `forall(x = rcharacter(), stop(x))` is a valid assertion but always fails. How can we express the fact that this is its correct behavior? `testthat` has a rich set of expectations to capture this and other requirements, such as printing something or generating a warning. `quickcheck` has a way to access those, implemented as the function `expect`:
 
-```{r}
-test(
-  forall(x = rcharacter(), expect("error", stop(x))))
+```{r expect}
 ```
 
 By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertions defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you would ever want to use `expect("equal", ...)`, but we threw it in for completeness. 
@@ -76,40 +85,26 @@ By executing this test successfully we have built confidence that the function `
 
 `quickcheck` doesn't fix bugs for you, but tries to get you started in a couple of ways. The first is its output:
 
-```{r, error = TRUE}
-test(forall(x = rdouble(), mean(x) > 0), stop = TRUE)
+```{r output, error = TRUE}
 ```
 
 This output shows that about half of the default 10 runs have failed and then invites us to enter a command, `repro(<some-path>)`, that will execute the assertion in the debugger with the input data that made it fail. Another way to achieve the same is to run the test with the option `stop = FALSE` which doesn't produce an error and returns the same debugging data. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
 
-```{r}
-test.out = test(forall(x = rdouble(), mean(x) > 0), stop = FALSE)
-test.out
+```{r return-value}
 ```
 
-The output is a list with elements:
+ In most cases all we need to do with the output of `test` is to pass it to another function, `repro`:
 
-  - the assertion that failed
-  - a list of in-scope variables that could have affected the result -- this is work in progress and shouldn't be trusted at this time
-  - a list of lists of arguments passed to the assertion in each run 
-  - the outcome of each run
-  - optional coverage information
-  - some performance stats
-  
-A recommended practice is to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and the assertion arguments default values. This is because the first step in fixing a bug is almost always to reproduce it, and non-deterministic bugs are more difficult to reproduce. The `test` function seeds the random number generator so that every time it is called it will rerun the same tests, that is call the assertion with the same arguments, run after run. Different assertions should have different seeds, but small edits to an assertion should not change the seed in most cases, which is helpful for developing the assertion itself. In most cases all we need to do with the output of `test` is to pass it to another function, `repro`:
-
-
-```{r}
-repro(test.out)
+```{r repro}
 ```
-As before, this opens the debugger at the beginning of a failed call to the assertion. Now it is up to the developer to fix any bugs.
+
+This opens the debugger at the beginning of a failed call to the assertion. Now it is up to the developer to fix any bugs.
+
+To achieve reproducibility, it is necessary to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and the assertion arguments default values. The `test` function seeds the random number generator in a way that ensures reproducibilit from one call of the test to the next. The seed is unique to each assertion, but doesn't change for small edits of the assertion, to facilitate assertion development.
 
 ## What tests should I write?
 
-There is no general answer to this question, as you can imagine. One possible criterion is that of *test coverage*, the fraction of code that has been executed during the execution of tests. The other is the strictness of your assertions. The conjunction of all the assertions in your test set should imply the correctness of your program, in the ideal case and when universally quantified over their inputs. For instance `test(forall(x = rinteger(), identical(x,x))` tests one important property of the `identical` function for all integer vectors. That doesn't mean it runs the test for all integer vectors, which is impossible, but it means two related concepts:
-
- - The developer meant that the function should work for all integer vectors, so it works as a specification.
- - The test can in principle run on any integer vector and should pass in each case, you are not restricted to the original `sample.size`; you can run as many times as needed.
+There is no general answer to this question, as you can imagine. One possible criterion is that of *test coverage*, the fraction of code that has been executed during the execution of tests. The other is the strictness of your assertions. The conjunction of all the assertions in your test set should imply the correctness of your program, in the ideal case and when universally quantified over their inputs. For instance `test(forall(x = rinteger(), identical(x,x))` tests one important property of the `identical` function for all integer vectors. That doesn't mean it runs the test for all integer vectors, which is impossible, but it means that there should be no failure no matter how many runs we allow the test to include.
  
 The attentive reader may have already noticed that this is not the most stringent test we could  have written, even if it achieves 100% coverage. `identical` is supposed to work with any R object, so `test(forall(x = rany(), identical(x,x))` is also expected to pass, implies the previous test, if universally quantified over all inputs, that is it is strictly more stringent given infinite time to try all possible inputs and better captures the developer's intent.
 
@@ -126,59 +121,47 @@ Quickcheck own tests achieve 90% coverage, with the function `no.coverage` itsel
 
 There are built in random data generators for most built-in data types. They follow a simple naming conventions, "r" followed by the class name. For instance `rinteger` generates a random integer vector. Another characteristic of random data generators as defined in this package is that they have defaults for every argument, that is they can be called without arguments. That's one difference with R random number generators, such as `rnorm` and `rpois`, the other being that those return a sample of a specific size, whereas for random data generators even that is random, unless specified otherwise. Like RNGs, quickcheck's generators promise statistical independence between calls -- whatever that means in the pseudo-random setting.
 
-```{r}
-set.seed(0)
-rdouble()
-rdouble()
+```{r rdouble}
 ```
 
 As you can see, both elements and length change from one call to the next and in fact they are both random and independent. This is generally true for all generators, with the exception of the trivial generators created with `constant`. Most generators take two arguments, `elements` and `size` which are meant to specify the distribution of the elements and size of the returned data structures and whose exact interpretation depends on the specific generator. In general, if the argument `elements` is a numeric it is construed as providing parameters of the default RNG invoked to draw the elements, if it is a function, it is called with a single argument to generate the elements of the random data structure. For example
 
-```{r}
-rdouble()
+```{r rdouble-2}
 ```
 
 generates some random double vector. The next expression does the same but with expectation 100 and standard deviation 20
 
-```{r}
-rdouble(elements = c(mean = 100, sd  = 20))
+```{r rdouble-mean-sd}
 ```
 and finally this extracts the elements from a uniform distribution with all parameters at default values.
-```{r}
-rdouble(elements = runif)
+```{r rdouble-runif}
 ```
 
-For other generators the paramters may have different names and semantics, for instance
+For other generators the parameters may have different names and semantics, for instance
 
-```{r}
-rinteger(elements = c(min = 3, max = 7))
+```{r rinteger-min-max}
 ```
 
 For added convenience, the vector of parameters is subject to argument matching as if they were argument to a separate function, for instance
 
-```{r}
-rinteger(elements = c(3, 7))
+```{r rinteger-unnamed}
 ```
 
 is equivalent to the previous one, and 
 
-```{r}
-rinteger(elements = c(max = 7))
+```{r rinteger-matching}
 ```
 
 leaves the `min` component at its default. The defaults are controlled by package options, see `help(qc.options)`.
 
 There is also a formula syntax, if for instance you need to modify the parameters of `runif`, as in 
 
-```{r}
-rdouble(elements = ~runif(size, min = -1))
+```{r rdouble-formula}
 ```
 
 which is the same as
 
-```{r}
-library(functional)
-rdouble(elements = Curry(runif, min = -1))
+```{r rdouble-Curry}
 ```
 
 Remember to use the variable `size` anywhere appropriate in the formula, so that it evaluates to exactly `size` elements.
@@ -187,57 +170,65 @@ To summarize, `elements` can be:
 
  - a named or unnamed vector of distribution parameters
  - an RNG that takes the sample size as its first argument;
- - a formula containing the variable `size` and evalating to a length `size` vector. 
+ - a formula containing the variable `size` and evaluating to a length `size` vector. 
  
- In general the RNG or forumula should return exactly `size` elements. If not, recycling will be applied after issueing a warning. Recycling random numbers in general changes their stochastic properties and it is not recommended. But there are some use cases, like creating a random-length vector of 0s.
+ In general the RNG or formula should return exactly `size` elements. If not, recycling will be applied after issuing a warning. Recycling random numbers in general changes their stochastic properties and it is not recommended. But there are some use cases, like creating a random-length vector of 0s.
  
-```{r}
-rinteger(~0, 100)
+```{r rinteger-formula}
 ```
 
 The same is `TRUE` for argument `size`. It can be a range, partially or completely specified, a RNG function or a formula returning exactly a vector of length 1.
 
 First form:
-```{r}
-rdouble(size = c(max = 100))
+```{r rdouble-size-max}
 ```
 
 Second form:
-```{r}
-rdouble(size = c(min = 0, max = 10))
+```{r rdouble-size-min-max}
 ```
 
 RNG:
 
-```{r}
-rdouble(size = function(n) 10 * runif(n))
+```{r rdouble-size-function}
 ```
 
 With the formula syntax:
 
-```{r}
-rdouble(size = ~10*runif(1))
+```{r rdouble-size-formula}
 ```
 
-Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`, with the same possibile values. Nested data structures have an argument `height`. For now `height` can only be one number construed as maximum height and applies only to `rlist`. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
+Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`, with the same possible values. Nested data structures have an argument `height`. For now `height` can only be one number construed as maximum height and applies only to `rlist`. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
 
-```{r}
-rdouble(size = constant(3))
-rdouble(size = constant(3))
+```{r rdouble-size-constant}
 ```
 
 Or, since ["succintness is power"](http://www.paulgraham.com/power.html):
 
-```{r}
-rdouble(size = ~3)
+```{r rdouble-size-formula-2}
 ```
 
-Without the `~` it would be a min size, with it it is deterministic. Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. Another simple generator is `rsample`, which creates a generator that picks randomly from a list, provided as argument -- not unlike `sample`, but consistent with the `quickcheck` definition of generator.
+Without the `~` it would be a min size, with it it is deterministic. Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. 
 
-```{r}
-rsample(elements = 1:5, c(max = 10))
-rsample(elements = 1:5, c(max = 10))
-```
+|function| description|
+|---|---|
+`rany` | any R object|
+`ratomic` | any atomic vector|
+`rcharacter` | character
+`rdata.frame` |data.frame|
+`rDate` |Date|
+`rdouble` |double|
+`rfactor` |factor|
+`rinteger` | integer|
+`rlist` | list|
+`rlogical` | logical
+`rmatrix` | matrix
+`rnamed` | random names for a vector
+`rnumeric` | any numeric|
+`rraw` |raw
+`rsample` | sample from vector
+`constant` | trivial constant RDG
+`mixture` | mixture RDG
+`named` | named version of any RDG
 
 We can not exclude adjustments to the default distributions in future versions. Please don't make your tests reliant on implementation details of the generators.
 
@@ -249,39 +240,26 @@ We can not exclude adjustments to the default distributions in future versions. 
 There is no reason to limit oneself to built-in generators and one can do much more than just change the parameters. For instance, we may want to 
 make sure that extremes of the allowed range are hit more often than the built-in generators ensure. For instance, `rdouble` uses by default a standard normal, and values like 0 and Inf have very small or 0 probability of occurring. Let's say we want to test the following assertion about the ratio:
 
-```{r}
-is.reciprocal.self.inverse = function(x) isTRUE(all.equal(x, 1/(1/x)))
+```{r is.reciprocal.self.inverse}
 ```
 
 We can have two separate tests, one for values returned by `rdouble`:
 
-```{r}
-test(forall(x = rdouble(), is.reciprocal.self.inverse(x)))
+```{r test-is.reciprocal.self.inverse}
 ```
 
 and one for the corner cases:
-```{r}
-test(forall(x = rsample(c(0, -Inf, Inf)), is.reciprocal.self.inverse(x)))
+```{r corner-cases}
 ```
 
 That's a start, but the two types of values never mix in the same vector. We can combine the two with a custom generator
 
-```{r}
-rdoublex = 
-	function(elements = c(mean = 100), size = c(max = 10)) {
-		data = rdouble(elements, size)
-		sample(
-			c(data, c(0, -Inf, Inf)), 
-			size = length(data), 
-			replace = FALSE)}
-rdoublex()
-rdoublex()
+```{r rdoublex}
 ```
 		
 And use it in a more general test.
 
-```{r}
-test(forall(x = rdoublex(), is.reciprocal.self.inverse(x)))
+```{r test-rdoublex}
 ```
 
 ### Composition of generators
