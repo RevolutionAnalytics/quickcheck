@@ -238,7 +238,7 @@ test =
     tf = tempfile(tmpdir = tmpdir, pattern = "tr")
     saveRDS(test.report, file = tf)
     if (stop && any(!test.report$pass)) {
-      stop("repro(\"", tf, "\")")}
+      stop("to reproduce enter repro(\"", tf, "\")")}
     invisible(test.report)}
 
 first.false =
