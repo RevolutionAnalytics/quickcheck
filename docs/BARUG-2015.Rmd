@@ -1,0 +1,268 @@
+---
+title: "Randomized testing with Quickcheck"
+author: "Revolution Analytics"
+output:
+  ioslides_presentation:
+    widescreen: true
+    incremental: no
+    transition: 0.01
+    keep_md: yes
+    logo: RevolutionAnalytics.png
+---
+
+```{r, echo=FALSE}
+library(knitr)
+read_chunk("../pkg/tests/tutorial.R")
+opts_chunk$set(echo=TRUE, tidy=FALSE, comment="", cache=FALSE, error=FALSE)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  if (!is.null(n <- options$out.lines)) {
+		x = unlist(stringr::str_split(x, '\n'))
+		if (length(x) > n) {
+			# truncate the output
+			x = c(head(x, n), '....\n')
+		}
+		x = paste(x, collapse = '\n') # paste first n lines together
+	}
+	hook_output(x, options)
+})
+opts_chunk$set(out.lines = 5)
+```
+
+
+
+# Legacy 
+ 
+## {.build}
+
+```{r library-testthat}
+```
+
+```{r test_that, eval=FALSE}
+```
+
+```{r for-test_that}
+```
+
+# Randomized Testing
+
+## {.build}
+
+```{r test, eval=FALSE}
+```
+
+```{r test, echo=FALSE}
+```
+
+# Advantages
+
+## {.build}
+
+```{r sample.size}
+```
+
+# Assertions
+
+##  {.build}
+
+```{r, eval=FALSE}
+function(x = rdouble()) all(x + 0 == x)
+```
+
+```{r, eval=FALSE}
+function(x = rlist()) identical(x, rev(rev(x)))
+```
+
+```{r, eval=FALSE}
+forall(x = rdouble(), all(x + 0 == x))
+```
+
+```{r, eval=FALSE}
+forall(x = rcharacter(), stop(x))
+```
+
+
+```{r expect}
+```
+
+# Failure
+
+## {.build}
+
+```{r output, error = TRUE}
+```
+
+## {.build}
+
+```{r return-value}
+```
+
+## {.build}
+
+```{r repro}
+```
+
+
+# Writing Tests
+
+## {.build}
+
+```{r, results='hide'}
+test(forall(x = rinteger(), identical(x,x))) 
+```
+
+```{r, results='hide'}
+test(forall(x = rany(), identical(x,x)))
+```
+
+
+# Random Data Generators
+
+## {.build}
+
+```{r rdouble}
+```
+
+## {.build}
+
+```{r rdouble-2}
+```
+
+```{r rdouble-mean-sd}
+```
+
+## {.build}
+
+```{r rinteger-min-max}
+```
+
+```{r rinteger-unnamed}
+```
+
+
+```{r rinteger-matching}
+```
+
+## {.build}
+
+
+```{r rdouble-runif}
+```
+
+```{r rdouble-formula}
+```
+
+## {.build}
+
+```{r rdouble-Curry}
+```
+
+## {.build}
+
+```{r rdouble-size-max}
+```
+
+
+```{r rdouble-size-min-max}
+```
+
+
+```{r rdouble-size-function}
+```
+
+
+```{r rdouble-size-formula}
+```
+
+## {.build}
+
+```{r rdouble-size-constant}
+```
+
+
+```{r rdouble-size-formula-2}
+```
+
+## {.build}
+
+```{r rinteger-formula}
+```
+
+
+
+## {.build}
+
+|function| description|
+|---|---|
+`rany` | any R object|
+`ratomic` | any atomic vector|
+`rcharacter` | character
+`rdata.frame` |data.frame|
+`rDate` |Date|
+`rdouble` |double|
+`rfactor` |factor|
+
+## {.build}
+
+|function| description|
+|---|---|
+`rinteger` | integer|
+`rlist` | list|
+`rlogical` | logical
+`rmatrix` | matrix
+`rnamed` | random names for a vector
+`rnumeric` | any numeric|
+`rraw` |raw
+`rsample` | sample from vector
+
+## {.build}
+
+|function| description|
+|---|---|
+`constant` | trivial constant RDG
+`mixture` | mixture RDG
+`named` | named version of any RDG
+
+
+# Custom Generators
+
+## {.build} 
+
+```{r is.reciprocal.self.inverse}
+```
+
+
+```{r test-is.reciprocal.self.inverse}
+```
+
+## {.build}
+
+```{r corner-cases}
+```
+
+## {.build}
+
+```{r rdoublex}
+```
+
+## {.build}
+
+```{r test-rdoublex}
+```
+
+## {.build}
+```{r, eval = FALSE}
+rlist(rdouble)
+```
+```{r, eval = FALSE}
+rlist(function() rlist(rdouble))
+```
+
+```{r, eval = FALSE}
+rlist(~rlist(rdouble))
+```
+
+
+## Repo
+
+- http://github.com/RevolutionAnalytics/quickcheck
