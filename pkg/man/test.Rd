@@ -6,7 +6,7 @@
 \code{test} evaluates an assertion multiple times by re-evaluating its arguments, some of which are expected to be random data generators. Stops or returns a test report.
 }
 \usage{
-test(assertion, sample.size = default(sample.size \%||\% severity), stop = !interactive(), coverage = FALSE)
+test(assertion, sample.size = default(sample.size \%||\% severity), stop = !interactive(), coverage = qc.option("coverage"))
 forall(..., .env = parent.frame())
 }
 \arguments{
@@ -32,7 +32,7 @@ A test is considered passed if each run passes. A run passes if the assertion, o
 When \code{stop} is TRUE, this list is stored in a file. The command to load that file into the current environment as the variable \code{test.report} is printed as an error message. This allows to replicate the error, see \code{\link{repro}}. Other than this use, a developer may want to directly inspect the arguments to try and identify a pattern for the failures. Running time information is also printed in stderr on success.}
 
 \examples{
-test(function(x = rdouble(10)) all(x + 0 == x))
+test(function(x = rdouble(10)) {all(x + 0 == x)})
 #equivalent
 test(forall(x = rdouble(10), all(x + 0 == x)))
 }

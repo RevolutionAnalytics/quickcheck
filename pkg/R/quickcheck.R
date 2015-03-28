@@ -30,6 +30,8 @@ matrix.ncol = NULL
 matrix.nrow = NULL
 data.frame.ncol = NULL
 data.frame.nrow = NULL
+coverage = FALSE
+
 tmpdir = {
   if(.Platform$OS.type == "windows")
     "."
@@ -146,12 +148,13 @@ check.covr =
         "Need to install covr to use this feature
          library(devtools)
          install_github(\"jimhester/covr@b181831f0fd4299f70c330b87a73d9ec2d13433\")")
+
 test =
   function(
     assertion,
     sample.size = default(sample.size %||% severity),
     stop = !interactive(),
-    coverage = FALSE) {
+    coverage = qc.option("coverage")) {
     tokens = unlist(strsplit(deparse(assertion), split = "[ \t(){},]"))
     tokens = tokens[tokens != ""]
     seed = minhash(tokens)
@@ -192,6 +195,8 @@ test =
                     sep = "\n"))
               list(args = args, pass = result$pass, elapsed = result$elapsed)})}
     if(coverage) {
+      if(is.null(attributes(body(assertion))))
+        stop("To use coverage feature please wrap assertion's body in {}")
       check.covr()
       cov = covr::function_coverage("assertion", run(), env = sys.frame(sys.nframe()))
       names(cov) <- paste0("assertion", names(cov))}
@@ -257,9 +262,13 @@ repro =
 
 forall =
   function(..., .env = parent.frame()) {
-    if(!all(head(names(dots(...)) != "", n = -1)))
+    if(is.null(names(dots(...))) ||
+         !all(head(names(dots(...)) != "", n = -1)))
       stop("Missing default value for some of the arguments")
-    do.call(f, c(dots(...), list(.env = .env)))}
+    dargs  = dots(...)
+    body = tail(lazy_dots(...), 1)[[1]]$expr #lazy dots somehow keeps attrs
+    dargs[[length(dargs)]] = body
+    as.function(dargs, envir = .env)}
 
 no.coverage =
   function(path = "pkg/") {

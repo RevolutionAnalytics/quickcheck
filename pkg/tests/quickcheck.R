@@ -16,7 +16,7 @@
 ## test (failure)
 library(quickcheck)
 
-
+qc.option(coverage = FALSE)
 stopifnot(expect("error", test(function(x = rcharacter()) stop(x))))
 
 #repro
