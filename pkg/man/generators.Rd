@@ -112,11 +112,10 @@ rnamed(
  \item{ncol}{The maximum number of columns for the returned data frame. Alternatively, a function specifying its distribution (see \code{size})}
  \item{height}{A parameter monotonically increasing with the average height (amount of nesting) of the returned list, for a fixed \code{size} argument. We plan to make the interpretation of this parameter more direct in a future release.}
  \item{replace}{Whether to sample with replacement}
- \item{generator}{A random data generator}
+ \item{generator}{A random data generator or a formula that evaluates to random data (only right side is used)}
  \item{generators}{List of random data generators}
  \item{const}{Any R object}
  \item{x}{An R object for which it is possible to assign names}
- \item{generator}{A random data generator or a formula that evaluates to random data (only right side is used)}
  \item{names}{It is passed as the \code{elements} argument to \code{rcharacter} to generate names; see that function for details}
 }
 \details{
