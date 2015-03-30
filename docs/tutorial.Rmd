@@ -121,8 +121,8 @@ As a final guideline  for test-writing, there is practical and some theoretical 
  - Aim for 100% coverage
  - Keep code and tests short. 
  
-Quickcheck can help with the second point. Function `no.coverage` will generate a simple coverage report highlighting areas of your code, with line-level detail, that is not covered by any test. At this time it works only for packages, that is it runs all the tests implied by `R CMD check` and compiles its report based on that, but we hope to make it work at the file or function level in the future (this feature is based on package `covr` by @jimhester).
-Quickcheck own tests achieve 90% coverage, with the function `no.coverage` itself representing most of the left out lines.
+Quickcheck can help with the second point. Argument `coverage` to function `test`  will generate a simple coverage report highlighting areas of your code, with line-level detail, that is not covered by a test. To get a package-level coverage report, enter `no.coverage(<path-to-oackage>)`.
+Quickcheck own tests achieve 90% coverage, with the function `no.coverage` itself representing most of the skipped lines.
 
 ## Modifying or defining random data generators
 
