@@ -48,7 +48,7 @@ Let's start with something very simple. Let's say we just wrote the function `t`
 That works, but has some limitations. For instance, suppose we have to match some fictional military-grade testing which requires to run at least $10^4$ tests per  function. It can be pretty laborious to write them this way. So the next step is to replace examples of what the function is supposed to do with a general statement of the properties that a function is supposed to have, also known as an assertion:
 
 
-```{r knitr-for-test_that}
+```{r for-test_that}
 ```
 
 That's progress, yet the testing points are chosen manually and arbitrarily. It's hard to have many or very large input values, and unstated assumptions my affect their choice. For instance, is `t` going to work for non-numeric matrices?`quickcheck` can solve or at least alleviate all these problems:
