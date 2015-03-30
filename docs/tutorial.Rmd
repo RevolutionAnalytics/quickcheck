@@ -51,16 +51,16 @@ That works, but has some limitations. For instance, suppose we have to match som
 ```{r for-test_that}
 ```
 
-That's progress, yet the testing points are chosen manually and arbitrarily. It's hard to have many or very large input values, and unstated assumptions my affect their choice. For instance, is `t` going to work for non-numeric matrices?`quickcheck` can solve or at least alleviate all these problems:
+That's progress, yet the testing points are chosen manually and arbitrarily. It's hard to have many or very large input values, and unstated assumptions may affect their choice. For instance, is `t` going to work for non-numeric matrices?`quickcheck` can solve or at least alleviate all these problems:
 
 ```{r test}
 ```
 
-We recognize the assertion in the previous code snippet, modified to take into account matrices with 0 rows or columns. Here though, it becomes the body of a function, which is what is called "assertion" in `quickcheck`, which has one or more arguments, all with default values, and returns a length-one logical vector. `TRUE` means success, `FALSE` or an error mean failure. Some of those arguments are initialized randomly, in this case using what in `quickcheck` is called a Random Data Generator, or RDG -- more on these later. In this case `rmatrix` is a function that returns a random matrix. The `test` function evaluates the assertion multiple times and outputs some messages: 
+We recognize the assertion in the previous code snippet, modified to take into account matrices with 0 rows or columns. Here, though, it becomes the body of a function, which is called "assertion" in `quickcheck`, which has one or more arguments, all with default values, and returns a length-one logical vector. `TRUE` means success, `FALSE` or an error mean failure. Some of those arguments are initialized randomly, in this case using what in `quickcheck` is called a Random Data Generator, or RDG -- more on these later. In this case `rmatrix` is a function that returns a random matrix. The `forall` function creates assertions and does little more than `function`, but its name clarifies intent. The `test` function evaluates the assertion multiple times and produces some messages: 
 
 - the seed used is unique to each test, but ensures reproducibility
 - a "pass" message
-- the assertion tested -- imagine you are scanning a log of a long series of tests
+- the assertion tested -- useful when scanning a log of a long series of tests
 - some performance information -- harbinger of future features
 - information about a directory -- more on that later.
 
