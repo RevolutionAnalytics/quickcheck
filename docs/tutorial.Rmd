@@ -107,13 +107,13 @@ This output shows that about half of the default 10 runs have failed and then in
 
 This opens the debugger at the beginning of a failed call to the assertion. Now it is up to the developer to fix any bugs.
 
-To achieve reproducibility, it is necessary to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and the assertion arguments default values. The `test` function seeds the random number generator in a way that ensures reproducibilit from one call of the test to the next. The seed is unique to each assertion, but doesn't change for small edits of the assertion, to facilitate assertion development.
+To achieve reproducibility, it is necessary to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and the assertion arguments default values. The `test` function seeds the random number generator in a way that ensures reproducibility from one call to the next. The seed is unique to each assertion, but doesn't change for small edits of the assertion, to facilitate assertion development.
 
 ## What tests should we write?
 
-There is no general answer to this question, as you can imagine. One possible criterion is that of *test coverage*, the fraction of code that has been executed during the execution of tests. The other is the strictness of your assertions. The conjunction of all the assertions in your test set should imply the correctness of your program, in the ideal case and when universally quantified over their inputs. For instance `test(forall(x = rinteger(), identical(x,x))` tests one important property of the `identical` function for all integer vectors. That doesn't mean it runs the test for all integer vectors, which is impossible, but it means that there should be no failure no matter how many runs we allow the test to include.
+There is no general answer to this question, as you can imagine. One possible criterion is that of *test coverage*, the fraction of code that has been executed during the execution of tests, which is considered a practical proxy for "thoroughness". The other is the strictness of your assertions. The conjunction of all the assertions in your test set should imply the correctness of your program, in the ideal case and when universally quantified over their inputs. For instance `test(forall(x = rinteger(), identical(x,x))` tests one important property of the `identical` function for all integer vectors. That doesn't mean it runs the test for all integer vectors, which is impossible, but it means that there should be no failure no matter how many runs we allow the test to include.
  
-The attentive reader may have already noticed that this is not the most stringent test we could  have written, even if it achieves 100% coverage. `identical` is supposed to work with any R object, so `test(forall(x = rany(), identical(x,x))` is also expected to pass, implies the previous test, if universally quantified over all inputs, that is it is strictly more stringent given infinite time to try all possible inputs and better captures the developer's intent.
+The attentive reader may have already noticed that this is not the strictest test we could  have written, independent of the fact that it achieves 100% coverage. `identical` is supposed to work with any R object, so `test(forall(x = rany(), identical(x,x))` is also expected to pass, implies the previous test, if universally quantified over all inputs, that is it is stricter given infinite time to try all possible inputs and better captures the developer's intent.
 
 As a final guideline  for test-writing, there is practical and some theoretical evidence that shorter programs can be tested more effectively, provided that the tests are also short. To summarize:
 
@@ -131,7 +131,7 @@ There are built in random data generators for most built-in data types. They fol
 ```{r rdouble}
 ```
 
-As you can see, both elements and length change from one call to the next and in fact they are both random and independent. This is generally true for all generators, with the exception of the trivial generators created with `constant`. Most generators take two arguments, `elements` and `size` which are meant to specify the distribution of the elements and size of the returned data structures and whose exact interpretation depends on the specific generator. In general, if the argument `elements` is a numeric it is construed as providing parameters of the default RNG invoked to draw the elements, if it is a function, it is called with a single argument to generate the elements of the random data structure. For example
+As you can see, both elements and length change from one call to the next and in fact they are both random and independent. This is generally true for all generators, with the exception of the trivial generators created with `constant`. Most generators take two arguments, `elements` and `size` which are meant to specify the distribution of the elements and size of the returned data structures and whose exact interpretation depends on the specific generator. In general, if the argument `elements` is a numeric it is construed as providing parameters of the default RNG invoked to draw the elements, if it is a function, it is called with a single argument to generate the elements of the random data structure. For example:
 
 ```{r rdouble-2}
 ```
@@ -149,7 +149,7 @@ For other generators the parameters may have different names and semantics, for 
 ```{r rinteger-min-max}
 ```
 
-For added convenience, the vector of parameters is subject to argument matching as if they were argument to a separate function, for instance
+For added convenience, the vector of parameters is subject to argument matching as if they were argument to a separate function, for instance:
 
 ```{r rinteger-unnamed}
 ```
