@@ -301,7 +301,7 @@ no.coverage.character =
     browseURL(paste0("file://", temp))}
 
 no.coverage.coverage =
-  function(x, src = NULL...) {
+  function(x, ...) {
     zc = covr::zero_coverage(x)
     if(nrow(zc) == 0)
       return
