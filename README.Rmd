@@ -1,4 +1,12 @@
-
+---
+output:
+  html_document:
+    keep_md: yes
+---
+```{r, echo=FALSE}
+library(knitr)
+opts_chunk$set(echo=TRUE, tidy=FALSE, comment="", cache=FALSE, error=FALSE)
+```
 
 quickcheck
 ==========
@@ -19,26 +27,31 @@ install.packages(devtools)
 library(devtools)
 ```
 
-
+```{r, echo= FALSE}
+version = packageDescription("quickcheck")$Version
+```
 
 Then, to install from source:
-
-```
-install_github("RevolutionAnalytics/quickcheck@3.1.0", subdir = "pkg")
+```{r, echo=FALSE, comment=""}
+cat(
+  paste0('install_github("RevolutionAnalytics/quickcheck@', version, '", subdir = "pkg")
+'))
 ```
 
 Linux package:
-
-```
-install_url(
-  "https://github.com/RevolutionAnalytics/quickcheck/releases/download/3.1.0/quickcheck_3.1.0.tar.gz")
+```{r, echo=FALSE, comment=""}
+cat(
+  paste0('install_url(
+  "https://github.com/RevolutionAnalytics/quickcheck/releases/download/', version, '/quickcheck_', version, '.tar.gz")
+'))
 ```
 
 Windows package:
-
-```
-install_url(
-  "https://github.com/RevolutionAnalytics/quickcheck/releases/download/3.1.0/quickcheck_3.1.0.zip")
+```{r, echo=FALSE, comment=""}
+cat(
+  paste0('install_url(
+  "https://github.com/RevolutionAnalytics/quickcheck/releases/download/', version, '/quickcheck_', version, '.zip")
+'))
 ```
 
 
