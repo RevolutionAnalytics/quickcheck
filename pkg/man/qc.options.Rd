@@ -6,7 +6,7 @@
 \title{Set and get package options}
 \description{\code{qc.options} and \code{qc.option} set and gets packag options, which allow to fine tune testing, particularly the number of runs or the parameters of most data generators. \code{default} is just a shorthand to write expression involving multiple package options and operator \code{\%||\%} a convenient way to combine multiple defaults.}
 \usage{
-  qc.options(..., character.max = NULL, coverage = FALSE,
+  qc.options(..., character.max = NULL,
              data.frame.ncol = NULL,
              data.frame.nrow = NULL, double.size = NULL,
              integer.size = NULL, list.height = NULL, list.size =
@@ -15,7 +15,7 @@
              sample.size = NULL, severity = 10,
              tmpdir = if(.Platform$OS.type == "windows") "." else "/tmp",
              vector.size = NULL)
-  qc.option(..., character.max = NULL, coverage = FALSE,
+  qc.option(..., character.max = NULL,
             data.frame.ncol = NULL,
             data.frame.nrow = NULL, double.size = NULL,
             integer.size = NULL, list.height = NULL, list.size =
@@ -46,7 +46,6 @@
   \item{tmpdir}{Directory used by \code{test} to write its test report when argument \code{stop} is \code{TRUE}}
   \item{...}{Name of option to get}
   \item{x,y}{Any R object}
-  \item{coverage}{Whether to compute coverage by default in \code{test} or not}
 }
 \details{For each named argument, the equally named option is set to the specified value. For each unnamed argument, the current value of the option specified in the argument is returned. Multiple options can be set and gotten in one call to \code{qc.options}, but \code{qc.option} only accepts one argument. \code{default} only reads options and accepts an expression where options can be used as variable. It is just a way to write more readable expressions where \code{qc.option} would have had to be called multiple times. Operator \code{\%||\%} returns the value of its left argument unless it is \code{NULL}, in which case it is set to the right argument (even if \code{NULL} itself). Usueful to chain multiple default setting in order of priority.
 }

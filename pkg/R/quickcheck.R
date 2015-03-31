@@ -30,7 +30,6 @@ matrix.ncol = NULL
 matrix.nrow = NULL
 data.frame.ncol = NULL
 data.frame.nrow = NULL
-coverage = FALSE
 
 tmpdir = {
   if(.Platform$OS.type == "windows")
@@ -154,7 +153,7 @@ test =
     assertion,
     sample.size = default(sample.size %||% severity),
     stop = !interactive(),
-    coverage = qc.option("coverage")) {
+    cover = NULL) {
     tokens = unlist(strsplit(deparse(assertion), split = "[ \t(){},]"))
     tokens = tokens[tokens != ""]
     seed = minhash(tokens)
@@ -194,12 +193,10 @@ test =
                           collapse = "\n"),
                     sep = "\n"))
               list(args = args, pass = result$pass, elapsed = result$elapsed)})}
-    if(coverage) {
-      if(is.null(attributes(body(assertion))))
-        stop("To use coverage feature please wrap assertion's body in {}")
-      check.covr()
-      cov = covr::function_coverage("assertion", run(), env = sys.frame(sys.nframe()))
-      names(cov) <- paste0("assertion", names(cov))}
+    if(!is.null(cover)) {
+       check.covr()
+      cov = covr::function_coverage(cover, run(), env = sys.frame(sys.nframe()))
+      names(cov) <- paste0(cover, names(cov))}
     else{
       cov = NULL
       run()}
@@ -234,8 +231,11 @@ test =
             assertion.text,
             "\n",
             collapse = " ")))
-      if(coverage) print(test.report$coverage)
-      print(test.report$elapsed)}
+      if(!is.null(cover)) {
+        print(test.report$coverage)
+        no.coverage(test.report$coverage)}
+      #print(test.report$elapsed)
+      }
     tmpdir = file.path(default(tmpdir), "quickcheck", Sys.getpid())
     if(!file.exists(tmpdir))
       message("Creating ", tmpdir, ". Use qc.options(tmpdir = <alternate-path>) to change location.")
@@ -265,14 +265,16 @@ forall =
     if(is.null(names(dots(...))) ||
          !all(head(names(dots(...)) != "", n = -1)))
       stop("Missing default value for some of the arguments")
-    dargs  = dots(...)
-    body = tail(lazy_dots(...), 1)[[1]]$expr #lazy dots somehow keeps attrs
-    dargs[[length(dargs)]] = body
-    as.function(dargs, envir = .env)}
+    as.function(dots(...), envir = .env)}
 
 no.coverage =
-  function(path = "pkg/") {
+  function(x = "pkg/", ...) {
     check.covr()
+    UseMethod(generic = "no.coverage", object = x)}
+
+no.coverage.character =
+  function(x = "pkg/", ... ) {
+    path = x
     pc = covr::package_coverage(path)
     print(pc)
     zc = covr::zero_coverage(pc)
@@ -298,3 +300,23 @@ no.coverage =
       con = temp)
     browseURL(paste0("file://", temp))}
 
+no.coverage.coverage =
+  function(x, src = NULL...) {
+    zc = covr::zero_coverage(x)
+    if(nrow(zc) == 0)
+      return
+    else {
+    temp = tempfile(fileext = ".html")
+    src =
+      as.character(
+        attributes(
+          body(
+            get(zc$filename[1], envir = parent.frame())))$wholeSrcref)
+    mapply(
+      function(sta, sto){
+        src[sta] <<- paste("<strong>", src[sta])
+        src[sto] <<- paste(src[sto], "</strong>")},
+      zc$first_line,
+      zc$last_line)
+    writeLines(c("<pre>", src, "</pre>"), temp)
+    browseURL(paste0("file://", temp))}}

@@ -3,11 +3,11 @@
 \title{Visualize test coverage}
 \description{
  \code{no.coverage} produces an html report highlighting code that is not covered by tests in a package.}
-\usage{no.coverage(path = "pkg/")}
+\usage{no.coverage(x = "pkg/")}
 \arguments{
-  \item{path}{Path to package to analyze}
+  \item{x}{Path to package to analyze}
 }
-\details{The report will be opened in a new browser window}
+\details{The report will open in a new browser window}
 \value{\code{NULL}.}
 
 \examples{
