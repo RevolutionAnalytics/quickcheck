@@ -42,6 +42,8 @@ if(FALSE)
 test(forall(x = rdouble(), mean(x) > 0), stop = TRUE)
 ##  @knitr return-value
 test.out = test(forall(x = rdouble(), mean(x) > 0), stop = FALSE)
+## @knitr end
+if(FALSE)
 ## @knitr repro
 repro(test.out)
 ## @knitr rdouble
