@@ -31,7 +31,7 @@ opts_chunk$set(out.lines = 5)
 
 
 
-# Legacy 
+# Testing
  
 ## {.build}
 
@@ -66,7 +66,7 @@ opts_chunk$set(out.lines = 5)
 ##  {.build}
 
 ```{r, eval=FALSE}
-function(x = rdouble()) all(x + 0 == x)
+function(x = rdouble(), y = rdouble()) all(x + y == y + x))
 ```
 
 ```{r, eval=FALSE}
@@ -74,7 +74,7 @@ function(x = rlist()) identical(x, rev(rev(x)))
 ```
 
 ```{r, eval=FALSE}
-forall(x = rdouble(), all(x + 0 == x))
+forall(x = rdouble(), y = rdouble(), all(x + y == y + x))
 ```
 
 ```{r, eval=FALSE}
@@ -183,11 +183,12 @@ test(forall(x = rany(), identical(x,x)))
 ```{r rdouble-size-formula-2}
 ```
 
+<!--
 ## {.build}
 
 ```{r rinteger-formula}
 ```
-
+-->
 
 
 ## {.build}
@@ -223,6 +224,8 @@ test(forall(x = rany(), identical(x,x)))
 `mixture` | mixture RDG
 `named` | named version of any RDG
 
+
+<!--
 
 # Custom Generators
 
@@ -262,6 +265,7 @@ rlist(function() rlist(rdouble))
 rlist(~rlist(rdouble))
 ```
 
+-->
 
 ## Repo
 

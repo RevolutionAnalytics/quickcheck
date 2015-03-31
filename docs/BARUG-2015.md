@@ -5,7 +5,7 @@ Revolution Analytics
 
 
 
-# Legacy 
+# Testing
  
 ## {.build}
 
@@ -58,15 +58,8 @@ Pass
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
      ] == t(x)[, i]))) 
-```
 
-```
-   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  22300   26400   73800   89800  118000  277000 
-```
-
-```
-Creating /tmp/quickcheck/5355. Use qc.options(tmpdir = <alternate-path>) to change location.
+Creating /tmp/quickcheck/99444. Use qc.options(tmpdir = <alternate-path>) to change location.
 ```
 
 # Advantages
@@ -91,18 +84,13 @@ Pass
      ] == t(x)[, i]))) 
 ```
 
-```
-   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  19200   20700   66100   88600  124000  405000 
-```
-
 # Assertions
 
 ##  {.build}
 
 
 ```r
-function(x = rdouble()) all(x + 0 == x)
+function(x = rdouble(), y = rdouble()) all(x + y == y + x))
 ```
 
 
@@ -112,7 +100,7 @@ function(x = rlist()) identical(x, rev(rev(x)))
 
 
 ```r
-forall(x = rdouble(), all(x + 0 == x))
+forall(x = rdouble(), y = rdouble(), all(x + y == y + x))
 ```
 
 
@@ -132,11 +120,6 @@ Using seed 770024200
 Pass  
  function (x = rcharacter())  
  expect("error", stop(x)) 
-```
-
-```
-   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-2030000 2330000 2440000 2670000 2510000 3940000 
 ```
 
 # Failure
@@ -165,7 +148,7 @@ mean(x) > 0
 ```
 
 ```
-Error: to reproduce enter repro("/tmp/quickcheck/5355/tr14eb194db5a0")
+Error: to reproduce enter repro("/tmp/quickcheck/99444/tr18474854051b")
 ```
 
 ## {.build}
@@ -434,6 +417,7 @@ rdouble(size = ~3)
 [1] -14.73 154.16 -98.19
 ```
 
+<!--
 ## {.build}
 
 
@@ -450,7 +434,7 @@ Warning: recycling random numbers
  [36] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  [71] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 ```
-
+-->
 
 
 ## {.build}
@@ -487,6 +471,8 @@ Warning: recycling random numbers
 `named` | named version of any RDG
 
 
+<!--
+
 # Custom Generators
 
 ## {.build} 
@@ -509,11 +495,6 @@ Pass
  is.reciprocal.self.inverse(x) 
 ```
 
-```
-   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  52700   58800   77400  108000   84200  434000 
-```
-
 ## {.build}
 
 
@@ -526,11 +507,6 @@ Using seed 590705710
 Pass  
  function (x = rsample(c(0, -Inf, Inf)))  
  is.reciprocal.self.inverse(x) 
-```
-
-```
-   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  51400   58200   62300   63500   70500   77600 
 ```
 
 ## {.build}
@@ -573,11 +549,6 @@ Pass
  is.reciprocal.self.inverse(x) 
 ```
 
-```
-   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  51000   52500   60400   65100   74500   87600 
-```
-
 ## {.build}
 
 ```r
@@ -593,6 +564,7 @@ rlist(function() rlist(rdouble))
 rlist(~rlist(rdouble))
 ```
 
+-->
 
 ## Repo
 
