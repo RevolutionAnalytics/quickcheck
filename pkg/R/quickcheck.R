@@ -266,12 +266,12 @@ forall =
       stop("Missing default value for some of the arguments")
     as.function(dots(...), envir = .env)}
 
-no.coverage =
+coverage =
   function(x = "pkg/", ...) {
     check.covr()
-    UseMethod(generic = "no.coverage", object = x)}
+    UseMethod(generic = "coverage", object = x)}
 
-no.coverage.character =
+coverage.character =
   function(x = "pkg/", ... ) {
     path = x
     pc = covr::package_coverage(path)

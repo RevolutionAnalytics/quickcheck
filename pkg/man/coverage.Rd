@@ -1,9 +1,9 @@
-\name{no.coverage}
-\alias{no.coverage}
+\name{coverage}
+\alias{coverage}
 \title{Visualize test coverage}
 \description{
- \code{no.coverage} produces an html report highlighting code that is not covered by tests in a package.}
-\usage{no.coverage(x = "pkg/", ...)}
+ \code{coverage} produces an html report highlighting code that is not covered by tests in a package.}
+\usage{coverage(x = "pkg/", ...)}
 \arguments{
   \item{x}{Path to package to analyze}
   \item{...}{Arguments for specific methods, unused at this time}
@@ -12,5 +12,5 @@
 \value{\code{NULL}.}
 
 \examples{
-#no.coverage(".")
+#coverage(".")
 }
