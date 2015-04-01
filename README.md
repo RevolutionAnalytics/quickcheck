@@ -24,21 +24,21 @@ library(devtools)
 Then, to install from source:
 
 ```
-install_github("RevolutionAnalytics/quickcheck@3.1.0", subdir = "pkg")
+install_github("RevolutionAnalytics/quickcheck@3.2.0", subdir = "pkg")
 ```
 
 Linux package:
 
 ```
 install_url(
-  "https://github.com/RevolutionAnalytics/quickcheck/releases/download/3.1.0/quickcheck_3.1.0.tar.gz")
+  "https://github.com/RevolutionAnalytics/quickcheck/releases/download/3.2.0/quickcheck_3.2.0.tar.gz")
 ```
 
 Windows package:
 
 ```
 install_url(
-  "https://github.com/RevolutionAnalytics/quickcheck/releases/download/3.1.0/quickcheck_3.1.0.zip")
+  "https://github.com/RevolutionAnalytics/quickcheck/releases/download/3.2.0/quickcheck_3.2.0.zip")
 ```
 
 
