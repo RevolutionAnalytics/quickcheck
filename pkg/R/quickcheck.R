@@ -233,7 +233,6 @@ test =
             collapse = " ")))
       if(!is.null(cover)) {
         print(test.report$coverage)
-        no.coverage(test.report$coverage)}
       #print(test.report$elapsed)
       }
     tmpdir = file.path(default(tmpdir), "quickcheck", Sys.getpid())
@@ -277,28 +276,8 @@ no.coverage.character =
     path = x
     pc = covr::package_coverage(path)
     print(pc)
-    zc = covr::zero_coverage(pc)
-    temp = tempfile(fileext = ".html")
-    writeLines(
-      unlist(
-        lapply(
-          unique(zc$filename),
-          function(fname) {
-            ffname = file.path(path, fname)
-            src = readLines(ffname)
-            zc = zc[zc$filename == fname, , drop = FALSE]
-            mapply(
-              function(sta, sto){
-                src[sta] <<- paste("<strong>", src[sta])
-                src[sto] <<- paste(src[sto], "</strong>")},
-              zc$first_line,
-              zc$last_line)
-            c(
-              paste("<h2>", ffname , "</h2>\n<pre>"),
-              src,
-              "</pre>")})),
-      con = temp)
-    browseURL(paste0("file://", temp))}
+    covr::shine(pc)}
+
 
 no.coverage.coverage =
   function(x, ...) {
