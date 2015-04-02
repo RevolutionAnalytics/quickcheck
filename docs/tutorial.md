@@ -66,7 +66,7 @@ Pass
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
      ] == t(x)[, i]))) 
 
-Creating /tmp/quickcheck/35923. Use qc.options(tmpdir = <alternate-path>) to change location.
+Creating /tmp/quickcheck/40043. Use qc.options(tmpdir = <alternate-path>) to change location.
 ```
 
 ```r
@@ -160,7 +160,7 @@ mean(x) > 0
 ```
 
 ```
-Error: to reproduce enter repro("/tmp/quickcheck/35923/tr8c532a0955d4")
+Error: to reproduce enter repro("/tmp/quickcheck/40043/tr9c6b28e8c8c0")
 ```
 
 This output shows that about half of the default 10 runs have failed and then invites us to enter a command, `repro(<some-path>)`, that will execute the assertion in the debugger with the input data that made it fail. Another way to achieve the same is to run the test with the option `stop = FALSE` which doesn't produce an error and returns the same debugging data. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
@@ -222,8 +222,7 @@ As a final guideline  for test-writing, there is practical and some theoretical 
  - Aim for 100% coverage
  - Keep code and tests short. 
  
-Quickcheck can help with the second point. Argument `coverage` to function `test`  will generate a simple coverage report highlighting areas of your code, with line-level detail, that is not covered by a test. To get a package-level coverage report, enter `no.coverage(<path-to-oackage>)`.
-Quickcheck own tests achieve 90% coverage, with the function `no.coverage` itself representing most of the skipped lines.
+Quickcheck can help with the second point. Argument `cover` to function `test`  will generate a simple coverage report highlighting areas of your code, with line-level detail, that is not covered by a test. To get a package-level coverage report, enter `coverage(<path-to-package>)`.
 
 ## Modifying or defining random data generators
 

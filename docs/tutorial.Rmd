@@ -121,8 +121,7 @@ As a final guideline  for test-writing, there is practical and some theoretical 
  - Aim for 100% coverage
  - Keep code and tests short. 
  
-Quickcheck can help with the second point. Argument `coverage` to function `test`  will generate a simple coverage report highlighting areas of your code, with line-level detail, that is not covered by a test. To get a package-level coverage report, enter `no.coverage(<path-to-oackage>)`.
-Quickcheck own tests achieve 90% coverage, with the function `no.coverage` itself representing most of the skipped lines.
+Quickcheck can help with the second point. Argument `cover` to function `test`  will generate a simple coverage report highlighting areas of your code, with line-level detail, that is not covered by a test. To get a package-level coverage report, enter `coverage(<path-to-package>)`.
 
 ## Modifying or defining random data generators
 
