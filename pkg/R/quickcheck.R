@@ -281,6 +281,8 @@ coverage =
 coverage.character =
   function(x = "pkg/", ... ) {
     path = x
+    if(!file.exists(x))
+      stop(x, " does not exist.")
     pc = covr::package_coverage(path)
     print(pc)
     covr::shine(pc)}
