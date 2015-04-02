@@ -10,7 +10,7 @@ This package provides support for randomized  software testing for R. Inspired b
  * Assertions are more self-documenting than individual examples of the I/O relation, and in some instances can amount to a complete specification for a function.
  * The developer is less likely to incorporate unstated assumptions in the choice of test inputs.
 
-Additional features include the `repro` function that supports reproducing and debugging a failed test. For additional information, see the [tutorial](docs/tutorial.md). For support, we are experimentally [monitoring](http://stackoverflow.com/questions/tagged/r+quickcheck) tags [R] [quickcheck] on [Stackoverflow](http://stackoverflow.com). Please remember to add *both* tags to your question.
+Additional features include the `repro` function that supports reproducing and debugging a failed test. For additional information, see the [tutorial](docs/tutorial.md). For support, we are experimentally [monitoring](http://stackoverflow.com/questions/tagged/r+quickcheck) tags [R] [quickcheck] on [Stackoverflow](http://stackoverflow.com). Please remember to add *both* tags to your question. For new releases, <a href="https://feedburner.google.com/fb/a/mailverify?uri=ReleaseNotesFromQuickcheck&amp;loc=en_US">subscribe to Release notes from quickcheck by Email</a>
 
 To install, first install and load `devtools`
 
