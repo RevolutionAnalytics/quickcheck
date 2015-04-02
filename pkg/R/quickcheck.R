@@ -194,9 +194,15 @@ test =
                     sep = "\n"))
               list(args = args, pass = result$pass, elapsed = result$elapsed)})}
     if(!is.null(cover)) {
-       check.covr()
-      cov = covr::function_coverage(cover, run(), env = sys.frame(sys.nframe()))
-      names(cov) <- paste0(cover, names(cov))}
+      check.covr()
+      env = parent.frame()
+      cov = covr::function_coverage(cover, run(), env = env)
+      cover.fun = get(cover, envir = env)
+      cover.srcfile = as.list.environment(attributes(attributes(cover.fun)$srcref)$srcfile)
+      if(cover.srcfile$filename == "") {
+        srctemp = tempfile()
+        writeLines(cover.srcfile$lines, srctemp)
+        names(cov) = paste0(srctemp, names(cov))}}
     else{
       cov = NULL
       run()}
@@ -233,8 +239,9 @@ test =
             collapse = " ")))
       if(!is.null(cover)) {
         print(test.report$coverage)
+        coverage(test.report$coverage)}
       #print(test.report$elapsed)
-      }
+    }
     tmpdir = file.path(default(tmpdir), "quickcheck", Sys.getpid())
     if(!file.exists(tmpdir))
       message("Creating ", tmpdir, ". Use qc.options(tmpdir = <alternate-path>) to change location.")
@@ -279,23 +286,6 @@ coverage.character =
     covr::shine(pc)}
 
 
-no.coverage.coverage =
+coverage.coverage =
   function(x, ...) {
-    zc = covr::zero_coverage(x)
-    if(nrow(zc) == 0)
-      return
-    else {
-    temp = tempfile(fileext = ".html")
-    src =
-      as.character(
-        attributes(
-          body(
-            get(zc$filename[1], envir = parent.frame())))$wholeSrcref)
-    mapply(
-      function(sta, sto){
-        src[sta] <<- paste("<strong>", src[sta])
-        src[sto] <<- paste(src[sto], "</strong>")},
-      zc$first_line,
-      zc$last_line)
-    writeLines(c("<pre>", src, "</pre>"), temp)
-    browseURL(paste0("file://", temp))}}
+    covr::shine(x) }
