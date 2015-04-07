@@ -246,12 +246,23 @@ test =
       stop("to reproduce enter repro(\"", tf, "\")")}
     invisible(test.report)}
 
-first.false =
-  function(xx)
-    min(which(!xx))
+smallest.failed =
+  function(pass, cases)
+      tail(
+        arrange(
+          filter(
+            data.frame(
+              pass = pass,
+              size = sapply(cases, object.size),
+              case.index = 1:length(cases)),
+            pass)),
+        1)$case.index
 
 repro =
-  function(test.report, i = first.false(test.report$pass), debug = TRUE) {
+  function(
+    test.report,
+    i = smallest.failed(test.report$pass, test.report$cases),
+    debug = TRUE) {
     if(is.character(test.report))
       test.report = readRDS(test.report)
     assertion = test.report$assertion
