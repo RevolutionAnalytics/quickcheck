@@ -67,8 +67,7 @@ qc.options =
       names(nargs) = match.arg(names(nargs), ls(quickcheck.env), several.ok = TRUE)
       stopifnot(all(names(nargs) %in% ls(quickcheck.env)))}
     else {
-      unargs = args
-    }
+      unargs = args}
     if(length(unargs) > 0)
       unargs = match.arg(unlist(unargs),  ls(quickcheck.env), several.ok = TRUE)
     stopifnot(all(unargs %in% ls(quickcheck.env)))
@@ -198,10 +197,10 @@ test =
       env = parent.frame()
       cov = covr::function_coverage(cover, run(), env = env)
       cover.fun = get(cover, envir = env)
-      cover.srcfile = as.list.environment(attributes(attributes(cover.fun)$srcref)$srcfile)
+      cover.srcfile = as.list.environment(attributes(body(cover.fun))$srcfile)
       if(cover.srcfile$filename == "") {
         srctemp = tempfile()
-        writeLines(cover.srcfile$lines, srctemp)
+        writeLines(cover.srcfile$original$lines %||% cover.srcfile$lines, srctemp)
         names(cov) = paste0(srctemp, names(cov))}}
     else{
       cov = NULL
@@ -261,7 +260,7 @@ smallest.failed =
               pass = pass,
               size = sapply(cases, object.size),
               case.index = 1:length(cases)),
-            pass)),
+            !pass)),
         1)$case.index
 
 repro =
