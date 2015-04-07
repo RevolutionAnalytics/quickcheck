@@ -11,14 +11,14 @@ opts_chunk$set(echo=TRUE, tidy=FALSE, comment="", cache=FALSE, error=FALSE)
 quickcheck
 ==========
 
-This package provides support for randomized  software testing for R. Inspired by its influential Haskell namesake, it promotes a style of writing tests where assertions about functions are verified on random inputs. The package provides default generators for most common types but allows users to modify their behavior or even to create new ones based on the needs of a each application. The main advantages over traditional testing are
+This package provides support for randomized  software testing for R. Inspired by its influential [Haskell namesake](http://www.eecs.northwestern.edu/~robby/courses/395-495-2009-fall/quick.pdf), it promotes a style of writing tests where assertions about functions are verified on random inputs. The package provides default generators for most common types but allows users to modify their behavior or even to create new ones based on the needs of a each application. The main advantages over traditional testing are
 
  * Each test can be run many times, with better coverage and bug detection.
  * Tests can be run on large inputs that would be unwieldy to include in the test source or would require addtional development.
  * Assertions are more self-documenting than individual examples of the I/O relation, and in some instances can amount to a complete specification for a function.
  * The developer is less likely to incorporate unstated assumptions in the choice of test inputs.
 
-Additional features include the `repro` function that supports reproducing and debugging a failed test. For additional information, see the [tutorial](docs/tutorial.md). For support, we are experimentally [monitoring](http://stackoverflow.com/questions/tagged/r+quickcheck) tags [R] [quickcheck] on [Stackoverflow](http://stackoverflow.com). Please remember to add *both* tags to your question.
+Additional features include the `repro` function that supports reproducing and debugging a failed test. For additional information, see the [tutorial](docs/tutorial.md). For support, we are experimentally [monitoring](http://stackoverflow.com/questions/tagged/r+quickcheck) tags [R] [quickcheck] on [Stackoverflow](http://stackoverflow.com). Please remember to add *both* tags to your question. For new releases, <a href="https://feedburner.google.com/fb/a/mailverify?uri=ReleaseNotesFromQuickcheck&amp;loc=en_US">subscribe to Release notes from quickcheck by Email</a>
 
 To install, first install and load `devtools`
 
