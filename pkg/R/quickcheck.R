@@ -152,8 +152,19 @@ test =
     assertion,
     sample.size = default(sample.size %||% severity),
     stop = !interactive(),
+    about = all.names(body(assertion)),
     cover = NULL) {
-    tokens = unlist(strsplit(deparse(assertion), split = "[ \t(){},]"))
+    tokens =
+      unlist(
+        strsplit(
+          c(
+            deparse(assertion),
+            unlist(
+              sapply(
+                about,
+                function(x)
+                  tryCatch(deparse(match.fun(x)), error = function(e) NULL)))),
+          split = "[ \t(){},]"))
     tokens = tokens[tokens != ""]
     seed = minhash(tokens)
     message("Using seed ", seed)
@@ -197,7 +208,7 @@ test =
       env = parent.frame()
       cov = covr::function_coverage(cover, run(), env = env)
       cover.fun = get(cover, envir = env)
-      cover.srcfile = as.list.environment(attributes(body(cover.fun))$srcfile)
+      cover.srcfile = as.list.environment(attributes(body(cover.fun))$srcfile %||% attributes(attributes(ff)$srcref)$srcfile)
       if(cover.srcfile$filename == "") {
         srctemp = tempfile()
         writeLines(cover.srcfile$original$lines %||% cover.srcfile$lines, srctemp)
@@ -253,15 +264,15 @@ test =
 
 smallest.failed =
   function(pass, cases)
-      tail(
-        arrange(
-          filter(
-            data.frame(
-              pass = pass,
-              size = sapply(cases, object.size),
-              case.index = 1:length(cases)),
-            !pass)),
-        1)$case.index
+    tail(
+      arrange(
+        filter(
+          data.frame(
+            pass = pass,
+            size = sapply(cases, object.size),
+            case.index = 1:length(cases)),
+          !pass)),
+      1)$case.index
 
 repro =
   function(
@@ -279,7 +290,7 @@ repro =
 forall =
   function(..., .env = parent.frame()) {
     if(is.null(names(dots(...))) ||
-         !all(head(names(dots(...)) != "", n = -1)))
+       !all(head(names(dots(...)) != "", n = -1)))
       stop("Missing default value for some of the arguments")
     as.function(dots(...), envir = .env)}
 
