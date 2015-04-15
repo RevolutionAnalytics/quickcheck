@@ -32,6 +32,7 @@ importFrom(digest, digest)
 import(testthat)
 importFrom(microbenchmark, get_nanotime)
 importFrom(dplyr, arrange)
+importFrom(dplyr, filter)
 importFrom(bitops, cksum)
 importFrom(pryr, dots)
 
