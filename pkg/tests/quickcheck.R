@@ -29,8 +29,7 @@ stopifnot(expect("warning", rinteger(elements= ~1)))
 ## qc.options
 
 test(
-  forall(x = rsize(), {qc.options(character.max = x); qc.option("character.max") == x}),
-  cover = "qc.options")
+  forall(x = rsize(), {qc.options(character.max = x); qc.option("character.max") == x}))
 
 ## qc.option
 
