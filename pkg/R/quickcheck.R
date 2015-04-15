@@ -208,7 +208,7 @@ test =
       env = parent.frame()
       cov = covr::function_coverage(cover, run(), env = env)
       cover.fun = get(cover, envir = env)
-      cover.srcfile = as.list.environment(attributes(body(cover.fun))$srcfile %||% attributes(attributes(ff)$srcref)$srcfile)
+      cover.srcfile = as.list.environment(attributes(body(cover.fun))$srcfile %||% attributes(attributes(cover.fun)$srcref)$srcfile)
       if(cover.srcfile$filename == "") {
         srctemp = tempfile()
         writeLines(cover.srcfile$original$lines %||% cover.srcfile$lines, srctemp)
