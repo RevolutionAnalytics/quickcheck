@@ -4,7 +4,7 @@ Title: Support for randomized software testing
 Version: 3.2.0
 Date: 2015-03-31
 Author: Revolution Analytics
-Imports: digest, functional, testthat, pryr, microbenchmark, lazyeval, dplyr, bitops
+Imports: digest, functional, testthat, pryr, microbenchmark, dplyr, bitops
 Suggests: covr
 Collate: quickcheck.R generators.R
 Maintainer: Revolution Analytics <rhadoop@revolutionanalytics.com>

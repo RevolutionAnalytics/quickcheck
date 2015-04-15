@@ -16,8 +16,8 @@
 #generators common
 default =
   function(x) {
-    x = lazy(x)
-    lazy_eval(x, as.list(quickcheck.env))}
+    x = substitute(x)
+    eval(x, quickcheck.env, parent.frame())}
 
 ## zipf
 
