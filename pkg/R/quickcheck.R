@@ -129,16 +129,6 @@ eval.args =
         args[[i]] <<- eval(args[[i]], args[1:(i-1)], envir))
     as.list(args)}
 
-minhash =
-  function(tokens)
-    min(
-      cksum(
-        mapply(
-          function(x, i, j) paste(x[i:j], collapse = " "),
-          MoreArgs = list(x = tokens),
-          1:max(0, (length(tokens) - 6)),
-          min(7, length(tokens)):length(tokens))))%%(2^31 - 1)
-
 check.covr =
   function()
     if(!requireNamespace("covr"))
@@ -154,19 +144,15 @@ test =
     stop = !interactive(),
     about = all.names(body(assertion)),
     cover = NULL) {
-    tokens =
-      unlist(
-        strsplit(
+    seed =
+      cksum(
+        digest(
           c(
-            deparse(assertion),
-            unlist(
-              sapply(
-                about,
-                function(x)
-                  tryCatch(deparse(match.fun(x)), error = function(e) NULL)))),
-          split = "[ \t(){},]"))
-    tokens = tokens[tokens != ""]
-    seed = minhash(tokens)
+            list(assertion),
+            lapply(
+              about,
+              function(x)
+                tryCatch(deparse(match.fun(x)), error = function(e) NULL)))))%%(2^31 - 1)
     message("Using seed ", seed)
     set.seed(seed)
     stopifnot(is.function(assertion))
