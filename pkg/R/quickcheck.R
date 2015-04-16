@@ -137,13 +137,28 @@ check.covr =
          library(devtools)
          install_github(\"jimhester/covr@b181831f0fd4299f70c330b87a73d9ec2d13433\")")
 
+tested.functions =
+  function(expr, envir) {
+    funs =
+      names(
+        do.call(
+          c,
+          mget(
+            all.names(expr),
+            envir = envir,
+            ifnotfound = list(list()),
+            inherits = TRUE,
+            mode = "function")))
+    mask = funs %in% c(ls(search()[1]), ls(search()[2]))
+    funs[mask]}
+
 test =
   function(
     assertion,
     sample.size = default(sample.size %||% severity),
     stop = !interactive(),
-    about = all.names(body(assertion)),
-    cover = NULL) {
+    about = tested.functions(body(assertion), parent.frame()),
+    cover = FALSE) {
     seed =
       cksum(
         digest(
@@ -156,7 +171,15 @@ test =
     message("Using seed ", seed)
     set.seed(seed)
     stopifnot(is.function(assertion))
+    if(!is.character(about))
+      about = as.character(substitute(about))
     envir = parent.frame()
+    if(is.logical(cover))
+      cover = {
+        if(cover)
+          about[1]
+        else
+          NULL}
     assertion.text = deparse(assertion)
     try.assertion =
       function(xx) {
