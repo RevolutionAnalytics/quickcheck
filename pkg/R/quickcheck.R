@@ -220,7 +220,7 @@ test =
       cover.srcfile = as.list.environment(attributes(body(cover.fun))$srcfile %||% attributes(attributes(cover.fun)$srcref)$srcfile)
       if(cover.srcfile$filename == "") {
         srctemp = tempfile()
-        writeLines(cover.srcfile$original$lines %||% cover.srcfile$lines, srctemp)
+        writeLines(capture.output(cover.fun), srctemp)
         names(cov) = paste0(srctemp, names(cov))}}
     else{
       cov = NULL
