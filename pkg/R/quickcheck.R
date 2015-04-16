@@ -214,9 +214,8 @@ test =
               list(args = args, pass = result$pass, elapsed = result$elapsed)})}
     if(!is.null(cover)) {
       check.covr()
-      env = parent.frame()
-      cov = covr::function_coverage(cover, run(), env = env)
-      cover.fun = get(cover, envir = env)
+      cov = covr::function_coverage(cover, run(), env = envir)
+      cover.fun = get(cover, envir = envir)
       cover.srcfile = as.list.environment(attributes(body(cover.fun))$srcfile %||% attributes(attributes(cover.fun)$srcref)$srcfile)
       if(cover.srcfile$filename == "") {
         srctemp = tempfile()
@@ -228,6 +227,7 @@ test =
     test.report =
       list(
         assertion = assertion,
+        about = about,
         env =
           do.call(
             c,
@@ -270,6 +270,32 @@ test =
     if (stop && any(!test.report$pass)) {
       stop("to reproduce enter repro(\"", tf, "\")")}
     invisible(test.report)}
+
+test.set = function(..., block = {}) {
+  test.results =
+    c(
+      list(...),
+      lapply(substitute(block)[-1], eval, envir = parent.frame()))
+  retval =
+    unlist(
+      lapply(
+        test.results,
+        function(x)
+          lapply(
+            x$about,
+            function(name){
+              ll = list()
+              ll[[name]] = x$assertion
+              ll})))
+  retval = structure(retval[sort(names(retval))], class = "TestSet")
+  print(retval)
+  retval}
+
+print.TestSet =
+  function(x, ...){
+    cat("----test set------\n")
+    ll = lapply(x, function(y) paste(capture.output(y), collapse = "\n"))
+    cat(paste("function: ", names(ll), "assertion: ", ll, "\n", sep = "\n", collapse = ""))}
 
 smallest.failed =
   function(pass, cases)

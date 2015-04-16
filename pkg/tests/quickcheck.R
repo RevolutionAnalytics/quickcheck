@@ -24,33 +24,37 @@ stopifnot(expect("error", repro(test(function() TRUE))))
 
 stopifnot(!expect("error", repro(test(function() FALSE, stop = FALSE), debug = FALSE)))
 
-stopifnot(expect("warning", rinteger(elements= ~1)))
+stopifnot(expect("warning", rinteger(elements= ~1, size = c(min = 2))))
 
-## qc.options
+test.set(
+  block = {
 
-test(
-  forall(x = rsize(), {qc.options(character.max = x); qc.option("character.max") == x}))
+    ## qc.options
 
-## qc.option
+    test(
+      forall(x = rsize(), {qc.options(character.max = x); qc.option("character.max") == x}))
 
-test(
-function(
-  opts =
-    rsample(
-      names(formals(qc.options))[-1],
-      size = c(min = 1, max = length(formals(qc.options))),
-      replace = FALSE),
-  values = rinteger(size = ~length(opts))) {
-  args = as.list(values)
-  names(args) = opts
-  before = do.call(qc.options,  as.list(names(args)))
-  after = do.call(qc.options, args)
-  check = do.call(qc.options, as.list(names(args)))
-  check2 = lapply(as.list(names(args)), qc.option)
-  names(check2) = names(args)
-  do.call(qc.options, before)
-  identical(after[sort(names(after))], args[sort(names(args))]) &&
-    identical(after[sort(names(after))], check[sort(names(check))]) &&
-    identical(after[sort(names(after))], check2[sort(names(check2))]) })
+    ## qc.option
+
+    test(
+      function(
+        opts =
+          rsample(
+            names(formals(qc.options))[-1],
+            size = c(min = 1, max = length(formals(qc.options)) - 1),
+            replace = FALSE),
+        values = rinteger(size = ~length(opts))) {
+        args = as.list(values)
+        names(args) = opts
+        before = do.call(qc.options,  as.list(names(args)))
+        after = do.call(qc.options, args)
+        check = do.call(qc.options, as.list(names(args)))
+        check2 = lapply(as.list(names(args)), qc.option)
+        names(check2) = names(args)
+        do.call(qc.options, before)
+        identical(after[sort(names(after))], args[sort(names(args))]) &&
+          identical(after[sort(names(after))], check[sort(names(check))]) &&
+          identical(after[sort(names(after))], check2[sort(names(check2))]) })
 
 
+  })
