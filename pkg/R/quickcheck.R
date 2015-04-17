@@ -168,7 +168,7 @@ test =
     if(length(about) == 0)
       warning("Can't guess what this test is about, please specify about argument")
     else {
-      if(grepl("^package:", about))
+      if(grepl("^package:", about)[1])
         about = intersect(ls(about), all.names(body(assertion)))
       print(paste("Testing", paste(about, collapse = " ")))}
     seed =
@@ -283,20 +283,18 @@ test =
 
 test.set = function(...) {
   test.results =
-      list(...)
+    list(...)
   if(length(test.results) == 1)
     test.results = list(test.results)
-  retval =
-    unlist(
+  retval = list()
+  lapply(
+    test.results,
+    function(x)
       lapply(
-        test.results,
-        function(x)
-          lapply(
-            x$about,
-            function(name){
-              ll = list()
-              ll[[name]] = x$assertion
-              ll})))
+        x$about,
+        function(name){
+          retval[[name]] <<- append(retval[[name]], x$assertion)
+          retval}))
   structure(retval[sort(names(retval))], class = "TestSet")}
 
 get.source =
@@ -311,7 +309,7 @@ print.TestSet =
   function(x, ...){
     cat("----test set------\n")
     ll = lapply(x, function(y) paste(get.source(y), collapse = "\n"))
-    cat(paste("function: ", names(ll), "assertion: ", ll, "\n", sep = "\n", collapse = ""))}
+    cat(paste("Function: ", names(ll), "\nAssertions:\n", ll, sep = " ", collapse = "\n"))}
 
 smallest.failed =
   function(pass, cases)
