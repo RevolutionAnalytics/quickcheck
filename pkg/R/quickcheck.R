@@ -281,11 +281,11 @@ test =
       stop("to reproduce enter repro(\"", tf, "\")")}
     invisible(test.report)}
 
-test.set = function(..., block = {}) {
+test.set = function(...) {
   test.results =
-    c(
-      list(...),
-      lapply(substitute(block)[-1], eval, envir = parent.frame()))
+      list(...)
+  if(length(test.results) == 1)
+    test.results = list(test.results)
   retval =
     unlist(
       lapply(
