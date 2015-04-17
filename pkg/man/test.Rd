@@ -21,7 +21,7 @@
   \item{.env}{Environment in which to create the function}
 }
 \details{
-A test is considered passed if each run passes. A run passes if the assertion, once called, returns \code{TRUE}. A run fails if the assertion returns \code{FALSE} or raises an error. \code{set.seed(0)} is performed at the beginning of each test for reproducibility. \code{forall} is just a different way to create a function that adds a check that all arguments have default values; it is used to create assertions. Coverage information consists of a overall coverage percentage and shiny application displaying line-by-line coverage information.
+A test is considered passed if each run passes. A run passes if the assertion, once called, returns \code{TRUE}. A run fails if the assertion returns \code{FALSE} or raises an error. \code{set.seed(0)} is performed at the beginning of each test for reproducibility. \code{forall} is just a different way to create a function that adds a check that all arguments have default values; it is used to create assertions. Coverage information consists of an overall coverage percentage and shiny application displaying line-by-line coverage information.
 }
 
 \value{A list with five elements:
