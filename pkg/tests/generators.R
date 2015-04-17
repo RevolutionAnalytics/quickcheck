@@ -21,14 +21,15 @@ library(digest)
 
 type.test =
 	function(is.class, generator)
-		test(forall(x = generator(), {is.class(x)}))
+		test(forall(x = generator(), {is.class(x)}), about = substitute(generator))
 
 variability.test =
 	function(generator)
 		test(
 			forall(
         x = generator,
-        {length(unique(sapply(replicate(10, generator()), digest))) > 2}))
+        {length(unique(sapply(replicate(10, generator()), digest))) > 2}),
+			about = substitute(generator))
 
 range.test =
   function(generator)
@@ -36,7 +37,8 @@ range.test =
       forall(
         range = sort(generator(size = ~2)),
         data = generator(elements = range),
-        {all(data >= min(range)) && all(data <= max(range))}))
+        {all(data >= min(range)) && all(data <= max(range))}),
+      about = substitute(generator))
 
 size.test =
   function(generator, size  = c(min = 0, max = default(vector.size %||% 4 * severity)))
@@ -44,7 +46,8 @@ size.test =
       forall(
         size = sort(rinteger(elements = size, size = ~2)),
         data = generator(size = size),
-        {length(data) >= min(size) && length(data) <= max(size)}))
+        {length(data) >= min(size) && length(data) <= max(size)}),
+      about = substitute(generator))
 
 nrow.test =
   function(generator)
@@ -53,7 +56,8 @@ nrow.test =
         nrow = sort(rinteger(elements = c(min = 0), size = ~2)),
         data = generator(nrow = nrow),
         {(nrow(data) >= min(nrow) && nrow(data) <= max(nrow)) ||
-        ncol(data) == 0}))
+        ncol(data) == 0}),
+      about = substitute(generator))
 
 
 ncol.test =
@@ -62,7 +66,8 @@ ncol.test =
       forall(
         ncol = sort(rinteger(elements = c(min = 0), size = ~2)),
         data = generator(ncol = ncol),
-        {ncol(data) >= min(ncol) && ncol(data) <= max(ncol)}))
+        {ncol(data) >= min(ncol) && ncol(data) <= max(ncol)}),
+      about = substitute(generator))
 
 #height function to build a test about height of a nested list
 height =
