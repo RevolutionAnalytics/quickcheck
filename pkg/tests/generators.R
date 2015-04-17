@@ -20,16 +20,16 @@ library(digest)
 ## define general tests that can apply to several if not most generators
 
 type.test =
-	function(is.class, generator)
-		test(forall(x = generator(), {is.class(x)}), about = substitute(generator))
+  function(is.class, generator)
+    test(forall(x = generator(), {is.class(x)}), about = substitute(generator))
 
 variability.test =
-	function(generator)
-		test(
-			forall(
+  function(generator)
+    test(
+      forall(
         x = generator,
         {length(unique(sapply(replicate(10, generator()), digest))) > 2}),
-			about = substitute(generator))
+      about = substitute(generator))
 
 range.test =
   function(generator)
@@ -56,7 +56,7 @@ nrow.test =
         nrow = sort(rinteger(elements = c(min = 0), size = ~2)),
         data = generator(nrow = nrow),
         {(nrow(data) >= min(nrow) && nrow(data) <= max(nrow)) ||
-        ncol(data) == 0}),
+            ncol(data) == 0}),
       about = substitute(generator))
 
 
@@ -71,151 +71,147 @@ ncol.test =
 
 #height function to build a test about height of a nested list
 height =
-	function(l)
-		switch(
-			class(l),
-			NULL = 0,
-			list = 1 + max({mm = sapply(l, height); if(is.list(mm)) 0 else mm}),
-			0)
+  function(l)
+    switch(
+      class(l),
+      NULL = 0,
+      list = 1 + max({mm = sapply(l, height); if(is.list(mm)) 0 else mm}),
+      0)
 
 test.set(
-  block = {
-
-    ##rlogical
-    type.test(is.logical, rlogical)
-    variability.test(rlogical)
-    size.test(rlogical)
-    test(
-      forall(x = rlogical(c(p = 0)), {!any(x)}))
-    test(
-      forall(x =  rlogical(c(p = 1)), {all(x)}))
+  ##rlogical
+  type.test(is.logical, rlogical),
+  variability.test(rlogical),
+  size.test(rlogical),
+  test(
+    forall(x = rlogical(c(p = 0)), {!any(x)})),
+  test(
+    forall(x =  rlogical(c(p = 1)), {all(x)})),
 
 
-    ##rinteger
-    type.test(is.integer, rinteger)
-    variability.test(rinteger)
-    range.test(rinteger)
-    size.test(rinteger)
+  ##rinteger
+  type.test(is.integer, rinteger),
+  variability.test(rinteger),
+  range.test(rinteger),
+  size.test(rinteger),
 
-    ##rdouble
-    type.test(is.double, rdouble)
-    variability.test(rdouble)
-    size.test(rdouble)
-    test(
-      forall(
-        mean = rdouble(size = ~1),
-        data = rdouble(elements = c(mean = mean, sd = 0)),
-        {all(data == mean)}))
+  ##rdouble
+  type.test(is.double, rdouble),
+  variability.test(rdouble),
+  size.test(rdouble),
+  test(
+    forall(
+      mean = rdouble(size = ~1),
+      data = rdouble(elements = c(mean = mean, sd = 0)),
+      {all(data == mean)})),
 
-    ## rnumeric
-    type.test(is.numeric, rnumeric)
-    variability.test(rnumeric)
-    size.test(rnumeric)
+  ## rnumeric
+  type.test(is.numeric, rnumeric),
+  variability.test(rnumeric),
+  size.test(rnumeric),
 
-    ##rcharacter:
-    type.test(is.character, rcharacter)
-    variability.test(rcharacter)
-    size.test(rcharacter)
-    test(
-      forall(
-        nchar = rsize(),
-        string = rsize(),
-        data = rcharacter(elements = list(nchar = c(max = nchar), string = c(max = string))),
-        {all(sapply(data, nchar) <= nchar)}))
+  ##rcharacter:
+  type.test(is.character, rcharacter),
+  variability.test(rcharacter),
+  size.test(rcharacter),
+  test(
+    forall(
+      nchar = rsize(),
+      string = rsize(),
+      data = rcharacter(elements = list(nchar = c(max = nchar), string = c(max = string))),
+      {all(sapply(data, nchar) <= nchar)})),
 
-    ##rfactor
-    type.test(is.factor, rfactor)
-    variability.test(rfactor)
-    size.test(rfactor)
-    test(
-      forall(
-        nlevels = rsize(c(min = 1)),
-        data = rfactor(elements =  c(nlevels = nlevels)),
-        {length(unique(data)) <= nlevels}))
+  ##rfactor
+  type.test(is.factor, rfactor),
+  variability.test(rfactor),
+  size.test(rfactor),
+  test(
+    forall(
+      nlevels = rsize(c(min = 1)),
+      data = rfactor(elements =  c(nlevels = nlevels)),
+      {length(unique(data)) <= nlevels})),
 
-    ##rDate
+  ##rDate
 
-    ##rraw
-    type.test(is.raw, rraw)
-    variability.test(rraw)
-    size.test(rraw)
-    test(
-      forall(
-        n = rsize(),
-        data = rraw(elements = c(min = n, max = n)),
-        {all(data == as.raw(n))}))
+  ##rraw
+  type.test(is.raw, rraw),
+  variability.test(rraw),
+  size.test(rraw),
+  test(
+    forall(
+      n = rsize(),
+      data = rraw(elements = c(min = n, max = n)),
+      {all(data == as.raw(n))})),
 
-    #constant
-    test(
-      forall(x = rany(), y = constant(x), {identical(x, y())}))
+  #constant
+  test(
+    forall(x = rany(), y = constant(x), {identical(x, y())})),
 
-    #rsample
-    test(
-      forall(
-        x = rlist(),
-        y = rsample(x),
-        {y %in% x}))
+  #rsample
+  test(
+    forall(
+      x = rlist(),
+      y = rsample(x),
+      {y %in% x})),
 
-    variability.test(Curry(rsample, elements = 1:1000, size =~2))
+  variability.test(Curry(rsample, elements = 1:1000, size =~2)),
 
-    #rlist
-    type.test(is.list, rlist)
-    test(
-      forall(
-        l = rlist(),
-        {is.element(rsample(l), l)}))
+  #rlist
+  type.test(is.list, rlist),
+  test(
+    forall(
+      l = rlist(),
+      {is.element(rsample(l), l)})),
 
-    #mixture
-    #very weak test
-    test(
-      forall(
-        n = runif(n = 1),
-        {is.element(
-          mixture(
-            list(
-              constant(n),
-              constant(2*n)))(),
-          c(n,2*n))}))
+  #mixture
+  #very weak test
+  test(
+    forall(
+      n = runif(n = 1),
+      {is.element(
+        mixture(
+          list(
+            constant(n),
+            constant(2*n)))(),
+        c(n,2*n))})),
 
-    #rlist
+  #rlist
 
-    type.test(is.list, rlist)
-    variability.test(rlist)
-    size.test(rlist)
+  type.test(is.list, rlist),
+  variability.test(rlist),
+  size.test(rlist),
 
-    # rdata.frame
-    type.test(is.data.frame, rdata.frame)
-    variability.test(rdata.frame)
-    nrow.test(rdata.frame)
-    ncol.test(rdata.frame)
+  # rdata.frame
+  type.test(is.data.frame, rdata.frame),
+  variability.test(rdata.frame),
+  nrow.test(rdata.frame),
+  ncol.test(rdata.frame),
 
-    # rany
-    variability.test(rany)
+  # rany
+  variability.test(rany),
 
-    #rmatrix
+  #rmatrix
 
-    type.test(is.matrix, rmatrix)
-    variability.test(rmatrix)
-    nrow.test(rmatrix)
-    ncol.test(rmatrix)
+  type.test(is.matrix, rmatrix),
+  variability.test(rmatrix),
+  nrow.test(rmatrix),
+  ncol.test(rmatrix),
 
-    #ratomic
-    type.test(is.atomic, ratomic)
-    variability.test(ratomic)
+  #ratomic
+  type.test(is.atomic, ratomic),
+  variability.test(ratomic),
 
 
-    #rfunction
-    type.test(is.function, quickcheck:::rfunction)
-    variability.test(quickcheck:::rfunction)
+  #rfunction
+  type.test(is.function, quickcheck:::rfunction),
+  variability.test(quickcheck:::rfunction),
 
-    #named
+  #named
 
-    test(forall(x = named(ratomic)(), {!is.null(names(x))}))
-    test(forall(x = rnamed(ratomic()), {!is.null(names(x))}))
-    type.test(is.atomic, named(ratomic))
+  test(forall(x = named(ratomic)(), {!is.null(names(x))})),
+  test(forall(x = rnamed(ratomic()), {!is.null(names(x))})),
+  type.test(is.atomic, named(ratomic)),
 
-    test(forall(x = named(rlist)(), {!is.null(names(x))}))
-    test(forall(x = rnamed(rlist()), {!is.null(names(x))}))
-    type.test(is.list, named(rlist))
-
-  })
+  test(forall(x = named(rlist)(), {!is.null(names(x))})),
+  test(forall(x = rnamed(rlist()), {!is.null(names(x))})),
+  type.test(is.list, named(rlist)))
