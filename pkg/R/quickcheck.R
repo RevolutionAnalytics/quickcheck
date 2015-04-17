@@ -219,7 +219,7 @@ test =
       cover.srcfile = as.list.environment(attributes(body(cover.fun))$srcfile %||% attributes(attributes(cover.fun)$srcref)$srcfile)
       if(cover.srcfile$filename == "") {
         srctemp = tempfile()
-        writeLines(capture.output(cover.fun), srctemp)
+        writeLines(get.source(cover.fun), srctemp)
         names(cov) = paste0(srctemp, names(cov))}}
     else{
       cov = NULL
@@ -291,10 +291,18 @@ test.set = function(..., block = {}) {
   print(retval)
   retval}
 
+get.source =
+  function(f) {
+    src = capture.output(f)
+    if(grepl("^<environment: ", tail(src, 1)) == 1)
+      src[-length(src)]
+    else
+      src}
+
 print.TestSet =
   function(x, ...){
     cat("----test set------\n")
-    ll = lapply(x, function(y) paste(capture.output(y), collapse = "\n"))
+    ll = lapply(x, function(y) paste(get.source(y), collapse = "\n"))
     cat(paste("function: ", names(ll), "assertion: ", ll, "\n", sep = "\n", collapse = ""))}
 
 smallest.failed =
