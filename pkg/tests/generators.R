@@ -24,12 +24,12 @@ type.test =
     test(forall(x = generator(), {is.class(x)}), about = substitute(generator))
 
 variability.test =
-  function(generator)
+  function(generator, about = substitute(generator))
     test(
       forall(
         x = generator,
         {length(unique(sapply(replicate(10, generator()), digest))) > 2}),
-      about = substitute(generator))
+      about = about)
 
 range.test =
   function(generator)
@@ -84,9 +84,9 @@ test.set(
   variability.test(rlogical),
   size.test(rlogical),
   test(
-    forall(x = rlogical(c(p = 0)), {!any(x)})),
+    forall(x = rlogical(c(p = 0)), {!any(x)}), about = "rlogical"),
   test(
-    forall(x =  rlogical(c(p = 1)), {all(x)})),
+    forall(x =  rlogical(c(p = 1)), {all(x)}), about = "rlogical"),
 
 
   ##rinteger
@@ -103,7 +103,8 @@ test.set(
     forall(
       mean = rdouble(size = ~1),
       data = rdouble(elements = c(mean = mean, sd = 0)),
-      {all(data == mean)})),
+      {all(data == mean)}),
+    about = "rdouble"),
 
   ## rnumeric
   type.test(is.numeric, rnumeric),
@@ -119,7 +120,8 @@ test.set(
       nchar = rsize(),
       string = rsize(),
       data = rcharacter(elements = list(nchar = c(max = nchar), string = c(max = string))),
-      {all(sapply(data, nchar) <= nchar)})),
+      {all(sapply(data, nchar) <= nchar)}),
+    about = "rcharacter"),
 
   ##rfactor
   type.test(is.factor, rfactor),
@@ -129,7 +131,8 @@ test.set(
     forall(
       nlevels = rsize(c(min = 1)),
       data = rfactor(elements =  c(nlevels = nlevels)),
-      {length(unique(data)) <= nlevels})),
+      {length(unique(data)) <= nlevels}),
+    about = "rfactor"),
 
   ##rDate
 
@@ -141,27 +144,31 @@ test.set(
     forall(
       n = rsize(),
       data = rraw(elements = c(min = n, max = n)),
-      {all(data == as.raw(n))})),
+      {all(data == as.raw(n))}),
+    about = "rraw"),
 
   #constant
   test(
-    forall(x = rany(), y = constant(x), {identical(x, y())})),
+    forall(x = rany(), y = constant(x), {identical(x, y())}),
+    about = "constant"),
 
   #rsample
   test(
     forall(
       x = rlist(),
       y = rsample(x),
-      {y %in% x})),
+      {y %in% x}),
+    about = "rsample"),
 
-  variability.test(Curry(rsample, elements = 1:1000, size =~2)),
+  variability.test(Curry(rsample, elements = 1:1000, size =~2), about = "rsample"),
 
   #rlist
   type.test(is.list, rlist),
   test(
     forall(
       l = rlist(),
-      {is.element(rsample(l), l)})),
+      {is.element(rsample(l), l)}),
+    about = "rlist"),
 
   #mixture
   #very weak test
@@ -173,7 +180,8 @@ test.set(
           list(
             constant(n),
             constant(2*n)))(),
-        c(n,2*n))})),
+        c(n,2*n))}),
+    about = "mixture"),
 
   #rlist
 
@@ -208,10 +216,10 @@ test.set(
 
   #named
 
-  test(forall(x = named(ratomic)(), {!is.null(names(x))})),
-  test(forall(x = rnamed(ratomic()), {!is.null(names(x))})),
+  test(forall(x = named(ratomic)(), {!is.null(names(x))}), about = "named"),
+  test(forall(x = rnamed(ratomic()), {!is.null(names(x))}), about = "named"),
   type.test(is.atomic, named(ratomic)),
 
-  test(forall(x = named(rlist)(), {!is.null(names(x))})),
-  test(forall(x = rnamed(rlist()), {!is.null(names(x))})),
+  test(forall(x = named(rlist)(), {!is.null(names(x))}), about = "named"),
+  test(forall(x = rnamed(rlist()), {!is.null(names(x))}), about = "named"),
   type.test(is.list, named(rlist)))
