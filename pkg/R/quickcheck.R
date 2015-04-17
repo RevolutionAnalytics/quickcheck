@@ -165,7 +165,12 @@ test =
     about = tested.functions(assertion),
     cover = FALSE) {
     about = as.character(about)
-    print(paste("Testing", paste(about, collapse = " ")))
+    if(length(about) == 0)
+      warning("Can't guess what this test is about, please specify about argument")
+    else {
+      if(grepl("^package:", about))
+        about = intersect(ls(about), all.names(body(assertion)))
+      print(paste("Testing", paste(about, collapse = " ")))}
     seed =
       cksum(
         digest(
