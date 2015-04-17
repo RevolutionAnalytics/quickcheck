@@ -16,23 +16,23 @@
 ## test (failure)
 library(quickcheck)
 
-stopifnot(expect("error", test(function(x = rcharacter()) stop(x))))
+pkg = "package:quickcheck"
+stopifnot(expect("error", test(function(x = rcharacter()) stop(x), about = "test")))
 
 #repro
 
-stopifnot(expect("error", repro(test(function() TRUE))))
+stopifnot(expect("error", repro(test(function() TRUE, about = "test"))))
 
-stopifnot(!expect("error", repro(test(function() FALSE, stop = FALSE), debug = FALSE)))
+stopifnot(!expect("error", repro(test(function() FALSE, stop = FALSE, about = "test"), debug = FALSE)))
 
 stopifnot(expect("warning", rinteger(elements= ~1, size = c(min = 2))))
 
 test.set(
-  block = {
-
     ## qc.options
 
     test(
-      forall(x = rsize(), {qc.options(character.max = x); qc.option("character.max") == x}))
+      forall(x = rsize(), {qc.options(character.max = x); qc.option("character.max") == x}),
+      about = pkg),
 
     ## qc.option
 
@@ -54,7 +54,6 @@ test.set(
         do.call(qc.options, before)
         identical(after[sort(names(after))], args[sort(names(args))]) &&
           identical(after[sort(names(after))], check[sort(names(check))]) &&
-          identical(after[sort(names(after))], check2[sort(names(check2))]) })
+          identical(after[sort(names(after))], check2[sort(names(check2))]) },
+      about = pkg))
 
-
-  })
