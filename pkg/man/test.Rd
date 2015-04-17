@@ -6,19 +6,22 @@
 \code{test} evaluates an assertion multiple times by re-evaluating its arguments, some of which are expected to be random data generators. Stops or returns a test report.
 }
 \usage{
-test(assertion, sample.size = default(sample.size \%||\% severity), stop = !interactive(), cover = NULL)
-forall(..., .env = parent.frame())
+ test(assertion, sample.size = default(sample.size \%||\%
+                 severity), stop = !interactive(), about =
+                 tested.functions(assertion), cover = FALSE)
+ forall(..., .env = parent.frame())
 }
 \arguments{
   \item{assertion}{A function returning a length-1 logical vector and having defaults for all arguments.}
   \item{sample.size}{How many times to check the assertion, with newly sampled data as arguments}
   \item{stop}{Whether to stop in case of error or continue}
-  \item{cover}{Name of function whose coverage to report, as a character string}
+  \item{about}{Names of functions, as character vector, that the current call was designed to test. Alternatively, the name of a package as "package:<package-name>", in which case the test is associated with all the function in the pacakge that are present in the body of the assertion. The default is the names of functions that are present in the body of the assertion and defined in its environment or the enclosing one. This is just a heuristic and should not be expected to guess the correct functions all the time.}
+  \item{cover}{Name of function whose coverage to report, as a character string. If \code{TRUE}}, the first element of the \code{about} argument.
   \item{...}{The argument of a function, followed by its body}
   \item{.env}{Environment in which to create the function}
 }
 \details{
-A test is considered passed if each run passes. A run passes if the assertion, once called, returns \code{TRUE}. A run fails if the assertion returns \code{FALSE} or raises an error. \code{set.seed(0)} is performed at the beginning of each test for reproducibility. \code{forall} is just a different way to create a function that adds a check that all arguments have default values; it is used to create assertions. Coverage information consists of a overall coverage percentage and web page displaying the code, with uncovered lines in bold face.
+A test is considered passed if each run passes. A run passes if the assertion, once called, returns \code{TRUE}. A run fails if the assertion returns \code{FALSE} or raises an error. \code{set.seed(0)} is performed at the beginning of each test for reproducibility. \code{forall} is just a different way to create a function that adds a check that all arguments have default values; it is used to create assertions. Coverage information consists of a overall coverage percentage and shiny application displaying line-by-line coverage information.
 }
 
 \value{A list with five elements:
