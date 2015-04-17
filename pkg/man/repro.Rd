@@ -5,11 +5,11 @@
   Helps reproducing any failures incurred into while testing with the function \code{\link{test}}
 }
 \usage{
-  repro(test.report, i = first.false(test.report$pass), debug = TRUE)
+  repro(test.report, which = smallest.failed(test.report$pass, test.report$cases), debug = TRUE)
 }
 \arguments{
   \item{test.report}{The value returned by test when \code{stop} is \code{FALSE}}
-  \item{i}{A number identifying the test case the developer would like to reproduce, defaults to the first failed}
+  \item{which}{A number identifying the test case the developer would like to reproduce, defaults to the first failed}
   \item{debug}{Whether to debug the assertion or just rerun it}
 }
 \details{

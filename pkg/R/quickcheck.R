@@ -326,15 +326,15 @@ smallest.failed =
 repro =
   function(
     test.report,
-    i = smallest.failed(test.report$pass, test.report$cases),
+    which = smallest.failed(test.report$pass, test.report$cases),
     debug = TRUE) {
     if(is.character(test.report))
       test.report = readRDS(test.report)
     assertion = test.report$assertion
-    if(!is.finite(i))
+    if(!is.finite(which))
       stop("All tests pass, nothing to repro here.")
     if(debug) debug(assertion)
-    do.call(assertion, test.report$cases[[i]])}
+    do.call(assertion, test.report$cases[[which]])}
 
 forall =
   function(..., .env = parent.frame()) {
