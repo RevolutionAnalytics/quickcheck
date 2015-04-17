@@ -135,7 +135,7 @@ check.covr =
       stop(
         "Need to install covr to use this feature
          library(devtools)
-         install_github(\"jimhester/covr@b181831f0fd4299f70c330b87a73d9ec2d13433\")")
+         install_github(\"jimhester/covr@c70153f80461ca054771055309b02fd2a810750d\")")
 
 tested.functions =
   function(assertion) {
