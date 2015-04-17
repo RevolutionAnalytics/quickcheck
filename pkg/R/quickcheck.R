@@ -327,11 +327,11 @@ repro =
   function(
     test.report,
     which = smallest.failed(test.report$pass, test.report$cases),
+    assertion = test.report$assertion,
     debug = TRUE) {
     if(is.character(test.report))
       test.report = readRDS(test.report)
-    assertion = test.report$assertion
-    if(!is.finite(which))
+     if(!is.finite(which))
       stop("All tests pass, nothing to repro here.")
     if(debug) debug(assertion)
     do.call(assertion, test.report$cases[[which]])}
