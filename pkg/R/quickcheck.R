@@ -138,18 +138,23 @@ check.covr =
          install_github(\"jimhester/covr@b181831f0fd4299f70c330b87a73d9ec2d13433\")")
 
 tested.functions =
-  function(expr, envir) {
+  function(assertion) {
     funs =
-      names(
-        do.call(
-          c,
-          mget(
-            all.names(expr),
-            envir = envir,
-            ifnotfound = list(list()),
-            inherits = TRUE,
-            mode = "function")))
-    mask = funs %in% c(ls(search()[1]), ls(search()[2]))
+      unique(
+        names(
+          do.call(
+            c,
+            mget(
+              all.names(body(assertion)),
+              envir = environment(assertion),
+              ifnotfound = list(list()),
+              inherits = TRUE,
+              mode = "function"))))
+    mask =
+      funs %in%
+      c(
+        ls(environment(assertion)),
+        ls(parent.env(environment(assertion))))
     funs[mask]}
 
 test =
@@ -157,8 +162,10 @@ test =
     assertion,
     sample.size = default(sample.size %||% severity),
     stop = !interactive(),
-    about = tested.functions(body(assertion), parent.frame()),
+    about = tested.functions(assertion),
     cover = FALSE) {
+    about = as.character(about)
+    print(paste("Testing", paste(about, collapse = " ")))
     seed =
       cksum(
         digest(
@@ -171,8 +178,6 @@ test =
     message("Using seed ", seed)
     set.seed(seed)
     stopifnot(is.function(assertion))
-    if(!is.character(about))
-      about = as.character(substitute(about))
     envir = parent.frame()
     if(is.logical(cover))
       cover = {
@@ -287,9 +292,7 @@ test.set = function(..., block = {}) {
               ll = list()
               ll[[name]] = x$assertion
               ll})))
-  retval = structure(retval[sort(names(retval))], class = "TestSet")
-  print(retval)
-  retval}
+  structure(retval[sort(names(retval))], class = "TestSet")}
 
 get.source =
   function(f) {
