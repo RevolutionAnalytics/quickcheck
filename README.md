@@ -24,23 +24,23 @@ library(devtools)
 Then, to install from source:
 
 ```
-install_github("RevolutionAnalytics/quickcheck@3.2.0", subdir = "pkg")
+install_github("RevolutionAnalytics/quickcheck@3.3.0", subdir = "pkg")
 ```
 
 Linux package:
 
 ```
 install_url(
-  "https://github.com/RevolutionAnalytics/quickcheck/releases/download/3.2.0/quickcheck_3.2.0.tar.gz")
+  "https://github.com/RevolutionAnalytics/quickcheck/releases/download/3.3.0/quickcheck_3.3.0.tar.gz")
 ```
 
 Windows package:
 
 ```
 install_url(
-  "https://github.com/RevolutionAnalytics/quickcheck/releases/download/3.2.0/quickcheck_3.2.0.zip")
+  "https://github.com/RevolutionAnalytics/quickcheck/releases/download/3.3.0/quickcheck_3.3.0.zip")
 ```
 
-The current version is 3.2.0 .
+The current version is 3.3.0 .
 
 While this package was first developed to support the activities of the RHadoop project, it's not part of it nor related to Hadoop or big data. While it has been in use for a few years to test packages used in production, version 3.0.0 marks the first version of the project that's offered for general use and as such it went through a major API re-design. Hence, versions 3.x.y should be considered beta  releases and no backward compatibility guarantees are offered, as it is customary in [semantic versioning](http://semver.org) for 0.x.y releases. We will switch to the normal major/minor/hotfix releases from version 4.
