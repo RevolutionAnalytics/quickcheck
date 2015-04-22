@@ -103,17 +103,20 @@ arg.match =
 rdata =
   function(rng, size) {
     data = {
-      if(is.function(rng))
-        do.call(rng, list(size))
+      if(is.function(rng)){
+        if(is.null(size))
+          rng()
+        else
+          do.call(rng, list(size))}
       else
         eval(tail(as.list(rng), 1)[[1]], list(size = size), environment(rng))}
-    if(size != length(data)) {
+    if(is.null(size) || size == length(data))
+      data
+    else{
       if(length(data) > 0) {
         warning('recycling random numbers')
         rep_len(data, size)}
-      else stop("can't recycle no data")}
-    else
-      data}
+      else stop("can't recycle no data")}}
 
 # accepts max or min, max or an rng function or formula (size spec)
 # returns random nonnegative integer,  from bilateral zipf by default
