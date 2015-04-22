@@ -1,8 +1,8 @@
 Package: quickcheck
 Type: Package
 Title: Support for randomized software testing
-Version: 3.3.0
-Date: 2015-04-18
+Version: 3.4.0
+Date: 2015-04-22
 Author: Revolution Analytics
 Imports: digest, functional, testthat, pryr, microbenchmark, dplyr, bitops
 Suggests: covr
