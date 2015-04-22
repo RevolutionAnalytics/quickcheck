@@ -88,7 +88,7 @@ rnamed( x, names = rcharacter(size = ~length(x)))}
 \arguments{
  \item{elements}{Specify the distribution of elements of the returned data structure, either as a vector of distribution parameters or as a random number generator function or a formula that will be used as a random number generator. Different generators accept different parameters. Using names in the vectors is optional when no ambiguity arises.
  \describe{
-  \item{rcharacter}{\code{nchar}, the range of lengths of each string and \code{string}, the range of distinct strings generated. Each can also be a random number generator function or formula, see below}
+  \item{rcharacter}{\code{alphabet}, the alphabet the generated strings are built on; \code{nchar.min}, \code{nchar.max},  the range of lengths of each string; and \code{unique.min}, \code{unique.max}, the range of distinct strings generated. Each can also be a random number generator function or formula, see below}
   \item{rDate}{\code{from}, \code{to}, the earliest and latest possible dates, as class Date objects or strings amenable to conversion}
   \item{rdouble}{\code{mean} and \code{sd} are the mean and standard deviation}
  \item{rfactor}{\code{nlevels} is the maximum number of levels}

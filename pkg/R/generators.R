@@ -192,40 +192,38 @@ rcharacter =
   function(
     elements =
       list(
-        nchar = c(min = 0, max = default(nchar.size %||% severity)),
-        string = c(min = 0, max = default(character.max %||% severity))),
-    size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
-    elements = arg.match(elements)
-    nchar = elements[["nchar"]]
-    string = elements[["string"]]
+        alphabet = c(letters, LETTERS, 0:9),
+        nchar.min = 0,
+        nchar.max = default(nchar.max %||% severity),
+        unique.min = 1,
+        unique.max = default(unique.max %||% severity)),
+        size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
+    if(!is.fofun(elements)){
+      el = arg.match(elements)
+      elements =
+        function(n){
+          #generate n.unique
+          n.unique = rsize(unname(el[c("unique.min", "unique.max")]))
+          #generate n.unique str lenghts according to n.char
+          n.char = rinteger(unname(el[c("nchar.min", "nchar.max")]), ~n.unique)
+          # create the strings
+          strings =
+            sapply(
+              split(
+                sample(
+                  x = el$alphabet,
+                  size = sum(n.char),
+                  replace = TRUE),
+                rep(1:length(n.char), n.char)),
+              paste,
+              collapse = "")
+          if(min(n.char) == 0)
+            strings = c(strings, "")
+          # resample n time
+          sample(strings, n, replace = TRUE)
+        }}
     size = rsize(arg.match(size))
-    if(!is.fofun(nchar)) {
-      nn = nchar
-      nchar =
-        function(n)
-          rinteger(
-            elements =
-              arg.match(
-                nn,
-                c(min = 0, max = default(nchar.size %||% severity))),
-            size = ~n)}
-    if(!is.fofun(string)) {
-      ss = string
-      string =
-        function(n)
-          sapply(
-            rinteger(
-              elements =
-                arg.match(
-                  ss,
-                  c(min = 0, max = default(character.max %||% severity))),
-              size = ~n),
-            digest)}
-    unname(
-      substr(
-          rdata(string, size),
-        1,
-        rdata(nchar, size)))}
+    as.character(unname(rdata(elements, size)))}
 
 rfactor =
   function(
