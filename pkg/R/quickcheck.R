@@ -98,7 +98,6 @@ qc.option =
 
 formals(qc.option) = formals(qc.options)
 
-
 ## make use of testthat expectations
 
 as.assertion =
@@ -373,7 +372,6 @@ coverage.character =
     pc = covr::package_coverage(path)
     print(pc)
     covr::shine(pc)}
-
 
 coverage.coverage =
   function(x, ...) {
