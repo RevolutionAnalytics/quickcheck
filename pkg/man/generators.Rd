@@ -69,11 +69,10 @@ rmatrix(
   nrow = c(min = 0, max = default(matrix.nrow \%||\% 4 * severity)),
   ncol = c(min = 0, max = default(matrix.ncol \%||\% severity)))
 rnumeric(
-  elements =
-    list(
-      integer = c(max = default(integer.size \%||\% 10 * severity)),
-      double = c(mean = 0, sd = default(double.size \%||\% 10 * severity))),
-  size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
+  elements = { r = default(integer.size \%||\% 10 * severity)
+              c(integer.min = -r, integer.max = r,
+                 double.mean = 0, double.sd = default(double.size \%||\% 10 * severity))},
+ size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
 rraw(
   elements = c(min = 0, max = default(raw.max \%||\% severity)),
   size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))

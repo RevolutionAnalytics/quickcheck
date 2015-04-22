@@ -170,15 +170,21 @@ rdouble =
 
 rnumeric =
   function(
-    elements  =
-      list(
-        integer = c(max = default(integer.size %||% 10 * severity)),
-        double = 	c(mean = 0, sd = default(double.size %||% 10 * severity))),
+    elements  = {
+      r = default(integer.size %||% 10 * severity);
+      c(integer.min = -r, integer.max = r,
+        double.mean = 0, double.sd = default(double.size %||% 10 * severity))},
     size = c(min = 0, max = default(vector.size %||% 10 * severity)))
     mixture(
       list(
-        Curry(rdouble, elements = elements$double, size = size),
-        Curry(rinteger, elements = elements$integer, size = size)))()
+        Curry(
+          rdouble,
+          elements = unname(elements[c("double.mean", "double.sd")]),
+          size = size),
+        Curry(
+          rinteger,
+          elements = unname(elements[c("integer.min", "integer.max")]),
+          size = size)))()
 
 ##rcomplex NAY
 
