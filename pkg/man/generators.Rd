@@ -83,16 +83,8 @@ rsample(
 rsize(size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
 mixture(generators)
 constant(const = NULL)
-named(
-    generator,
-    names = list(
-      nchar = c(min = 0, max = default(nchar.size \%||\% severity)),
-      string = c(min = 0, max = default(character.max \%||\% severity))))
-rnamed(
-    x,
-    names = list(
-      nchar = c(min = 0, max = default(nchar.size \%||\% severity)),
-      string = c(min = 0, max = default(character.max \%||\% severity))))}
+named(generator, rnames = rnamed)
+rnamed( x, names = rcharacter(size = ~length(x)))}
 \arguments{
  \item{elements}{Specify the distribution of elements of the returned data structure, either as a vector of distribution parameters or as a random number generator function or a formula that will be used as a random number generator. Different generators accept different parameters. Using names in the vectors is optional when no ambiguity arises.
  \describe{
