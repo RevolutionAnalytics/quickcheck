@@ -51,24 +51,39 @@ sample =
     x[base::sample(length(x), size = size, ...)]
 
 
-#workaround for R bug
-fix.as.list =
-  function(as.fun) {
-    force(as.fun)
-    function(x, ...) {
-      dd = as.fun(x)
-      names(dd) = names(x)
-      dd}}
-
-as.list.Date = fix.as.list(base::as.list.Date)
-as.list.factor = fix.as.list(base::as.list.factor)
-
-#perform function argument like matching for vectors
-#macro-like, call only one level deep
+# #workaround for R bug
+# fix.as.list =
+#   function(as.fun) {
+#     force(as.fun)
+#     function(x, ...) {
+#       as.fun(x)
+#       names(dd) = names(x)
+#       dd}}
+#
+# as.list.Date = fix.as.list(base::as.list.Date)
+# as.list.factor = fix.as.list(base::as.list.factor)
 
 is.fofun =
   function(x)
     is.function(x) || is.formula(x)
+
+#perform function argument like matching for vectors
+#macro-like, call only one level deep
+
+apply.default =
+  function(name, x, default) {
+    if(is.null(names(default)) || is.null(x))
+      x %||% default
+    else {
+      length(x) = length(default)
+      nmask = {
+        if(is.null(names(x)))
+          rep(T, length(x))
+        else names(x) == ""}
+      names(x)[nmask]= setdiff(names(default), names(x))
+      structure(
+        lapply(names(default), function(n) apply.default(n, x[[n]], default[[n]])),
+        names = names(default))}}
 
 arg.match =
   function(arg, defaults = NULL) {
@@ -78,17 +93,9 @@ arg.match =
       name = as.character(substitute(arg))
       if(is.null(defaults))
         defaults =
-        as.list(
-          eval.parent(
-            formals(sys.function(sys.parent()))[[name]]))
-      default.names = names(defaults)
-      default.length = length(defaults)
-      ff = function() mget(names(formals()), sys.frame(sys.nframe()))
-      formals(ff) = do.call(pairlist, as.list(defaults))
-      defaults = do.call(ff, as.list(arg))
-      if(length(defaults) > default.length)
-        stop("Argument can have elements ", default.names, " only")
-      defaults}}
+            eval.parent(
+              formals(sys.function(sys.parent()))[[name]])
+      apply.default("", arg, defaults)}}
 
 #takes a rng in the R sense (rnorm, rpois etc) and extracts size data
 # accepts also formula
@@ -96,17 +103,20 @@ arg.match =
 rdata =
   function(rng, size) {
     data = {
-      if(is.function(rng))
-        do.call(rng, list(size))
+      if(is.function(rng)){
+        if(is.null(size))
+          rng()
+        else
+          do.call(rng, list(size))}
       else
         eval(tail(as.list(rng), 1)[[1]], list(size = size), environment(rng))}
-    if(size != length(data)) {
+    if(is.null(size) || size == length(data))
+      data
+    else{
       if(length(data) > 0) {
         warning('recycling random numbers')
         rep_len(data, size)}
-      else stop("can't recycle no data")}
-    else
-      data}
+      else stop("can't recycle no data")}}
 
 # accepts max or min, max or an rng function or formula (size spec)
 # returns random nonnegative integer,  from bilateral zipf by default
@@ -160,15 +170,21 @@ rdouble =
 
 rnumeric =
   function(
-    elements  =
-      list(
-        integer = c(max = default(integer.size %||% 10 * severity)),
-        double = 	c(mean = 0, sd = default(double.size %||% 10 * severity))),
+    elements  = {
+      r = default(integer.size %||% 10 * severity);
+      c(integer.min = -r, integer.max = r,
+        double.mean = 0, double.sd = default(double.size %||% 10 * severity))},
     size = c(min = 0, max = default(vector.size %||% 10 * severity)))
     mixture(
       list(
-        Curry(rdouble, elements = elements$double, size = size),
-        Curry(rinteger, elements = elements$integer, size = size)))()
+        Curry(
+          rdouble,
+          elements = unname(elements[c("double.mean", "double.sd")]),
+          size = size),
+        Curry(
+          rinteger,
+          elements = unname(elements[c("integer.min", "integer.max")]),
+          size = size)))()
 
 ##rcomplex NAY
 
@@ -176,40 +192,38 @@ rcharacter =
   function(
     elements =
       list(
-        nchar = c(min = 0, max = default(nchar.size %||% severity)),
-        string = c(min = 0, max = default(character.max %||% severity))),
-    size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
-    elements = arg.match(elements)
-    nchar = elements[["nchar"]]
-    string = elements[["string"]]
+        alphabet = c(letters, LETTERS, 0:9),
+        nchar.min = 0,
+        nchar.max = default(nchar.max %||% severity),
+        unique.min = 1,
+        unique.max = default(unique.max %||% severity)),
+        size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
+    if(!is.fofun(elements)){
+      el = arg.match(elements)
+      elements =
+        function(n){
+          #generate n.unique
+          n.unique = rsize(unname(el[c("unique.min", "unique.max")]))
+          #generate n.unique str lenghts according to n.char
+          n.char = rinteger(unname(el[c("nchar.min", "nchar.max")]), ~n.unique)
+          # create the strings
+          strings =
+            sapply(
+              split(
+                sample(
+                  x = el$alphabet,
+                  size = sum(n.char),
+                  replace = TRUE),
+                rep(1:length(n.char), n.char)),
+              paste,
+              collapse = "")
+          if(min(n.char) == 0)
+            strings = c(strings, "")
+          # resample n time
+          sample(strings, n, replace = TRUE)
+        }}
     size = rsize(arg.match(size))
-    if(!is.fofun(nchar)) {
-      nn = nchar
-      nchar =
-        function(n)
-          rinteger(
-            elements =
-              arg.match(
-                nn,
-                c(min = 0, max = default(nchar.size %||% severity))),
-            size = ~n)}
-    if(!is.fofun(string)) {
-      ss = string
-      string =
-        function(n)
-          sapply(
-            rinteger(
-              elements =
-                arg.match(
-                  ss,
-                  c(min = 0, max = default(character.max %||% severity))),
-              size = ~n),
-            digest)}
-    unname(
-      substr(
-          rdata(string, size),
-        1,
-        rdata(nchar, size)))}
+    as.character(unname(rdata(elements, size)))}
 
 rfactor =
   function(
@@ -357,22 +371,13 @@ rany =
 rnamed =
   function(
     x,
-    names = list(
-      nchar = c(min = 0, max = default(nchar.size %||% severity)),
-      string = c(min = 0, max = default(character.max %||% severity)))) {
-    names(x) = rcharacter(elements = names, size = ~length(x))
-    x}
+    names = rcharacter(size = ~length(x)))
+    structure(x, names = names)
 
 named =
   function(
     generator,
-    names = list(
-      nchar = c(min = 0, max = default(nchar.size %||% severity)),
-      string = c(min = 0, max = default(character.max %||% severity)))) {
-    function()
-      rnamed(
-        if(is.function(generator))
-          generator()
-        else
-          eval(tail(as.list(generator), 1)[[1]], environment(generator)),
-        names)}
+    rnames = rnamed)
+    function() {
+      rnames(rdata(generator, NULL))}
+

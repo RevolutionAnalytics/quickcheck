@@ -45,10 +45,10 @@ quickcheck.env =
       c,
       lapply(
         ls(),
-        function(x)
-          structure(
-            list(eval(as.name(x))),
-          names = x))))
+        function(x) {
+          l = list(eval(as.name(x)))
+          names(l) = x
+          l})))
 
 `%||%` =
   function(x, y)
@@ -100,8 +100,11 @@ qc.option =
 
 formals(qc.option) = formals(qc.options)
 
+<<<<<<< HEAD
+=======
 qc.option(work.dir = eval(eval(qc.option("work.dir"))))
 
+>>>>>>> dev
 ## make use of testthat expectations
 
 as.assertion =
@@ -111,19 +114,25 @@ as.assertion =
       tryCatch({tmp(...); TRUE} , error = function(e) FALSE)}}
 
 library(testthat)
+<<<<<<< HEAD
+expect.names = grep("^expect_", ls("package:testthat"), value = TRUE)
+assert.funs =
+  lapply(
+    expect.names,
+    function(n)
+      as.assertion(get(n, envir = as.environment("package:testthat"))))
+names(assert.funs) = gsub("expect_", "", expect.names)
+=======
 assert.funs =
   do.call(
     c,
     lapply(
       c("error",  "message", "output",  "warning"),
-      function(n)
-        structure(
-          list(
-            as.assertion(
-              get(
-                paste0("expect_", n),
-                envir = as.environment("package:testthat")))),
-          names = n)))
+      function(n) {
+        l = list(as.assertion(get(paste0("expect_", n), envir = as.environment("package:testthat"))))
+        names(l) = n
+        l}))
+>>>>>>> dev
 
 expect =
   function(...) {
@@ -263,13 +272,14 @@ test =
             lapply(
               all.vars(body(assertion)),
               function(name)
-                tryCatch(
-                  structure(
+                tryCatch({
+                  val =
                     list(
                       eval(
                         as.name(name),
-                        envir = environment(assertion))),
-                    names = name),
+                        envir = environment(assertion)))
+                  names(val) = name
+                  val},
                   error = function(e) NULL))),
         cases = project(runs, "args"),
         pass = unlist(project(runs, "pass")),
@@ -289,11 +299,22 @@ test =
         coverage(test.report$coverage)}
       #print(test.report$elapsed)
     }
+<<<<<<< HEAD
+    tmpdir = file.path(default(tmpdir), "quickcheck", Sys.getpid())
+    if(!file.exists(tmpdir))
+      message(
+        "Creating ",
+        tmpdir,
+        ". Use qc.options(tmpdir = <alternate-path>) to change location.")
+    dir.create(tmpdir, recursive = TRUE, showWarnings = FALSE)
+    tf = tempfile(tmpdir = tmpdir, pattern = "tr")
+=======
     work.dir = file.path(default(work.dir), "quickcheck", Sys.getpid())
     if(!file.exists(work.dir))
       message("Creating ", work.dir, ". Use qc.options(work.dir = <alternate-path>) to change location.")
     dir.create(work.dir, recursive = TRUE, showWarnings = FALSE)
     tf = tempfile(tmpdir = work.dir, pattern = "tr")
+>>>>>>> dev
     saveRDS(test.report, file = tf)
     if (stop && any(!test.report$pass)) {
       stop("to reproduce enter repro(\"", tf, "\")")}

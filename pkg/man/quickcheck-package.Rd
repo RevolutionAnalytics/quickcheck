@@ -6,17 +6,10 @@
 Randomized testing
 }
 \description{
-Supports the generatio of randomized tests by defining the \code{\link{test}} function and a collection of meta-genarators for data of all types
+Supports the generation of randomized tests by providing functions to define tests and reproduce errors and a collection of data generators for all the most common types.
 }
 \details{
-\tabular{ll}{
-Package: \tab quickcheck\cr
-Type: \tab Package\cr
-Version: \tab 1.0\cr
-Date: \tab 2012-08-15\cr
-License: \tab What license is it under?\cr
-}
-
+See \code{packageDescription("quickcheck")}
 }
 \author{
 Revolution Analytics <rhadoop@revolutionanalytics.com>

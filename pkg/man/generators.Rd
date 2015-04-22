@@ -32,8 +32,9 @@ ratomic(
 rcharacter(
   elements =
     list(
-      nchar = c(min = 0, max = default(nchar.size \%||\% severity)),
-      string = c(min = 0, max = default(character.max \%||\% severity))),
+      alphabet = c(letters, LETTERS, 0:9),
+      nchar.min = 0, nchar.max = default(nchar.max \%||\% severity),
+      unique.min = 1, unique.max = default(unique.max \%||\% severity)),
   size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
 rdata.frame(
   generator = ratomic,
@@ -68,11 +69,10 @@ rmatrix(
   nrow = c(min = 0, max = default(matrix.nrow \%||\% 4 * severity)),
   ncol = c(min = 0, max = default(matrix.ncol \%||\% severity)))
 rnumeric(
-  elements =
-    list(
-      integer = c(max = default(integer.size \%||\% 10 * severity)),
-      double = c(mean = 0, sd = default(double.size \%||\% 10 * severity))),
-  size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
+  elements = { r = default(integer.size \%||\% 10 * severity)
+              c(integer.min = -r, integer.max = r,
+                 double.mean = 0, double.sd = default(double.size \%||\% 10 * severity))},
+ size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
 rraw(
   elements = c(min = 0, max = default(raw.max \%||\% severity)),
   size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
@@ -83,24 +83,17 @@ rsample(
 rsize(size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
 mixture(generators)
 constant(const = NULL)
-named(
-    generator,
-    names = list(
-      nchar = c(min = 0, max = default(nchar.size \%||\% severity)),
-      string = c(min = 0, max = default(character.max \%||\% severity))))
-rnamed(
-    x,
-    names = list(
-      nchar = c(min = 0, max = default(nchar.size \%||\% severity)),
-      string = c(min = 0, max = default(character.max \%||\% severity))))}
+named(generator, rnames = rnamed)
+rnamed( x, names = rcharacter(size = ~length(x)))}
 \arguments{
  \item{elements}{Specify the distribution of elements of the returned data structure, either as a vector of distribution parameters or as a random number generator function or a formula that will be used as a random number generator. Different generators accept different parameters. Using names in the vectors is optional when no ambiguity arises.
  \describe{
-  \item{rcharacter}{\code{nchar}, the range of lengths of each string and \code{string}, the range of distinct strings generated. Each can also be a random number generator function or formula, see below}
+  \item{rcharacter}{\code{alphabet}, the alphabet the generated strings are built on; \code{nchar.min}, \code{nchar.max},  the range of lengths of each string; and \code{unique.min}, \code{unique.max}, the range of distinct strings generated. Each can also be a random number generator function or formula, see below}
   \item{rDate}{\code{from}, \code{to}, the earliest and latest possible dates, as class Date objects or strings amenable to conversion}
   \item{rdouble}{\code{mean} and \code{sd} are the mean and standard deviation}
  \item{rfactor}{\code{nlevels} is the maximum number of levels}
  \item{rinteger}{\code{min} and \code{max} values; when \code{min} is omitted, \code{-max} is assumed, that is a symmetric distribution centered at 0}
+ \item{rnumeric}{a combination of parameters for \code{rinteger} and \code{rdouble}, renamed to avoid any confusion as to which part of the mixture they affect}
  \item{rlogical}{\code{p} is the probability of \code{TRUE}}
  \item{rraw}{\code{max} is the maximum value for an element, as an integer. Alternately, one can specify a raw vector whose elements will be sampled}
  \item{rsample}{A vector or list of elements to sample from.}
@@ -116,7 +109,8 @@ rnamed(
  \item{generators}{List of random data generators}
  \item{const}{Any R object}
  \item{x}{An R object for which it is possible to assign names}
- \item{names}{It is passed as the \code{elements} argument to \code{rcharacter} to generate names; see that function for details}
+ \item{names}{Random names to assign to the first argument}
+ \item{rnames}{Function that that takes a vector as argument and returnes a randomly named version thereof}
 }
 \details{
 The defaults for the \code{elements} and \code{size} refer to variables that are defined only as package options, such as \code{nchar.size} and \code{severity}. See \code{\link{qc.options}}.
@@ -126,9 +120,9 @@ The defaults for the \code{elements} and \code{size} refer to variables that are
 }
 
 \examples{
-#generate random integer vectors of size 4 or less
+#generate random integer vectors of size 4 or more
 rinteger(size = 4)
-#generate random integer vectors of maximum size 4 and elements between -5 and 5.
+#generate random integer vectors at least 4 long and with elements greater than 5.
 rinteger(element = 5, size = 4)
 #pick from a given vector (not unlike sample)
 rsample(1:5, c(max = 3))
