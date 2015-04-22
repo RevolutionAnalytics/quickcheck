@@ -108,13 +108,22 @@ as.assertion =
       tryCatch({tmp(...); TRUE} , error = function(e) FALSE)}}
 
 library(testthat)
-expect.names = grep("^expect_", ls("package:testthat"), value = TRUE)
-assert.funs = lapply(expect.names, function(n) as.assertion(get(n, envir = as.environment("package:testthat"))))
-names(assert.funs) = gsub("expect_", "", expect.names)
+assert.funs =
+  do.call(
+    c,
+    lapply(
+      c("error",  "message", "output",  "warning"),
+      function(n) {
+        l = list(as.assertion(get(paste0("expect_", n), envir = as.environment("package:testthat"))))
+        names(l) = n
+        l}))
 
 expect =
-  function(what, ...)
-    assert.funs[[what]](...)
+  function(...) {
+    what = match.arg(what)
+    assert.funs[[what]](...)}
+
+formals(expect) = c(list(what = names(assert.funs)), formals(expect))
 
 is.formula =
   function(x)
