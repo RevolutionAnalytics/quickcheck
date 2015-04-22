@@ -323,21 +323,21 @@ print.TestSet =
     cat(paste("Function: ", names(ll), "\nAssertions:\n", ll, sep = " ", collapse = "\n"))}
 
 smallest.failed =
-  function(pass, cases)
+  function(test.report)
     tail(
       arrange(
         filter(
           data.frame(
-            pass = pass,
-            size = sapply(cases, object.size),
-            case.index = 1:length(cases)),
-          !pass)),
+            pass = test.report$pass,
+            size = sapply(test.report$cases, object.size),
+            case.index = 1:length(test.report$cases)),
+          !test.report$pass)),
       1)$case.index
 
 repro =
   function(
     test.report,
-    which = smallest.failed(test.report$pass, test.report$cases),
+    which = smallest.failed(test.report),
     assertion = test.report$assertion,
     debug = TRUE) {
     if(is.character(test.report))
