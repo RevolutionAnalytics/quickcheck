@@ -27,8 +27,8 @@ variability.test =
   function(generator, about = substitute(generator))
     test(
       forall(
-        x = generator,
-        {length(unique(sapply(replicate(10, generator()), digest))) > 2}),
+        x = replicate(10, generator()),
+        {length(unique(sapply(x, digest))) > 2}),
       about = about)
 
 range.test =
