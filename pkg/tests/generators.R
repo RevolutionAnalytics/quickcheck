@@ -117,10 +117,10 @@ test.set(
   size.test(rcharacter),
   test(
     forall(
-      nchar = rsize(),
-      string = rsize(),
-      data = rcharacter(elements = list(nchar = c(max = nchar), string = c(max = string))),
-      {all(sapply(data, nchar) <= nchar)}),
+      nchar.max = rsize(),
+      unique.max = rsize(size = c(min = 1)),
+      data = rcharacter(elements = list(nchar.max = nchar.max, unique.max = unique.max)),
+      {all(sapply(data, nchar) <= nchar.max)}),
     about = "rcharacter"),
 
   ##rfactor
