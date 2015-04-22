@@ -27,35 +27,35 @@ stopifnot(!expect("error", repro(test(function() FALSE, stop = FALSE, about = "t
 
 stopifnot(expect("warning", rinteger(elements= ~1, size = c(min = 2))))
 
-test.set(
-  ## qc.options
+print(
+  test.set(
+    ## qc.options
 
-  test(
-    forall(x = rsize(), {qc.options(unique.max = x); qc.option("unique.max") == x}),
-    about = pkg),
+    test(
+      forall(x = rsize(), {qc.options(unique.max = x); qc.option("unique.max") == x}),
+      about = pkg),
 
-  ## qc.option
-  test(
-    function(
-      opts =
-        rsample(
-          names(formals(qc.options))[-1],
-          size = c(min = 1, max = length(formals(qc.options)) - 1),
-          replace = FALSE),
-      values = rinteger(elements = c(min = 1), size = ~length(opts))) {
-      args =
-        structure(
-          as.list(values),
-          names = opts)
-      before = do.call(qc.options,  as.list(names(args)))
-      after = do.call(qc.options, args)
-      check = do.call(qc.options, as.list(names(args)))
-      check2 = list()
-      for(n in names(args)) check2 = c(check2, qc.option(n))
-      names(check2) = names(args)
-      do.call(qc.options, before)
-      identical(after[sort(names(after))], args[sort(names(args))]) &&
-        identical(after[sort(names(after))], check[sort(names(check))]) &&
-        identical(after[sort(names(after))], check2[sort(names(check2))]) },
-    about = pkg))
-
+    ## qc.option
+    test(
+      function(
+        opts =
+          rsample(
+            names(formals(qc.options))[-1],
+            size = c(min = 1, max = length(formals(qc.options)) - 1),
+            replace = FALSE),
+        values = rinteger(elements = c(min = 1), size = ~length(opts))) {
+        args =
+          structure(
+            as.list(values),
+            names = opts)
+        before = do.call(qc.options,  as.list(names(args)))
+        after = do.call(qc.options, args)
+        check = do.call(qc.options, as.list(names(args)))
+        check2 = list()
+        for(n in names(args)) check2 = c(check2, qc.option(n))
+        names(check2) = names(args)
+        do.call(qc.options, before)
+        identical(after[sort(names(after))], args[sort(names(args))]) &&
+          identical(after[sort(names(after))], check[sort(names(check))]) &&
+          identical(after[sort(names(after))], check2[sort(names(check2))]) },
+      about = pkg)))
