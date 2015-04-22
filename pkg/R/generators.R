@@ -50,19 +50,6 @@ sample =
   function(x, size, ...)
     x[base::sample(length(x), size = size, ...)]
 
-
-# #workaround for R bug
-# fix.as.list =
-#   function(as.fun) {
-#     force(as.fun)
-#     function(x, ...) {
-#       as.fun(x)
-#       names(dd) = names(x)
-#       dd}}
-#
-# as.list.Date = fix.as.list(base::as.list.Date)
-# as.list.factor = fix.as.list(base::as.list.factor)
-
 is.fofun =
   function(x)
     is.function(x) || is.formula(x)
