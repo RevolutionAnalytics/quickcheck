@@ -60,7 +60,7 @@ qc.options =
   function(){
     args =
       lapply(
-        as.list(match.call())[-1],
+        as.list(sys.call())[-1],
         eval,
         envir = sys.frame(sys.parent()))
     if(!is.null(names(args))) {
@@ -92,7 +92,7 @@ qc.option =
   function() {
     args =
       lapply(
-        as.list(match.call())[-1],
+        as.list(sys.call())[-1],
         eval,
         envir = sys.frame(sys.parent()))
     stopifnot(length(args) == 1)
