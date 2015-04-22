@@ -63,12 +63,12 @@ fix.as.list =
 as.list.Date = fix.as.list(base::as.list.Date)
 as.list.factor = fix.as.list(base::as.list.factor)
 
-#perform function argument like matching for vectors
-#macro-like, call only one level deep
-
 is.fofun =
   function(x)
     is.function(x) || is.formula(x)
+
+#perform function argument like matching for vectors
+#macro-like, call only one level deep
 
 apply.default =
   function(name, x, default) {
