@@ -342,7 +342,7 @@ repro =
     debug = TRUE) {
     if(is.character(test.report))
       test.report = readRDS(test.report)
-     if(!is.finite(which))
+    if(length(which) == 0)
       stop("All tests pass, nothing to repro here.")
     if(debug) debug(assertion)
     do.call(assertion, test.report$cases[[which]])}
