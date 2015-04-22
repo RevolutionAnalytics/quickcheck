@@ -100,6 +100,7 @@ qc.option =
 
 formals(qc.option) = formals(qc.options)
 
+qc.option(work.dir = eval(eval(qc.option("work.dir"))))
 
 ## make use of testthat expectations
 
