@@ -109,7 +109,11 @@ as.assertion =
 
 library(testthat)
 expect.names = grep("^expect_", ls("package:testthat"), value = TRUE)
-assert.funs = lapply(expect.names, function(n) as.assertion(get(n, envir = as.environment("package:testthat"))))
+assert.funs =
+  lapply(
+    expect.names,
+    function(n)
+      as.assertion(get(n, envir = as.environment("package:testthat"))))
 names(assert.funs) = gsub("expect_", "", expect.names)
 
 expect =
@@ -226,7 +230,10 @@ test =
       check.covr()
       cov = covr::function_coverage(cover, run(), env = envir)
       cover.fun = get(cover, envir = envir)
-      cover.srcfile = as.list.environment(attributes(body(cover.fun))$srcfile %||% attributes(attributes(cover.fun)$srcref)$srcfile)
+      cover.srcfile =
+        as.list.environment(
+          attributes(body(cover.fun))$srcfile %||%
+            attributes(attributes(cover.fun)$srcref)$srcfile)
       if(cover.srcfile$filename == "") {
         srctemp = tempfile()
         writeLines(get.source(cover.fun), srctemp)
@@ -273,7 +280,10 @@ test =
     }
     tmpdir = file.path(default(tmpdir), "quickcheck", Sys.getpid())
     if(!file.exists(tmpdir))
-      message("Creating ", tmpdir, ". Use qc.options(tmpdir = <alternate-path>) to change location.")
+      message(
+        "Creating ",
+        tmpdir,
+        ". Use qc.options(tmpdir = <alternate-path>) to change location.")
     dir.create(tmpdir, recursive = TRUE, showWarnings = FALSE)
     tf = tempfile(tmpdir = tmpdir, pattern = "tr")
     saveRDS(test.report, file = tf)
@@ -309,7 +319,14 @@ print.TestSet =
   function(x, ...){
     cat("----test set------\n")
     ll = lapply(x, function(y) paste(get.source(y), collapse = "\n"))
-    cat(paste("Function: ", names(ll), "\nAssertions:\n", ll, sep = " ", collapse = "\n"))}
+    cat(
+      paste(
+        "Function: ",
+        names(ll),
+        "\nAssertions:\n",
+        ll,
+        sep = " ",
+        collapse = "\n"))}
 
 smallest.failed =
   function(pass, cases)
