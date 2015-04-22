@@ -57,7 +57,7 @@ quickcheck.env =
 opt.assign = Curry(assign, envir = quickcheck.env)
 
 qc.options =
-  function(...){
+  function(){
     args =
       lapply(
         as.list(match.call())[-1],

@@ -32,8 +32,9 @@ ratomic(
 rcharacter(
   elements =
     list(
-      nchar = c(min = 0, max = default(nchar.size \%||\% severity)),
-      string = c(min = 0, max = default(character.max \%||\% severity))),
+      alphabet = c(letters, LETTERS, 0:9),
+      nchar.min = 0, nchar.max = default(nchar.max \%||\% severity),
+      unique.min = 1, unique.max = default(unique.max \%||\% severity)),
   size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
 rdata.frame(
   generator = ratomic,
