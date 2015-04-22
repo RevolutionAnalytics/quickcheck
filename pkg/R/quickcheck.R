@@ -31,11 +31,13 @@ matrix.nrow = NULL
 data.frame.ncol = NULL
 data.frame.nrow = NULL
 
-tmpdir = {
-  if(.Platform$OS.type == "windows")
-    "."
-  else
-    "/tmp"}
+work.dir =
+  quote(
+    quote(
+      if(.Platform$OS.type == "windows")
+        "."
+      else
+        "/tmp"))
 
 quickcheck.env =
   list2env(
@@ -280,11 +282,11 @@ test =
         coverage(test.report$coverage)}
       #print(test.report$elapsed)
     }
-    tmpdir = file.path(default(tmpdir), "quickcheck", Sys.getpid())
-    if(!file.exists(tmpdir))
-      message("Creating ", tmpdir, ". Use qc.options(tmpdir = <alternate-path>) to change location.")
-    dir.create(tmpdir, recursive = TRUE, showWarnings = FALSE)
-    tf = tempfile(tmpdir = tmpdir, pattern = "tr")
+    work.dir = file.path(default(work.dir), "quickcheck", Sys.getpid())
+    if(!file.exists(work.dir))
+      message("Creating ", work.dir, ". Use qc.options(work.dir = <alternate-path>) to change location.")
+    dir.create(work.dir, recursive = TRUE, showWarnings = FALSE)
+    tf = tempfile(tmpdir = work.dir, pattern = "tr")
     saveRDS(test.report, file = tf)
     if (stop && any(!test.report$pass)) {
       stop("to reproduce enter repro(\"", tf, "\")")}
