@@ -93,6 +93,7 @@ rnamed( x, names = rcharacter(size = ~length(x)))}
   \item{rdouble}{\code{mean} and \code{sd} are the mean and standard deviation}
  \item{rfactor}{\code{nlevels} is the maximum number of levels}
  \item{rinteger}{\code{min} and \code{max} values; when \code{min} is omitted, \code{-max} is assumed, that is a symmetric distribution centered at 0}
+ \item{rnumeric}{a combination of parameters for \code{rinteger} and \code{rdouble}, renamed to avoid any confusion as to which part of the mixture they affect}
  \item{rlogical}{\code{p} is the probability of \code{TRUE}}
  \item{rraw}{\code{max} is the maximum value for an element, as an integer. Alternately, one can specify a raw vector whose elements will be sampled}
  \item{rsample}{A vector or list of elements to sample from.}
@@ -108,7 +109,8 @@ rnamed( x, names = rcharacter(size = ~length(x)))}
  \item{generators}{List of random data generators}
  \item{const}{Any R object}
  \item{x}{An R object for which it is possible to assign names}
- \item{names}{It is passed as the \code{elements} argument to \code{rcharacter} to generate names; see that function for details}
+ \item{names}{Random names to assign to the first argument}
+ \item{rnames}{Function that that takes a vector as argument and returnes a randomly named version thereof}
 }
 \details{
 The defaults for the \code{elements} and \code{size} refer to variables that are defined only as package options, such as \code{nchar.size} and \code{severity}. See \code{\link{qc.options}}.
@@ -118,9 +120,9 @@ The defaults for the \code{elements} and \code{size} refer to variables that are
 }
 
 \examples{
-#generate random integer vectors of size 4 or less
+#generate random integer vectors of size 4 or more
 rinteger(size = 4)
-#generate random integer vectors of maximum size 4 and elements between -5 and 5.
+#generate random integer vectors at least 4 long and with elements greater than 5.
 rinteger(element = 5, size = 4)
 #pick from a given vector (not unlike sample)
 rsample(1:5, c(max = 3))
