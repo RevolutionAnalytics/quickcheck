@@ -52,7 +52,7 @@ quickcheck.env =
 
 `%||%` =
   function(x, y)
-    if(is.null(x)) y else x
+    if(is.null(x) || is.na(x)) y else x
 
 opt.assign = Curry(assign, envir = quickcheck.env)
 

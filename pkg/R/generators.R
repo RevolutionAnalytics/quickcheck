@@ -70,6 +70,21 @@ is.fofun =
   function(x)
     is.function(x) || is.formula(x)
 
+apply.default =
+  function(name, x, default) {
+    if(is.null(names(default)) || is.null(x))
+      x %||% default
+    else {
+      length(x) = length(default)
+      nmask = {
+        if(is.null(names(x)))
+          rep(T, length(x))
+        else names(x) == ""}
+      names(x)[nmask]= setdiff(names(default), names(x))
+      ll = lapply(names(default), function(n) apply.default(n, x[[n]], default[[n]]))
+      names(ll) = names(default)
+      ll}}
+
 arg.match =
   function(arg, defaults = NULL) {
     if(is.fofun(arg))
@@ -78,17 +93,9 @@ arg.match =
       name = as.character(substitute(arg))
       if(is.null(defaults))
         defaults =
-        as.list(
-          eval.parent(
-            formals(sys.function(sys.parent()))[[name]]))
-      default.names = names(defaults)
-      default.length = length(defaults)
-      ff = function() mget(names(formals()), sys.frame(sys.nframe()))
-      formals(ff) = do.call(pairlist, as.list(defaults))
-      defaults = do.call(ff, as.list(arg))
-      if(length(defaults) > default.length)
-        stop("Argument can have elements ", default.names, " only")
-      defaults}}
+            eval.parent(
+              formals(sys.function(sys.parent()))[[name]])
+      apply.default("", arg, defaults)}}
 
 #takes a rng in the R sense (rnorm, rpois etc) and extracts size data
 # accepts also formula
