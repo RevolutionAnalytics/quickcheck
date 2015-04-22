@@ -60,13 +60,19 @@ test(
 ```
 
 ```
-Using seed 477281578
+Warning in test(forall(x = rmatrix(), any(dim(x) == c(0, 0)) ||
+all(sapply(1:nrow(x), : Can't guess what this test is about, please
+specify about argument
+```
+
+```
+Using seed 564840596
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
      ] == t(x)[, i]))) 
 
-Creating /tmp/quickcheck/40043. Use qc.options(tmpdir = <alternate-path>) to change location.
+Creating /tmp/quickcheck/32721. Use qc.options(work.dir = <alternate-path>) to change location.
 ```
 
 ```r
@@ -94,7 +100,13 @@ test(
 ```
 
 ```
-Using seed 477281578
+Warning in test(forall(x = rmatrix(), any(dim(x) == c(0, 0)) ||
+all(sapply(1:nrow(x), : Can't guess what this test is about, please
+specify about argument
+```
+
+```
+Using seed 1227863640
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
@@ -126,7 +138,11 @@ test(
 ```
 
 ```
-Using seed 770024200
+[1] "Testing expect"
+```
+
+```
+Using seed 1367890628
 Pass  
  function (x = rcharacter())  
  expect("error", stop(x)) 
@@ -144,7 +160,18 @@ test(forall(x = rdouble(), mean(x) > 0), stop = TRUE)
 ```
 
 ```
-Using seed 494012268
+Warning in test(forall(x = rdouble(), mean(x) > 0), stop = TRUE): Can't
+guess what this test is about, please specify about argument
+```
+
+```
+Using seed 1415577141
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
 FAIL: assertion:
 function (x = rdouble()) 
 mean(x) > 0
@@ -160,7 +187,7 @@ mean(x) > 0
 ```
 
 ```
-Error: to reproduce enter repro("/tmp/quickcheck/40043/tr9c6b28e8c8c0")
+Error in test(forall(x = rdouble(), mean(x) > 0), stop = TRUE): to reproduce enter repro("/tmp/quickcheck/32721/tr7fd1eca8a0f")
 ```
 
 This output shows that about half of the default 10 runs have failed and then invites us to enter a command, `repro(<some-path>)`, that will execute the assertion in the debugger with the input data that made it fail. Another way to achieve the same is to run the test with the option `stop = FALSE` which doesn't produce an error and returns the same debugging data. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
@@ -171,7 +198,18 @@ test.out = test(forall(x = rdouble(), mean(x) > 0), stop = FALSE)
 ```
 
 ```
-Using seed 494012268
+Warning in test(forall(x = rdouble(), mean(x) > 0), stop = FALSE): Can't
+guess what this test is about, please specify about argument
+```
+
+```
+Using seed 1415577141
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
 FAIL: assertion:
 function (x = rdouble()) 
 mean(x) > 0
@@ -195,10 +233,10 @@ repro(test.out)
 
 ```
 debugging in: (function (x = rdouble()) 
-mean(x) > 0)(x = c(95.4220841095448, 160.246710415966, -45.794324713949, 
-25.3869065691574, 23.7946291303444, -64.6528676719553, 17.2532503680657, 
--12.4640292985689, 203.772824804286, -52.1154926680255, 92.4381620907306, 
--53.8018711197192, -40.6044884240434, 5.53494104755664, -96.4591445419219, 
+mean(x) > 0)(x = c(-5.52072941519356, -62.858145709946, 77.9968438217872, 
+-89.9762272657883, -41.981654231729, -185.381156265085, -57.6976354458919, 
+82.6448280535689, -46.4663784909374, -45.4529071232917, -197.774366025242, 
+8.11044636047094, 67.2044836623528, 35.4283188238718, 55.789123149215, 
 ....
 ```
 
@@ -235,11 +273,11 @@ rdouble()
 ```
 
 ```
- [1]  -32.6233  132.9799  127.2429   41.4641 -153.9950  -92.8567  -29.4720
- [8]   -0.5767  240.4653   76.3593  -79.9009 -114.7657  -28.9462  -29.9215
-[15]  -41.1511   25.2223  -89.1921   43.5683 -123.7538  -22.4268   37.7396
-[22]   13.3336   80.4190   -5.7107   50.3608  108.5769  -69.0954 -128.4599
-[29]    4.6726  -23.5707  -54.2888  -43.3310  -64.9472   72.6751  115.1912
+ [1]  -32.6233361  132.9799263  127.2429321   41.4641434 -153.9950042
+ [6]  -92.8567035  -29.4720447   -0.5767173  240.4653389   76.3593461
+[11]  -79.9009249 -114.7657009  -28.9461574  -29.9215118  -41.1510833
+[16]   25.2223448  -89.1921127   43.5683299 -123.7538422  -22.4267885
+[21]   37.7395646   13.3336361   80.4189510   -5.7106774   50.3607972
 ....
 ```
 
@@ -259,9 +297,9 @@ rdouble()
 ```
 
 ```
- [1]   -1.105  -94.065  -11.583  -81.497   24.226 -142.510   36.594
- [8]   24.841    6.529    1.916   25.734  -64.901  -11.917   66.414
-[15]  110.097
+ [1]   -1.104548  -94.064916  -11.582532  -81.496871   24.226348
+ [6] -142.509839   36.594112   24.841265    6.528818    1.915639
+[11]   25.733838  -64.901008  -11.916876   66.413570  110.096910
 ```
 
 generates some random double vector. The next expression does the same but with expectation 100 and standard deviation 20
@@ -272,7 +310,8 @@ rdouble(elements = c(mean = 100, sd  = 20))
 ```
 
 ```
-[1]  97.64  81.76  71.25  84.06 125.08 115.44  95.61  91.50  91.62
+[1]  97.64493  81.75863  71.24828  84.05821 125.08166 115.44284  95.60969
+[8]  91.50379  91.62040
 ```
 and finally this extracts the elements from a uniform distribution with all parameters at default values.
 
@@ -281,11 +320,11 @@ rdouble(elements = runif)
 ```
 
 ```
- [1] 0.3914 0.3805 0.8954 0.6443 0.7411 0.6053 0.9031 0.2937 0.1913 0.8865
-[11] 0.5033 0.8771 0.1892 0.7581 0.7245 0.9437 0.5476 0.7117 0.3889 0.1009
-[21] 0.9273 0.2832 0.5906 0.1104 0.8405 0.3180 0.7829 0.2675 0.2186 0.5168
-[31] 0.2690 0.1812 0.5186 0.5628 0.1292 0.2564 0.7179 0.9614 0.1001 0.7632
-[41] 0.9480 0.8186 0.3083
+ [1] 0.3913593 0.3804939 0.8954454 0.6443158 0.7410786 0.6053034 0.9030816
+ [8] 0.2937302 0.1912601 0.8864509 0.5033395 0.8770575 0.1891936 0.7581031
+[15] 0.7244989 0.9437248 0.5476466 0.7117439 0.3889051 0.1008731 0.9273021
+[22] 0.2832325 0.5905732 0.1103606 0.8405070 0.3179637 0.7828513 0.2675082
+[29] 0.2186453 0.5167968 0.2689506 0.1811683 0.5185761 0.5627829 0.1291569
 ....
 ```
 
@@ -337,11 +376,11 @@ rdouble(elements = ~runif(size, min = -1))
 ```
 
 ```
- [1]  0.56436 -0.46424  0.52430  0.97262 -0.41279 -0.20130  0.62426
- [8] -0.84570 -0.27261 -0.11482 -0.68657  0.16441  0.94032  0.97900
-[15] -0.64710  0.08426 -0.23139  0.35233 -0.46141 -0.06150 -0.65640
-[22] -0.26162  0.45081 -0.02770 -0.87240  0.56909 -0.16336  0.96204
-[29] -0.43423  0.69576 -0.83552  0.77292 -0.05614 -0.78180 -0.33344
+ [1]  0.56436423 -0.46424374  0.52430306  0.97262318 -0.41278890
+ [6] -0.20129779  0.62426305 -0.84569666 -0.27260638 -0.11481507
+[11] -0.68657173  0.16441054  0.94032436  0.97899967 -0.64709593
+[16]  0.08426085 -0.23139222  0.35232810 -0.46141244 -0.06149812
+[21] -0.65639984 -0.26162108  0.45081055 -0.02770179 -0.87239507
 ....
 ```
 
@@ -354,7 +393,7 @@ rdouble(elements = Curry(runif, min = -1))
 ```
 
 ```
-[1] -0.9777  0.8806  0.9875
+[1] -0.9777010  0.8806174  0.9874985
 ```
 
 Remember to use the variable `size` anywhere appropriate in the formula, so that it evaluates to exactly `size` elements.
@@ -373,7 +412,7 @@ rinteger(elements = ~0, size = 100)
 ```
 
 ```
-Warning: recycling random numbers
+Warning in rdata(elements, size): recycling random numbers
 ```
 
 ```
@@ -391,11 +430,11 @@ rdouble(size = c(max = 100))
 ```
 
 ```
- [1]   -6.063  -50.138   92.606    3.694 -106.620  -23.846  149.522
- [8]  117.216 -145.771    9.506   84.766 -162.436  140.856  -54.176
-[15]   27.866  -19.397  157.616 -147.555  -14.461 -107.501   40.654
-[22]  222.926 -151.450   -6.171  -14.727  154.159  -98.186   49.658
-[29]  169.695  -26.074  -70.593  -16.118   50.132 -101.354
+ [1]   -6.063478  -50.137832   92.606273    3.693769 -106.620017
+ [6]  -23.845635  149.522344  117.215855 -145.770721    9.505623
+[11]   84.766496 -162.436453  140.856336  -54.176036   27.866472
+[16]  -19.397274  157.615818 -147.554764  -14.460821 -107.501019
+[21]   40.654273  222.926220 -151.449701   -6.170742  -14.727079
 ....
 ```
 
@@ -406,8 +445,8 @@ rdouble(size = c(min = 0, max = 10))
 ```
 
 ```
-[1]    0.5642 -290.4899 -110.7165  154.7567  -97.6830  -10.1503    4.2650
-[8] -159.6718   49.0967
+[1]    0.5641985 -290.4899060 -110.7164819  154.7566933  -97.6830350
+[6]  -10.1503448    4.2650250 -159.6718014   49.0967373
 ```
 
 RNG:
@@ -418,7 +457,8 @@ rdouble(size = function(n) 10 * runif(n))
 ```
 
 ```
-[1]   -6.965  -24.766   69.555  114.623 -240.310   57.274   37.472
+[1]   -6.965481  -24.766434   69.555081  114.622836 -240.309621   57.273956
+[7]   37.472441
 ```
 
 With the formula syntax:
@@ -429,7 +469,7 @@ rdouble(size = ~10*runif(1))
 ```
 
 ```
-[1]   35.29   55.04 -113.43
+[1]   35.28745   55.03934 -113.43310
 ```
 
 Two dimensional data structures have the argument `size` replaced by `nrow` and `ncol`, with the same possible values. Nested data structures have an argument `height`. For now `height` can only be one number construed as maximum height and applies only to `rlist`. If you need to define a test with a random vector of a specific length as input, use the generator constructor `constant`:
@@ -440,7 +480,7 @@ rdouble(size = constant(3))
 ```
 
 ```
-[1] 146.24  70.21 250.71
+[1] 146.23515  70.21167 250.71111
 ```
 
 ```r
@@ -448,7 +488,7 @@ rdouble(size = constant(3))
 ```
 
 ```
-[1] -189.00  -58.98 -171.45
+[1] -189.00271  -58.98128 -171.45023
 ```
 
 Or, since ["succintness is power"](http://www.paulgraham.com/power.html):
@@ -459,7 +499,7 @@ rdouble(size = ~3)
 ```
 
 ```
-[1] -42.10  31.01 170.26
+[1] -42.09979  31.01414 170.25706
 ```
 
 Without the `~` it would be a min size, with it it is deterministic. Sounds contrived, but if you start with the assumption that in `quickcheck` random is the default, it make sense that slightly more complex expressions be necessary to express determinism. 
@@ -508,7 +548,11 @@ test(forall(x = rdouble(), is.reciprocal.self.inverse(x)))
 ```
 
 ```
-Using seed 1509604841
+[1] "Testing is.reciprocal.self.inverse"
+```
+
+```
+Using seed 1218381074
 Pass  
  function (x = rdouble())  
  is.reciprocal.self.inverse(x) 
@@ -521,7 +565,11 @@ test(forall(x = rsample(c(0, -Inf, Inf)), is.reciprocal.self.inverse(x)))
 ```
 
 ```
-Using seed 590705710
+[1] "Testing is.reciprocal.self.inverse"
+```
+
+```
+Using seed 1421030040
 Pass  
  function (x = rsample(c(0, -Inf, Inf)))  
  is.reciprocal.self.inverse(x) 
@@ -542,7 +590,7 @@ rdoublex()
 ```
 
 ```
-[1] 147.902    -Inf 149.221     Inf  19.504  -8.808
+[1]   0 Inf
 ```
 
 ```r
@@ -550,7 +598,7 @@ rdoublex()
 ```
 
 ```
-[1] 162.9   Inf 103.0 143.6 130.1 104.6  -Inf 268.0
+[1] Inf
 ```
 		
 And use it in a more general test.
@@ -561,7 +609,11 @@ test(forall(x = rdoublex(), is.reciprocal.self.inverse(x)))
 ```
 
 ```
-Using seed 1300498190
+[1] "Testing is.reciprocal.self.inverse"
+```
+
+```
+Using seed 890091164
 Pass  
  function (x = rdoublex())  
  is.reciprocal.self.inverse(x) 
