@@ -13,25 +13,23 @@ for(x in list(matrix(c(1,2,3,4), ncol = 2), matrix(c(5:10), ncol = 3)))
   test_that(
     "transpose  test",
     expect_true(
-### <b>
       all(sapply(1:nrow(x), function(i) all(x[i,] == t(x)[,i])))))
-### </b>
 rm(x)
 ## @knitr test
 library(quickcheck)
 test(
   forall(
     x = rmatrix(),
-### <b>
     any(dim(x) == c(0,0)) ||
-      all(sapply(1:nrow(x), function(i) all(x[i,] == t(x)[,i])))))
-### </b>
+      all(sapply(1:nrow(x), function(i) all(x[i,] == t(x)[,i])))),
+  about = "t")
 ## @knitr sample.size
 test(
   forall(
     x = rmatrix(),
     any(dim(x) == c(0,0)) ||
       all(sapply(1:nrow(x), function(i) all(x[i,] == t(x)[,i])))),
+  about = "t",
   sample.size = 100)
 ## @knitr expect
 test(
@@ -39,9 +37,9 @@ test(
 ## @knitr end
 if(FALSE)
 ## @knitr output
-test(forall(x = rdouble(), mean(x) > 0), stop = TRUE)
+test(forall(x = rdouble(), mean(x) > 0), stop = TRUE, about = "mean")
 ##  @knitr return-value
-test.out = test(forall(x = rdouble(), mean(x) > 0), stop = FALSE)
+test.out = test(forall(x = rdouble(), mean(x) > 0), stop = FALSE, about = "mean")
 ## @knitr end
 if(FALSE)
 ## @knitr repro
