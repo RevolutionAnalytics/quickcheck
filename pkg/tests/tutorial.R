@@ -33,7 +33,8 @@ test(
   sample.size = 100)
 ## @knitr expect
 test(
-  forall(x = rcharacter(), expect("error", stop(x))))
+  forall(x = rcharacter(), expect("error", stop(x))),
+  about = "stop")
 ## @knitr end
 if(FALSE)
 ## @knitr output
@@ -91,13 +92,13 @@ test(forall(x = rdouble(), is.reciprocal.self.inverse(x)))
 test(forall(x = rsample(c(0, -Inf, Inf)), is.reciprocal.self.inverse(x)))
 ## @knitr rdoublex
 rdoublex =
-	function(elements = c(mean = 100), size = c(max = 10)) {
-		data = rdouble(elements, size)
-		sample(
-			c(data, c(0, -Inf, Inf)),
-			size = length(data),
-			replace = FALSE)}
-rdoublex()
-rdoublex()
+  function(elements = c(mean = 0, sd = 1), size = c(min = 0, max = 100)) {
+    data = rdouble(elements, size)
+    sample(
+      c(data, c(0, -Inf, Inf)),
+      size = length(data),
+      replace = FALSE)}
+rdoublex(size = ~10)
+rdoublex(size = ~10)
 ## @knitr test-rdoublex
 test(forall(x = rdoublex(), is.reciprocal.self.inverse(x)))
