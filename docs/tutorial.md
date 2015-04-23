@@ -6,7 +6,7 @@
 
 ## Introduction
 
-Quickcheck was originally a package for the language Haskell aimed at simplifying the writing of tests. The main idea is the automatic generation of tests based on assertions a function needs to satisfy and the signature of that function. The idea spread to other languages and is now implemented in R with this package (for the first time according to the best of our knowledge). Because of the differences in type systems between Haskell and other languages, the original idea morphed into something different for each language it was translated into. In R, the main ideas retained are that tests are based on assertions and that the developer should not have to specify the inputs and output values of a test. The difference from Haskell is that the user needs to specify the type of each variable in an assertion with the optional possibility to fully specify its distribution. The main function in the package, `test`, will randomly generate input values, execute the assertion and collect results. The advantages are multiple:
+Quickcheck was originally a package for the language Haskell aimed at simplifying the writing of tests. The main idea is the automatic generation of tests based on assertions a function needs to satisfy and the signature of that function. The idea spread to other languages and is now implemented in R with this package (for the first time according to the best of our knowledge). Because of the differences in type systems between Haskell and other languages, the original idea morphed into something different for each language it was translated into. In R, the main ideas retained are that tests are based on assertions and that the developer should not have to specify the inputs and output values of a test. The difference from Haskell is that the user needs to specify the type of each variable in an assertion with the optional possibility to fully specify its distribution. The main function in the package, `test`, will randomly generate input values, execute the assertion and collect results. There are several advantages to this approach:
 
   - each test can be run multiple times on different data points, improving coverage and the ability to detect bugs, at no additional cost for the developer;
   - tests can run on large size inputs, possible but impractical in non-randomized testing;
@@ -40,9 +40,7 @@ for(x in list(matrix(c(1,2,3,4), ncol = 2), matrix(c(5:10), ncol = 3)))
   test_that(
     "transpose  test",
     expect_true(
-### <b>
       all(sapply(1:nrow(x), function(i) all(x[i,] == t(x)[,i])))))
-### </b>
 rm(x)
 ```
 
@@ -54,29 +52,23 @@ library(quickcheck)
 test(
   forall(
     x = rmatrix(),
-### <b>
     any(dim(x) == c(0,0)) ||
-      all(sapply(1:nrow(x), function(i) all(x[i,] == t(x)[,i])))))
+      all(sapply(1:nrow(x), function(i) all(x[i,] == t(x)[,i])))),
+  about = "t")
 ```
 
 ```
-Warning in test(forall(x = rmatrix(), any(dim(x) == c(0, 0)) ||
-all(sapply(1:nrow(x), : Can't guess what this test is about, please
-specify about argument
+[1] "Testing t"
 ```
 
 ```
-Using seed 564840596
+Using seed 34276890
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
      ] == t(x)[, i]))) 
 
-Creating /tmp/quickcheck/32721. Use qc.options(work.dir = <alternate-path>) to change location.
-```
-
-```r
-### </b>
+Creating /tmp/quickcheck/18274. Use qc.options(tmpdir = <alternate-path>) to change location.
 ```
 
 We recognize the assertion in the previous code snippet, modified to take into account matrices with 0 rows or columns. Here, though, it becomes the body of a function, which is called "assertion" in `quickcheck`, which has one or more arguments, all with default values, and returns a length-one logical vector. `TRUE` means success, `FALSE` or an error mean failure. Some of those arguments are initialized randomly, in this case using what in `quickcheck` is called a Random Data Generator, or RDG -- more on these later. In this case `rmatrix` is a function that returns a random matrix. The `forall` function creates assertions and does little more than `function`, but its name clarifies intent. The `test` function evaluates the assertion multiple times and produces some messages: 
@@ -84,10 +76,9 @@ We recognize the assertion in the previous code snippet, modified to take into a
 - the seed used is unique to each test, but ensures reproducibility
 - a "pass" message
 - the assertion tested -- useful when scanning a log of a long series of tests
-- some performance information -- harbinger of future features
-- information about a directory -- more on that later.
+- when in non-interactive mode, a useful R expression -- more on that later.
 
-What this test success means is that we have tested that `t` satisfies this assertion on a sample of random matrices, including a variety of sizes, element types and, of course, element values. We don't have to write them down one by one and later we will see how we can affect the distribution of such inputs, to make them, say, larger in size or value, or more likely to hit corner cases.  If we need to control the number of time the assertion is run, that's very simple:
+The success of this test means that we have tested that `t` satisfies this assertion on a sample of random matrices, including a variety of sizes, element types and, of course, element values. We don't have to write them down one by one and later we will see how we can affect the distribution of such inputs, to make them, say, larger in size or value, or more likely to hit corner cases.  If we need to control the number of time the assertion is run, that's very simple:
 
 
 ```r
@@ -96,17 +87,16 @@ test(
     x = rmatrix(),
     any(dim(x) == c(0,0)) ||
       all(sapply(1:nrow(x), function(i) all(x[i,] == t(x)[,i])))),
+  about = "t",
   sample.size = 100)
 ```
 
 ```
-Warning in test(forall(x = rmatrix(), any(dim(x) == c(0, 0)) ||
-all(sapply(1:nrow(x), : Can't guess what this test is about, please
-specify about argument
+[1] "Testing t"
 ```
 
 ```
-Using seed 1227863640
+Using seed 384344163
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
@@ -148,7 +138,7 @@ Pass
  expect("error", stop(x)) 
 ```
 
-By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertions defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you would ever want to use `expect("equal", ...)`, but we threw it in for completeness. 
+By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. `expect` can used four `testthat` expectation, "error", "message", "output", "warning". Other expectations are easily implemented with ordinary R code and are not supported.
 
 ## What to do when tests fail
 
@@ -156,16 +146,24 @@ By executing this test successfully we have built confidence that the function `
 
 
 ```r
-test(forall(x = rdouble(), mean(x) > 0), stop = TRUE)
+test(forall(x = rdouble(), mean(x) > 0), stop = TRUE, about = "mean")
 ```
 
 ```
-Warning in test(forall(x = rdouble(), mean(x) > 0), stop = TRUE): Can't
-guess what this test is about, please specify about argument
+[1] "Testing mean"
 ```
 
 ```
-Using seed 1415577141
+Using seed 420616293
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
 FAIL: assertion:
 function (x = rdouble()) 
 mean(x) > 0
@@ -187,23 +185,31 @@ mean(x) > 0
 ```
 
 ```
-Error in test(forall(x = rdouble(), mean(x) > 0), stop = TRUE): to reproduce enter repro("/tmp/quickcheck/32721/tr7fd1eca8a0f")
+Error in test(forall(x = rdouble(), mean(x) > 0), stop = TRUE, about = "mean"): to reproduce enter repro("/tmp/quickcheck/18274/tr476255421e6f")
 ```
 
 This output shows that about half of the default 10 runs have failed and then invites us to enter a command, `repro(<some-path>)`, that will execute the assertion in the debugger with the input data that made it fail. Another way to achieve the same is to run the test with the option `stop = FALSE` which doesn't produce an error and returns the same debugging data. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
 
 
 ```r
-test.out = test(forall(x = rdouble(), mean(x) > 0), stop = FALSE)
+test.out = test(forall(x = rdouble(), mean(x) > 0), stop = FALSE, about = "mean")
 ```
 
 ```
-Warning in test(forall(x = rdouble(), mean(x) > 0), stop = FALSE): Can't
-guess what this test is about, please specify about argument
+[1] "Testing mean"
 ```
 
 ```
-Using seed 1415577141
+Using seed 420616293
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
+FAIL: assertion:
+function (x = rdouble()) 
+mean(x) > 0
 FAIL: assertion:
 function (x = rdouble()) 
 mean(x) > 0
@@ -233,10 +239,10 @@ repro(test.out)
 
 ```
 debugging in: (function (x = rdouble()) 
-mean(x) > 0)(x = c(-5.52072941519356, -62.858145709946, 77.9968438217872, 
--89.9762272657883, -41.981654231729, -185.381156265085, -57.6976354458919, 
-82.6448280535689, -46.4663784909374, -45.4529071232917, -197.774366025242, 
-8.11044636047094, 67.2044836623528, 35.4283188238718, 55.789123149215, 
+mean(x) > 0)(x = c(10.5458043647435, -138.624953856954, 49.5664878632335, 
+-66.9953355464049, -38.8970215857726, -136.86988586223, -86.5668871131464, 
+-13.5894142393942, -189.819518324129, -62.6379943337981, -75.9198540914486, 
+-128.548593676381, -68.2659777135941, 41.3580570802318, 27.2987557256821, 
 ....
 ```
 
@@ -246,7 +252,7 @@ mean(x) > 0)(x = c(-5.52072941519356, -62.858145709946, 77.9968438217872,
 
 This opens the debugger at the beginning of a failed call to the assertion. Now it is up to the developer to fix any bugs.
 
-To achieve reproducibility, it is necessary to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and the assertion arguments default values. The `test` function seeds the random number generator in a way that ensures reproducibility from one call to the next. The seed is unique to each assertion, but doesn't change for small edits of the assertion, to facilitate assertion development.
+To achieve reproducibility, one has to write assertions that depend exclusively on their arguments and are deterministic functions thereof, and leave all the randomness to `quickcheck` and the assertion arguments default values. The `test` function seeds the random number generator in a way that ensures reproducibility from one call to the next. The seed is unique to each assertion, to guarantee independence of tests on different assertions and different implementations -- one can't code assuming certain data will occur again and again.
 
 ## What tests should we write?
 

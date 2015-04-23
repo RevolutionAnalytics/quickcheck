@@ -28,7 +28,7 @@ opts_chunk$set(out.lines = 5)
 
 ## Introduction
 
-Quickcheck was originally a package for the language Haskell aimed at simplifying the writing of tests. The main idea is the automatic generation of tests based on assertions a function needs to satisfy and the signature of that function. The idea spread to other languages and is now implemented in R with this package (for the first time according to the best of our knowledge). Because of the differences in type systems between Haskell and other languages, the original idea morphed into something different for each language it was translated into. In R, the main ideas retained are that tests are based on assertions and that the developer should not have to specify the inputs and output values of a test. The difference from Haskell is that the user needs to specify the type of each variable in an assertion with the optional possibility to fully specify its distribution. The main function in the package, `test`, will randomly generate input values, execute the assertion and collect results. The advantages are multiple:
+Quickcheck was originally a package for the language Haskell aimed at simplifying the writing of tests. The main idea is the automatic generation of tests based on assertions a function needs to satisfy and the signature of that function. The idea spread to other languages and is now implemented in R with this package (for the first time according to the best of our knowledge). Because of the differences in type systems between Haskell and other languages, the original idea morphed into something different for each language it was translated into. In R, the main ideas retained are that tests are based on assertions and that the developer should not have to specify the inputs and output values of a test. The difference from Haskell is that the user needs to specify the type of each variable in an assertion with the optional possibility to fully specify its distribution. The main function in the package, `test`, will randomly generate input values, execute the assertion and collect results. There are several advantages to this approach:
 
   - each test can be run multiple times on different data points, improving coverage and the ability to detect bugs, at no additional cost for the developer;
   - tests can run on large size inputs, possible but impractical in non-randomized testing;
@@ -61,10 +61,9 @@ We recognize the assertion in the previous code snippet, modified to take into a
 - the seed used is unique to each test, but ensures reproducibility
 - a "pass" message
 - the assertion tested -- useful when scanning a log of a long series of tests
-- some performance information -- harbinger of future features
-- information about a directory -- more on that later.
+- when in non-interactive mode, a useful R expression -- more on that later.
 
-What this test success means is that we have tested that `t` satisfies this assertion on a sample of random matrices, including a variety of sizes, element types and, of course, element values. We don't have to write them down one by one and later we will see how we can affect the distribution of such inputs, to make them, say, larger in size or value, or more likely to hit corner cases.  If we need to control the number of time the assertion is run, that's very simple:
+The success of this test means that we have tested that `t` satisfies this assertion on a sample of random matrices, including a variety of sizes, element types and, of course, element values. We don't have to write them down one by one and later we will see how we can affect the distribution of such inputs, to make them, say, larger in size or value, or more likely to hit corner cases.  If we need to control the number of time the assertion is run, that's very simple:
 
 ```{r sample.size}
 ```
@@ -86,7 +85,7 @@ are valid assertions -- independent of their success or failure. For readability
 ```{r expect}
 ```
 
-By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. There are predefined `quickcheck` assertions defined for each `testthat` expectation, with a name equal to the `testthat` expectation, without the "expect_" prefix. We don't see why you would ever want to use `expect("equal", ...)`, but we threw it in for completeness. 
+By executing this test successfully we have built confidence that the function `stop` will generate an error whenever called with any `character` argument. `expect` can used four `testthat` expectation, "error", "message", "output", "warning". Other expectations are easily implemented with ordinary R code and are not supported.
 
 ## What to do when tests fail
 
@@ -107,7 +106,7 @@ This output shows that about half of the default 10 runs have failed and then in
 
 This opens the debugger at the beginning of a failed call to the assertion. Now it is up to the developer to fix any bugs.
 
-To achieve reproducibility, it is necessary to write assertions that depend exclusively on their arguments and are deterministic functions, and leave all the randomness to `quickcheck` and the assertion arguments default values. The `test` function seeds the random number generator in a way that ensures reproducibility from one call to the next. The seed is unique to each assertion, but doesn't change for small edits of the assertion, to facilitate assertion development.
+To achieve reproducibility, one has to write assertions that depend exclusively on their arguments and are deterministic functions thereof, and leave all the randomness to `quickcheck` and the assertion arguments default values. The `test` function seeds the random number generator in a way that ensures reproducibility from one call to the next. The seed is unique to each assertion, to guarantee independence of tests on different assertions and different implementations -- one can't code assuming certain data will occur again and again.
 
 ## What tests should we write?
 
