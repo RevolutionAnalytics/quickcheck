@@ -186,7 +186,7 @@ test =
     else {
       if(grepl("^package:", about)[1])
         about = intersect(ls(about), all.names(body(assertion)))
-      print(paste("Testing", paste(about, collapse = " ")))}
+      message(paste("Testing", paste(about, collapse = " ")))}
     seed =
       cksum(
         digest(
@@ -285,7 +285,7 @@ test =
             "\n",
             collapse = " ")))
       if(!is.null(cover)) {
-        print(test.report$coverage)
+        message(test.report$coverage)
         coverage(test.report$coverage)}
       #print(test.report$elapsed)
     }
@@ -379,7 +379,7 @@ coverage.character =
     if(!file.exists(x))
       stop(x, " does not exist.")
     pc = covr::package_coverage(path)
-    print(pc)
+    message(pc)
     covr::shine(pc)}
 
 coverage.coverage =
