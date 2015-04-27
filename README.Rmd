@@ -28,7 +28,8 @@ library(devtools)
 ```
 
 ```{r, echo= FALSE}
-version = packageDescription("quickcheck")$Version
+library(httr)
+version = content(GET("https://api.github.com/repos/RevolutionAnalytics/quickcheck/releases"))[[1]]$tag
 ```
 
 Then, to install from source:
