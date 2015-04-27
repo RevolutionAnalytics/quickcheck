@@ -6,7 +6,6 @@ Date: 2015-04-22
 Author: Revolution Analytics
 Imports: digest, functional, testthat, pryr, microbenchmark, dplyr, bitops
 Suggests: covr
-Collate: quickcheck.R generators.R
 Maintainer: Revolution Analytics <rhadoop@revolutionanalytics.com>
 URL: https://github.com/RevolutionAnalytics/quickcheck
 Description: Provides functions to test and reproduce failures of assertions on random data. Also provides a variety of random data generators.
