@@ -12,25 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-for (f in list(ratomic, rcharacter, rDate, rdouble, rfactor, rinteger, rlogical, rnumeric, rraw)) {
-  test(function(f = f)(assert.time.limit(f(size = ~10^6), 1, 1)))}
+for (f in c("ratomic", "rcharacter", "rDate", "rdouble", "rfactor", "rinteger", "rlogical", "rnumeric", "rraw")) {
+  test(function(f = get(f)) assert.time.limit(f(size = ~10^6), 1, 1), about = f)}
 
-#rnamed
+test(forall(x = ratomic(size = ~10^6), assert.time.limit(rnamed(x), 1, 1)), about = "rnamed")
 
-test(forall(x = ratomic(size = ~10^6), assert.time.limit(rnamed(x), 1, 1)))
+test(forall(x = ratomic(size = ~10^6), assert.time.limit(rsample(elements = x), 1, 1)), about = "rsample")
 
-#rsample
-test(forall(x = ratomic(size = ~10^6), assert.time.limit(rsample)))
+for(f in c("rmatrix", "rdata.frame"))
+  test(function(f = get(f)) assert.time.limit(f(ncol = ~10, nrow = ~10^5), 1, 1), about = f)
 
+test(function() assert.time.limit(rlist(),1,1), sample.size = 1000, about = "rlist")
 
+test(function() assert.time.limit(rany(),1,1), sample.size = 1000, about = "rany")
 
-#rmatrix rdataframe
-
-
-
-#rlist
-
-
-#rany
-
-#rize
+test(function() assert.time.limit(rsize(),1,1), sample.size = 1000, about = "rsize")
