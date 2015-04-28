@@ -20,3 +20,17 @@ assert.time.limit =
     retval = eval.parent(expr)
     setTimeLimit(Inf, Inf, TRUE)
     TRUE}
+
+benchmark =
+  function(){
+    v = rdouble(size = ~10^6)
+    i = 1:10^6
+    ret = list()
+    ret[[1]] = system.time({v = v[i]})[1:3]
+    i = sample(i)
+    ret[[2]] = system.time({v = v[i]})[1:3]
+    tf = tempfile()
+    ret[[3]] = system.time(saveRDS(v, tf))[1:3]
+    ret[[4]] = system.time({v = readRDS(tf)})[1:3]
+    do.call(rbind, ret)}
+
