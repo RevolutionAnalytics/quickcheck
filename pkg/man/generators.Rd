@@ -81,7 +81,7 @@ rsample(
   size = c(min = 0, max = ceiling(length(elements)/2)),
   replace = TRUE)
 rsize(size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
-mixture(generators)
+mixture(generators, weights = 1)
 constant(const = NULL)
 named(generator, rnames = rnamed)
 rnamed( x, names = rcharacter(size = ~length(x)))}
@@ -107,6 +107,7 @@ rnamed( x, names = rcharacter(size = ~length(x)))}
  \item{replace}{Whether to sample with replacement}
  \item{generator}{A random data generator or a formula that evaluates to random data (only right side is used)}
  \item{generators}{List of random data generators}
+ \item{weights}{A vector of probabilities to use in defining a mixture}
  \item{const}{Any R object}
  \item{x}{An R object for which it is possible to assign names}
  \item{names}{Random names to assign to the first argument}

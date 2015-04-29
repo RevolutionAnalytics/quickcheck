@@ -339,12 +339,11 @@ rsample =
     sample(elements, rsize(arg.match(size)), replace = replace)}
 
 ##combiners
-
 mixture =
-  function(generators) {
+  function(generators, weights = 1) {
     force(generators)
     function(...)
-      sample(generators, 1)[[1]](...)}
+      sample(generators, 1, prob = weights)[[1]](...)}
 
 # combine everything
 all.generators =
@@ -355,6 +354,7 @@ rany =
   function(generators = all.generators)
     mixture(generators)()
 
+#names
 rnamed =
   function(
     x,
