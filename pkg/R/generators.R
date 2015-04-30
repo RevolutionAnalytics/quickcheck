@@ -343,7 +343,7 @@ mixture =
   function(generators, weights = 1) {
     force(generators)
     function(...)
-      sample(generators, 1, prob = weights)[[1]](...)}
+      sample(generators, 1, prob = rep_len(weights, length(generators)))[[1]](...)}
 
 # combine everything
 all.generators =
