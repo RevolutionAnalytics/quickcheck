@@ -3,6 +3,8 @@
 quickcheck
 ==========
 
+[![Join the chat at https://gitter.im/RevolutionAnalytics/quickcheck](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/RevolutionAnalytics/quickcheck?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This package provides support for randomized  software testing for R. Inspired by its influential [Haskell namesake](http://www.eecs.northwestern.edu/~robby/courses/395-495-2009-fall/quick.pdf), it promotes a style of writing tests where assertions about functions are verified on random inputs. The package provides default generators for most common types but allows users to modify their behavior or even to create new ones based on the needs of a each application. The main advantages over traditional testing are
 
  * Each test can be run many times, with better coverage and bug detection.
