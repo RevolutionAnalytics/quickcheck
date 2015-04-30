@@ -112,18 +112,23 @@ as.assertion =
 
 library(testthat)
 assert.funs =
-  do.call(
-    c,
-    lapply(
-      c("error",  "message", "output",  "warning"),
-      function(n)
-        structure(
-          list(
-            as.assertion(
-              get(
-                paste0("expect_", n),
-                envir = as.environment("package:testthat")))),
-          names = n)))
+  c(
+    do.call(
+      c,
+      lapply(
+        c("error",  "message", "output",  "warning"),
+        function(n)
+          structure(
+            list(
+              as.assertion(
+                get(
+                  paste0("expect_", n),
+                  envir = as.environment("package:testthat")))),
+            names = n))),
+    list(
+      success = function(...) {list(...); TRUE},
+      time.limit = time.limit))
+
 
 expect =
   function(...) {

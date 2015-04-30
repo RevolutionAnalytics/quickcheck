@@ -14,7 +14,7 @@
 #
 
 
-assert.time.limit =
+time.limit =
   function(expr, cpu = Inf, elapsed = Inf) {
     setTimeLimit(cpu, elapsed, TRUE)
     retval = eval.parent(expr)
