@@ -214,15 +214,12 @@ test =
     assertion.text = deparse(assertion)
     try.assertion =
       function(xx) {
-        start = get_nanotime()
         assertion.return.value =
           tryCatch(
             do.call(assertion, xx),
             error =
               function(e) {message(e); FALSE})
-        list(
-          pass = all(as.logical(assertion.return.value)),
-          elapsed.time = get_nanotime() - start)}
+        list(pass = all(as.logical(assertion.return.value)))}
     project =
       function(xx, name)
         lapply(xx, function(x) x[[name]])
