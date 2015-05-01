@@ -19,17 +19,17 @@ length = 10^6
 max.time = 1
 
 for (f in c("ratomic", "rcharacter", "rDate", "rdouble", "rfactor", "rinteger", "rlogical", "rnumeric", "rraw")) {
-  test(function(f = get(f)) assert.time.limit(f(size = ~length), max.time, max.time), about = f)}
+  test(function(f = get(f)) expect("time.limit", f(size = ~length), max.time, max.time, max.time), about = f)}
 
-test(forall(x = ratomic(size = ~length), assert.time.limit(rnamed(x), max.time, max.time)), about = "rnamed")
+test(forall(x = ratomic(size = ~length), expect("time.limit", rnamed(x), max.time, max.time, max.time)), about = "rnamed")
 
-test(forall(x = ratomic(size = ~length), assert.time.limit(rsample(elements = x), max.time, max.time)), about = "rsample")
+test(forall(x = ratomic(size = ~length), expect("time.limit", rsample(elements = x), max.time, max.time, max.time)), about = "rsample")
 
 for(f in c("rmatrix", "rdata.frame"))
-  test(function(f = get(f)) assert.time.limit(f(ncol = ~ncol, nrow = ~nrow), max.time, max.time), about = f)
+  test(function(f = get(f)) expect("time.limit", f(ncol = ~ncol, nrow = ~nrow), max.time, max.time, max.time), about = f)
 
-test(function() assert.time.limit(rlist(), max.time, max.time), sample.size = 1000, about = "rlist")
+test(function() expect("time.limit", rlist(), max.time, max.time, max.time), sample.size = 1000, about = "rlist")
 
-test(function() assert.time.limit(rany(), max.time, max.time), sample.size = 1000, about = "rany")
+test(function() expect("time.limit", rany(), max.time, max.time, max.time), sample.size = 1000, about = "rany")
 
-test(function() assert.time.limit(rsize(), max.time, max.time), sample.size = 1000, about = "rsize")
+test(function() expect("time.limit", rsize(), max.time, max.time, max.time), sample.size = 1000, about = "rsize")
