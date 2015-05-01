@@ -14,12 +14,12 @@
 #
 
 
-assert.time.limit =
-  function(expr, cpu = Inf, elapsed = Inf) {
-    setTimeLimit(cpu, elapsed, TRUE)
-    retval = eval.parent(expr)
+time.limit =
+  function(expr, user = Inf, system = Inf, elapsed = Inf) {
+    setTimeLimit(user, elapsed, TRUE)
+    time = system.time(eval.parent(expr))[1:3]
     setTimeLimit(Inf, Inf, TRUE)
-    TRUE}
+    all(time <= c(user, system, elapsed))}
 
 benchmark =
   function(){
