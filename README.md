@@ -2,7 +2,7 @@
 
 quickcheck
 ==========
-
+[![wercker status](https://app.wercker.com/status/6f45c3d27e3ef361dffbdbc6df60d58c/m "wercker status")](https://app.wercker.com/project/bykey/6f45c3d27e3ef361dffbdbc6df60d58c)
 
 This package provides support for randomized  software testing for R. Inspired by its influential [Haskell namesake](http://www.eecs.northwestern.edu/~robby/courses/395-495-2009-fall/quick.pdf), it promotes a style of writing tests where assertions about functions are verified on random inputs. The package provides default generators for most common types but allows users to modify their behavior or even to create new ones based on the needs of a each application. The main advantages over traditional testing are
 
