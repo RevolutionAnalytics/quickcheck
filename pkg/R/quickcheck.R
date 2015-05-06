@@ -15,40 +15,34 @@
 #the appeasment
 # define all these awful globals to appease R CMD check
 
-severity = 10
-sample.size = NULL
-vector.size = NULL
-integer.size = NULL
-double.size = NULL
-nchar.max = NULL
-unique.max = NULL
-nlevels = NULL
-raw.max = NULL
-list.size = NULL
-list.height = NULL
-matrix.ncol = NULL
-matrix.nrow = NULL
-data.frame.ncol = NULL
-data.frame.nrow = NULL
-
-work.dir =
-  quote(
-    quote(
-      if(.Platform$OS.type == "windows")
-        "."
-      else
-        "/tmp"))
-
 quickcheck.env =
   list2env(
-    do.call(
-      c,
-      lapply(
-        ls(),
-        function(x)
-          structure(
-            list(eval(as.name(x))),
-          names = x))))
+    list(
+      severity = 10,
+      sample.size = NULL,
+      vector.size = NULL,
+      integer.size = NULL,
+      double.size = NULL,
+      nchar.max = NULL,
+      unique.max = NULL,
+      nlevels = NULL,
+      raw.max = NULL,
+      list.size = NULL,
+      list.height = NULL,
+      matrix.ncol = NULL,
+      matrix.nrow = NULL,
+      data.frame.ncol = NULL,
+      data.frame.nrow = NULL,
+      work.dir =
+        quote(
+          quote(
+            if(.Platform$OS.type == "windows")
+              "."
+            else
+              "/tmp"))))
+
+for(var in ls(quickcheck.env))
+  assign(var, quickcheck.env[[var]]) #silence R CMD check warnings
 
 `%||%` =
   function(x, y)
