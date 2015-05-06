@@ -14,13 +14,6 @@
 #
 
 
-time.limit =
-  function(expr, user = Inf, system = Inf, elapsed = Inf) {
-    setTimeLimit(user, elapsed, TRUE)
-    time = system.time(eval.parent(expr))[1:3]
-    setTimeLimit(Inf, Inf, TRUE)
-    all(time <= c(user, system, elapsed))}
-
 benchmark =
   function(){
     v = rdouble(size = ~10^6)
