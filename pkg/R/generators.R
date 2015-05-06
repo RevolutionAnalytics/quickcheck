@@ -96,7 +96,10 @@ rdata =
         else
           do.call(rng, list(size))}
       else
-        eval(tail(as.list(rng), 1)[[1]], list(size = size), environment(rng))}
+        eval(
+          tail(as.list(rng), 1)[[1]],
+          if(!is.null(size)) list(size = size),
+          environment(rng))}
     if(is.null(size) || size == length(data))
       data
     else{
@@ -113,7 +116,7 @@ rsize =
   function(size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
     retval = {
       if(is.fofun(size))
-        as.integer(round(rdata(size, 1)))
+        as.integer(round(rdata(size, if(is.function(size)) 1)))
       else {
         size = arg.match(size)
         rzipf.range(1, size$min, size$max, s = 1)}}
