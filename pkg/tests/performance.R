@@ -13,6 +13,8 @@
 # limitations under the License.
 #
 
+library(quickcheck)
+
 ncol = 10
 nrow = 10^5
 length = 10^6
