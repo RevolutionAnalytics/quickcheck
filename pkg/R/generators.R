@@ -50,10 +50,6 @@ sample =
   function(x, size, ...)
     x[base::sample(length(x), size = size, ...)]
 
-is.fofun =
-  function(x)
-    is.function(x) || is.formula(x) || is.RDG(x)
-
 #perform function argument like matching for vectors
 #macro-like, call only one level deep
 
@@ -72,9 +68,11 @@ apply.default =
         lapply(names(default), function(n) apply.default(n, x[[n]], default[[n]])),
         names = names(default))}}
 
+is.ffR = function(x) inherits(x, c("formula", "function", "RDG"))
+
 arg.match =
   function(arg, defaults = NULL) {
-    if(is.fofun(arg))
+    if(is.ffR(arg))
       arg
     else {
       name = as.character(substitute(arg))
@@ -125,15 +123,18 @@ rdata_.formula =
 #
 
 rsize =
-  function(size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
+  function() {
     retval = {
-      if(is.fofun(size))
+      if(is.ffR(size))
         as.integer(round(rdata(size, if(is.function(size)) 1)))
       else {
         size = arg.match(size)
         rzipf.range(1, size[["min"]], size[["max"]], s = 1)}}
     stopifnot(retval >= 0)
     retval}
+
+default.vector.size = quote(c(min = 0, max = default(vector.size %||% 10 * severity)))
+formals(rsize) = list(size = default.vector.size)
 
 ## basic types
 
@@ -183,56 +184,44 @@ as.RNG.list =
 
 is.RDG = function(x) class(x) == "RDG"
 
+vector.defaults =
+  function(elements)
+    list(elements = elements, size = default.vector.size)
+
 make.RDG =
   function(class){
     force(class)
     RDG.defaults =
       list(
-        logical =
-          list(
-            elements = quote(c(p = 0.5)),
-            size =  quote(c(min = 0, max = default(vector.size %||% 10 * severity)))),
+        logical = vector.defaults(quote(c(p = 0.5))),
         integer =
-          list(
-            elements =
-              quote({
-                r = default(integer.size %||% 10 * severity);
-                c(min = -r, max = r)}),
-            size = quote(c(min = 0, max = default(vector.size %||% 10 * severity)))),
+          vector.defaults(
+            quote({
+              r = default(integer.size %||% 10 * severity);
+              c(min = -r, max = r)})),
         double =
-          list(
-            elements = quote(c(mean = 0, sd = default(double.size %||% 10 * severity))),
-            size = quote(c(min = 0, max = default(vector.size %||% 10 * severity)))),
+          vector.defaults(
+            quote(c(mean = 0, sd = default(double.size %||% 10 * severity)))),
         character =
-          list(
-            elements =
-              quote(
-                list(
-                  alphabet = c(letters, LETTERS, 0:9),
-                  nchar.min = 0,
-                  nchar.max = default(nchar.max %||% severity),
-                  unique.min = 1,
-                  unique.max = default(unique.max %||% severity))),
-            size = quote(c(min = 0, max = default(vector.size %||% 10 * severity)))),
+          vector.defaults(
+            quote(
+              list(
+                alphabet = c(letters, LETTERS, 0:9),
+                nchar.min = 0,
+                nchar.max = default(nchar.max %||% severity),
+                unique.min = 1,
+                unique.max = default(unique.max %||% severity)))),
         factor =
-          list(
-            elements = quote(c(nlevels = default(nlevels %||% severity))),
-            size = quote(c(min = 0, max = default(vector.size %||% 10 * severity)))),
+          vector.defaults(quote(c(nlevels = default(nlevels %||% severity)))),
         raw =
-          list(
-            elements = quote(c(min = 0, max = default(raw.max %||% severity))),
-            size = quote(c(min = 0, max = default(vector.size %||% 10 * severity)))),
+          vector.defaults(quote(c(min = 0, max = default(raw.max %||% severity)))),
         Date =
-          list(
-            elements =  quote(c(from = as.Date("1950/01/01"), to = as.Date("2050/01/01"))),
-            size =  quote(c(min = 0, max = default(vector.size %||% 10 * severity)))
-          ))
+          vector.defaults(quote(c(from = as.Date("1950/01/01"), to = as.Date("2050/01/01")))))
     as.RDG({
       f =
         function() {
-          if(!any(class(elements) %in% c("formula", "function", "RDG"))){
-            elements = arg.match(elements)
-            elements = as.RNG(elements, class)}
+          if(!is.ffR(elements))
+            elements = as.RNG(arg.match(elements), class)
           size = rsize(arg.match(size))
           data = rdata(elements, size)
           if(class == "factor")
@@ -255,7 +244,7 @@ rnumeric =
         r = default(integer.size %||% 10 * severity);
         c(integer.min = -r, integer.max = r,
           double.mean = 0, double.sd = default(double.size %||% 10 * severity))},
-      size = c(min = 0, max = default(vector.size %||% 10 * severity)))
+      size = default.vector.size)
       mixture(
         list(
           Curry(
@@ -296,27 +285,14 @@ rlist =
 
 ratomic =
   as.RDG(
-    function(
-      generators = atomic.generators,
-      size = c(min = 0, max = default(vector.size %||% 10 * severity))) {
-      if(!is.fofun(size))
-        size = arg.match(size)
+    function(){
+      size = arg.match(size)
       mixture(
         lapply(
           generators,
           function(gg){
             hh = gg
             Curry(hh, size = size)}))()})
-
-rmatrix =
-  as.RDG(
-    function(
-      generator = ratomic,
-      nrow = c(min = 0, max = default(matrix.nrow %||% 4 * severity)),
-      ncol = c(min = 0, max = default(matrix.ncol %||% severity))) {
-      nrow = rsize(arg.match(nrow))
-      ncol = rsize(arg.match(ncol))
-      matrix(generator(size = constant(nrow*ncol)), nrow = nrow, ncol = ncol)})
 
 atomic.generators =
   list(
@@ -327,6 +303,21 @@ atomic.generators =
     rraw = rraw,
     rDate = rDate,
     rfactor = rfactor)
+
+formals(ratomic) =
+  list(
+    generators = atomic.generators,
+    size = default.vector.size)
+
+rmatrix =
+  as.RDG(
+    function(
+      generator = ratomic,
+      nrow = c(min = 0, max = default(matrix.nrow %||% 4 * severity)),
+      ncol = c(min = 0, max = default(matrix.ncol %||% severity))) {
+      nrow = rsize(arg.match(nrow))
+      ncol = rsize(arg.match(ncol))
+      matrix(generator(size = constant(nrow*ncol)), nrow = nrow, ncol = ncol)})
 
 rdata.frame =
   as.RDG(
