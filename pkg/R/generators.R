@@ -312,12 +312,12 @@ formals(ratomic) =
 rmatrix =
   as.RDG(
     function(
-      generator = ratomic,
+      elements = ratomic,
       nrow = c(min = 0, max = default(matrix.nrow %||% 4 * severity)),
       ncol = c(min = 0, max = default(matrix.ncol %||% severity))) {
       nrow = rsize(arg.match(nrow))
       ncol = rsize(arg.match(ncol))
-      matrix(generator(size = constant(nrow*ncol)), nrow = nrow, ncol = ncol)})
+      matrix(rdata(elements, size = nrow*ncol), nrow = nrow)})
 
 rdata.frame =
   as.RDG(
