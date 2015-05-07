@@ -22,7 +22,7 @@
 Generators and generator constructors for random data of many types
 }
 \description{
-These functions are divided into two groups, random data generators, and constructors for such functions. Random data generators, prefixed with "r",  are functions with no mandatory arguments that generate random data of the type indicated in their names. Their use is typically as default values for the arguments of the \code{assertion} function, which itself is the main argument to \code{test}. That is, these data generators are called for each test run and fed into the assertion. All arguments are given a default but can also be modified, thus defining customized data generators. In cases when no reasonable defaults could be defined, instead of a random data generator, a constructor is available that returns a random data generator.
+These functions are divided into two groups, random data generators, and constructors for such functions. Random data generators, prefixed with "r", are functions with no mandatory arguments that generate random data of the type indicated in their names. Their use is typically as default values for the arguments of the \code{assertion} function, which itself is the main argument to \code{\link{test}}. That is, these data generators are called for each test run and their return values are fed into the assertion. All arguments are given a default but can also be modified, thus defining customized data generators. In cases when no reasonable defaults could be defined, instead of a random data generator, a constructor that returns a random data generator is available.
 }
 \usage{
 rany(generators = all.generators)
@@ -88,7 +88,7 @@ rnamed( x, names = rcharacter(size = ~length(x)))}
 \arguments{
  \item{elements}{Specify the distribution of elements of the returned data structure, either as a vector of distribution parameters or as a random number generator function or a formula that will be used as a random number generator. Different generators accept different parameters. Using names in the vectors is optional when no ambiguity arises.
  \describe{
-  \item{rcharacter}{\code{alphabet}, the alphabet the generated strings are built on; \code{nchar.min}, \code{nchar.max},  the range of lengths of each string; and \code{unique.min}, \code{unique.max}, the range of distinct strings generated. Each can also be a random number generator function or formula, see below}
+  \item{rcharacter}{\code{alphabet}, the alphabet the generated vector elements are built on; \code{nchar.min}, \code{nchar.max}, the range of lengths of each string; and \code{unique.min}, \code{unique.max}, the range of distinct strings generated. Each can also be a random number generator function or formula, see below}
   \item{rDate}{\code{from}, \code{to}, the earliest and latest possible dates, as class Date objects or strings amenable to conversion}
   \item{rdouble}{\code{mean} and \code{sd} are the mean and standard deviation}
  \item{rfactor}{\code{nlevels} is the maximum number of levels}
@@ -97,10 +97,10 @@ rnamed( x, names = rcharacter(size = ~length(x)))}
  \item{rlogical}{\code{p} is the probability of \code{TRUE}}
  \item{rraw}{\code{max} is the maximum value for an element, as an integer. Alternately, one can specify a raw vector whose elements will be sampled}
  \item{rsample}{A vector or list of elements to sample from.}
- \item{rsize}{\code{min} and \code{max} values; when \code{min} is omitted,  0 is assumed}
  }
- A random number generator can be also passed, such as \code{rnorm} or \code{runif}.  Also, this argument accepts formulas that contain the \code{size} variable and whose right side evaluates to exactly \code{size} elements, as is \code{~10*runif(size)}. If the formula or function evaluates to the wrong class, a conversion will be attempted; if it evaluate to the wrong size, a warning will be issued and recycling will be attempted.}
- \item{size}{The maximum size of the returned data structure. Alternatively, a random number generator taking a single argument and returning exactly one integer or a formula whose right side evaluates to the same (see also the \code{elements} argument)}
+ A random number generator can be also passed, such as \code{rnorm} or \code{runif}, which will be used to generate the elements of the returned vector. Also, this argument accepts formulas that contain the \code{size} variable and whose right side evaluates to exactly \code{size} elements, as is \code{~10*runif(size)}. If the formula or function evaluates to the wrong class, a conversion will be attempted; if it evaluate to the wrong size, a warning will be issued and recycling will be attempted. Exceptions are as follows: \code{rnumeric} doesn't accept a formula or function. \code{rmatrix} and \code{rdata.frame} only accept a formula or function}
+ \item{size}{The maximum size of the returned data structure. Alternatively, a random number generator taking a single argument and returning exactly one integer or a formula whose right side evaluates to the same (see also the \code{elements} argument)
+ for \code{rsize} ...\code{min} and \code{max} values; when \code{min} is omitted, 0 is assumed}
  \item{nrow}{The maximum number of rows for the returned data frame. Alternatively, a function or a formula (see \code{size})}
  \item{ncol}{The maximum number of columns for the returned data frame. Alternatively, a function specifying its distribution (see \code{size})}
  \item{height}{A parameter monotonically increasing with the average height (amount of nesting) of the returned list, for a fixed \code{size} argument. We plan to make the interpretation of this parameter more direct in a future release.}
