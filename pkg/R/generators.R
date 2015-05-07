@@ -238,13 +238,7 @@ for(class in c("logical", "integer", "double", "character", "factor", "raw", "Da
   assign(paste0("r", class), make.RDG(class))
 
 rnumeric =
-  as.RDG(
-    function(
-      elements  = {
-        r = default(integer.size %||% 10 * severity);
-        c(integer.min = -r, integer.max = r,
-          double.mean = 0, double.sd = default(double.size %||% 10 * severity))},
-      size = default.vector.size)
+    function()
       mixture(
         list(
           Curry(
@@ -254,7 +248,18 @@ rnumeric =
           Curry(
             rinteger,
             elements = unname(elements[c("integer.min", "integer.max")]),
-            size = size)))())
+            size = size)))()
+
+formals(rnumeric) =
+  list(
+    elements  =
+      quote({
+        r = default(integer.size %||% 10 * severity);
+        c(integer.min = -r, integer.max = r,
+          double.mean = 0, double.sd = default(double.size %||% 10 * severity))}),
+    size = default.vector.size)
+
+rnumeric = as.RDG(rnumeric)
 
 ##rcomplex NAY
 
@@ -305,7 +310,7 @@ atomic.generators =
 
 formals(ratomic) =
   list(
-    generators = atomic.generators,
+    generators = quote(atomic.generators),
     size = default.vector.size)
 
 ratomic = as.RDG(ratomic)
