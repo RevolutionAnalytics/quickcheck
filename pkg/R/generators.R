@@ -284,7 +284,6 @@ rlist =
           simplify = FALSE)})
 
 ratomic =
-  as.RDG(
     function(){
       size = arg.match(size)
       mixture(
@@ -292,7 +291,7 @@ ratomic =
           generators,
           function(gg){
             hh = gg
-            Curry(hh, size = size)}))()})
+            Curry(hh, size = size)}))()}
 
 atomic.generators =
   list(
@@ -309,6 +308,8 @@ formals(ratomic) =
     generators = atomic.generators,
     size = default.vector.size)
 
+ratomic = as.RDG(ratomic)
+
 rmatrix =
   as.RDG(
     function(
@@ -317,17 +318,17 @@ rmatrix =
       ncol = c(min = 0, max = default(matrix.ncol %||% severity))) {
       nrow = rsize(arg.match(nrow))
       ncol = rsize(arg.match(ncol))
-      matrix(rdata(elements, size = nrow*ncol), nrow = nrow)})
+      matrix(rdata(elements, size = nrow*ncol), nrow = nrow, ncol = ncol)})
 
 rdata.frame =
   as.RDG(
     function(
-      generator = ratomic,
+      elements = ratomic,
       nrow = c(min = 0, max = default(data.frame.nrow %||% 4 * severity)),
       ncol = c(min = 0, max = default(data.frame.ncol %||% severity))) {
       nrow = rsize(arg.match(nrow))
       ncol = rsize(arg.match(ncol))
-      columns = replicate(ncol, generator(size = constant(nrow)), simplify = FALSE)
+      columns = replicate(ncol, rdata(elements, size = nrow), simplify = FALSE)
       if(length(columns) > 0)
         names(columns) = paste("col", 1:ncol)
       do.call(data.frame, columns)})
