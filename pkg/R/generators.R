@@ -238,17 +238,19 @@ for(class in c("logical", "integer", "double", "character", "factor", "raw", "Da
   assign(paste0("r", class), make.RDG(class))
 
 rnumeric =
-    function()
-      mixture(
-        list(
-          Curry(
-            rdouble,
-            elements = unname(elements[c("double.mean", "double.sd")]),
-            size = size),
-          Curry(
-            rinteger,
-            elements = unname(elements[c("integer.min", "integer.max")]),
-            size = size)))()
+  function(){
+    size = rsize(arg.match(size))
+    elements = arg.match(elements)
+    mixture(
+      list(
+        Curry(
+          rdouble,
+          elements = c(mean = elements$double.mean, sd = elements$double.sd),
+          size = ~size),
+        Curry(
+          rinteger,
+          elements = c(min = elements$integer.min , max = elements$integer.max),
+          size = ~size)))()}
 
 formals(rnumeric) =
   list(
@@ -285,18 +287,18 @@ rlist =
       else
         replicate(
           rsize(arg.match(size)),
-          generator(),
+          rdata(generator, NULL),
           simplify = FALSE)})
 
 ratomic =
-    function(){
-      size = arg.match(size)
-      mixture(
-        lapply(
-          generators,
-          function(gg){
-            hh = gg
-            Curry(hh, size = size)}))()}
+  function(){
+    size = arg.match(size)
+    mixture(
+      lapply(
+        generators,
+        function(gg){
+          hh = gg
+          Curry(hh, size = size)}))()}
 
 atomic.generators =
   list(
