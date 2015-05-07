@@ -58,6 +58,8 @@ apply.default =
     if(is.null(names(default)) || is.null(x))
       x %||% default
     else {
+      if(!all(names(x) %in% names(default)))
+        stop("Unsupported option(s) ", setdiff(names(x), names(default)), call. = FALSE)
       length(x) = length(default)
       nmask = {
         if(is.null(names(x)))
