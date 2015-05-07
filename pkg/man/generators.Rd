@@ -37,7 +37,7 @@ rcharacter(
       unique.min = 1, unique.max = default(unique.max \%||\% severity)),
   size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
 rdata.frame(
-  generator = ratomic,
+  elements = ratomic,
   nrow = c(min = 0, max = default(data.frame.nrow \%||\% 4 * severity)),
   ncol = c(min = 0, max = default(data.frame.ncol \%||\% severity)))
 rDate(
@@ -65,7 +65,7 @@ rlogical(
   elements = c(p = 0.5),
   size = c(min = 0, max = default(vector.size \%||\% 10 * severity)))
 rmatrix(
-  generator = ratomic,
+  elements = ratomic,
   nrow = c(min = 0, max = default(matrix.nrow \%||\% 4 * severity)),
   ncol = c(min = 0, max = default(matrix.ncol \%||\% severity)))
 rnumeric(

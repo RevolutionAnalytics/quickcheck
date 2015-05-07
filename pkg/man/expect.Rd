@@ -3,7 +3,7 @@
 \title{Create assertions from expectations}
 \description{Create assertion equivalent to useful \code{testthat} expectations}
 \usage{
-	expect(what = c("error", "message", "output", "warning"),  ...)
+	expect(what = c("error", "message", "output", "warning", "success", "time.limit"),  ...)
 }
 \arguments{
 	\item{what}{The name of the expectation}
