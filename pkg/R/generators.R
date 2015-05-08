@@ -194,31 +194,24 @@ make.RDG =
   function(class){
     force(class)
     RDG.defaults =
-      list(
-        logical = vector.defaults(quote(c(p = 0.5))),
-        integer =
-          vector.defaults(
-            quote({
-              r = default(integer.size %||% 10 * severity);
-              c(min = -r, max = r)})),
-        double =
-          vector.defaults(
-            quote(c(mean = 0, sd = default(double.size %||% 10 * severity)))),
-        character =
-          vector.defaults(
-            quote(
-              list(
-                alphabet = c(letters, LETTERS, 0:9),
-                nchar.min = 0,
-                nchar.max = default(nchar.max %||% severity),
-                unique.min = 1,
-                unique.max = default(unique.max %||% severity)))),
-        factor =
-          vector.defaults(quote(c(nlevels = default(nlevels %||% severity)))),
-        raw =
-          vector.defaults(quote(c(min = 0, max = default(raw.max %||% severity)))),
-        Date =
-          vector.defaults(quote(c(from = as.Date("1950/01/01"), to = as.Date("2050/01/01")))))
+      lapply(
+        alist(
+          logical =c(p = 0.5),
+          integer ={
+            r = default(integer.size %||% 10 * severity);
+            c(min = -r, max = r)},
+          double =  c(mean = 0, sd = default(double.size %||% 10 * severity)),
+          character =
+            list(
+              alphabet = c(letters, LETTERS, 0:9),
+              nchar.min = 0,
+              nchar.max = default(nchar.max %||% severity),
+              unique.min = 1,
+              unique.max = default(unique.max %||% severity)),
+          factor = c(nlevels = default(nlevels %||% severity)),
+          raw = c(min = 0, max = default(raw.max %||% severity)),
+          Date = c(from = as.Date("1950/01/01"), to = as.Date("2050/01/01"))),
+        vector.defaults)
     as.RDG({
       f =
         function() {
