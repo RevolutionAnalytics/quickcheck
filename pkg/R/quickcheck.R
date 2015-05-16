@@ -132,9 +132,9 @@ assert.funs =
 
 
 expect =
-  function(...) {
+function(expr, ...) {
     what = match.arg(what)
-    assert.funs[[what]](...)}
+    assert.funs[[what]](expr, ...)}
 
 formals(expect) = c(list(what = names(assert.funs)), formals(expect))
 
