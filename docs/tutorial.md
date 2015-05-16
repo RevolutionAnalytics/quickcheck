@@ -30,7 +30,7 @@ test_that(
     matrix(c(1,3,5,2,4,6), ncol = 2)))
 ```
 
-That works, but has some limitations. For instance, suppose we have to match some fictional military-grade testing which requires to run at least $10^4$ tests per  function. It can be pretty laborious to write them this way. So the next step is to replace examples of what the function is supposed to do with a general statement of one or  more properties that a function is supposed to have, also known as an assertion:
+That works, but has some limitations. For instance, suppose we have to match some fictional military-grade testing which requires to run at least $10^4$ tests per  function: writing them this way would be pretty laborious. One solution is to replace examples of what the function is supposed to do with a general statement of one or  more properties that a function is supposed to have, also known as an assertion:
 
 
 
@@ -58,13 +58,13 @@ test(
 
 ```
 Testing t
-Using seed 199494647
+Using seed 817375549
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
      ] == t(x)[, i]))) 
 
-Creating /tmp/quickcheck/28376. Use qc.options(work.dir = <alternate-path>) to change location.
+Creating /tmp/quickcheck/18687. Use qc.options(work.dir = <alternate-path>) to change location.
 ....
 ```
 
@@ -91,7 +91,7 @@ test(
 
 ```
 Testing t
-Using seed 1624801740
+Using seed 782640242
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
@@ -154,7 +154,7 @@ mean(x) > 0
 ```
 
 ```
-Error in test(forall(x = rdouble(), mean(x) > 0), stop = TRUE, about = "mean"): to reproduce enter repro("/tmp/quickcheck/28376/tr6ed84d09e6f9")
+Error in test(forall(x = rdouble(), mean(x) > 0), stop = TRUE, about = "mean"): to reproduce enter repro("/tmp/quickcheck/18687/tr48ff36a38193")
 ```
 
 This output shows that some of the default 10 runs have failed and then invites us to enter a command, `repro(<some-path>)`, that will execute the assertion in the debugger with the input data that made it fail. Another way to achieve the same is to run the test with the option `stop = FALSE` which doesn't produce an error and returns the same debugging data. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
@@ -207,7 +207,7 @@ To achieve reproducibility, one has to write assertions that depend exclusively 
 
 There is no general answer to this question. One possible criterion is that of *test coverage*, the fraction of code that has been executed during the execution of tests, which is considered a practical proxy for "thoroughness". The other is the strictness assertions. The conjunction of all the assertions in a test set should imply the correctness of a program, in the ideal case and when universally quantified over their inputs. For instance `test(forall(x = rinteger(), identical(x,x))` tests one important property of the `identical` function for all integer vectors. That doesn't mean it runs the test for all integer vectors, which is impossible, but it means that there should be no failure no matter how many runs we allow the test to include. Also, while this may be the ideal case, we should not let "perfection be the enemy of the good". Any set of assertions is better than no assertion.
  
-The attentive reader may have already noticed that this is not the strictest test we could  have written, independent of the fact that it achieves 100% coverage. `identical` is supposed to work with any R object, so `test(forall(x = rany(), identical(x,x))` is also expected to pass, implies the previous test, if universally quantified over all inputs, that is it is stricter given infinite time to try all possible inputs and better captures the developer's intent.
+The attentive reader may have already noticed that this is not the strictest test we could  have written, independent of the fact that it achieves 100% coverage. `identical` is supposed to work with any R object, so `test(forall(x = rany(), identical(x,x))` is also expected to pass and, if universally quantified over all inputs, implies the previous test, which means that it is stricter and better captures the developer's intent. Hence, we should prefer the latter version of this test.
 
 As a final guideline  for test-writing, there is practical and some theoretical evidence that shorter programs can be tested more effectively, provided that the tests are also short. To summarize:
 
