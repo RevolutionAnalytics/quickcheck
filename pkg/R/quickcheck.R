@@ -288,10 +288,8 @@ test =
             "\n",
             collapse = " ")))
       if(!is.null(cover)) {
-        message(test.report$coverage)
-        coverage(test.report$coverage)}
-      #print(test.report$elapsed)
-    }
+        message(capture.output(print(test.report$coverage)))
+        coverage(test.report$coverage)}}
     work.dir = file.path(default(work.dir), "quickcheck", Sys.getpid())
     if(!file.exists(work.dir))
       message("Creating ", work.dir, ". Use qc.options(work.dir = <alternate-path>) to change location.")
