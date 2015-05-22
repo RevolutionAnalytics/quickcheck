@@ -19,7 +19,7 @@ This package provides support for randomized  software testing for R. Inspired b
  * Assertions are more self-documenting than individual examples of the I/O relation, and in some instances can amount to a complete specification for a function.
  * The developer is less likely to incorporate unstated assumptions in the choice of test inputs.
 
-Additional features include the `repro` function that supports reproducing and debugging a failed test. For additional information, see the [tutorial](docs/tutorial.md). For support, we are experimentally [monitoring](http://stackoverflow.com/questions/tagged/r+quickcheck) tags [R] [quickcheck] on [Stackoverflow](http://stackoverflow.com). Please remember to add *both* tags to your question. For new releases, subscribe to `quickcheck`'s Release notes [feed](https://github.com/RevolutionAnalytics/quickcheck/releases.atom) or by [email](https://feedburner.google.com/fb/a/mailverify?uri=ReleaseNotesFromQuickcheck&amp;loc=en_US)
+Additional features include the `repro` function that supports reproducing and debugging a failed test. For additional information, see the [tutorial](docs/tutorial.md). For support, we are [monitoring](http://stackoverflow.com/questions/tagged/r+quickcheck) tags [R] [quickcheck] on [Stackoverflow](http://stackoverflow.com). Please remember to add *both* tags to your question. For new releases, subscribe to `quickcheck`'s Release notes [feed](https://github.com/RevolutionAnalytics/quickcheck/releases.atom) or by [email](https://feedburner.google.com/fb/a/mailverify?uri=ReleaseNotesFromQuickcheck&amp;loc=en_US)
 
 To install, first install and load `devtools`
 
@@ -61,5 +61,3 @@ cat("The current version is", version, ".")
 ```
 
 While this package was first developed to support the activities of the RHadoop project, it's not part of it nor related to Hadoop or big data. While it has been in use for a few years to test packages used in production, version 3.0.0 marks the first version of the project that's offered for general use and as such it went through a major API re-design. Hence, versions 3.x.y should be considered beta  releases and no backward compatibility guarantees are offered, as it is customary in [semantic versioning](http://semver.org) for 0.x.y releases. We will switch to the normal major/minor/hotfix releases from version 4.
-
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/RevolutionAnalytics/quickcheck?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge)
