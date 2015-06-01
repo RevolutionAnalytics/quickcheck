@@ -58,13 +58,13 @@ test(
 
 ```
 Testing t
-Using seed 817375549
+Using seed 1259503250
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
      ] == t(x)[, i]))) 
 
-Creating /tmp/quickcheck/18687. Use qc.options(work.dir = <alternate-path>) to change location.
+Creating /tmp/quickcheck/23790. Use qc.options(work.dir = <alternate-path>) to change location.
 ....
 ```
 
@@ -91,7 +91,7 @@ test(
 
 ```
 Testing t
-Using seed 782640242
+Using seed 1509435391
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
@@ -138,23 +138,23 @@ By executing this test successfully we have built confidence that the function `
 
 
 ```r
-test(forall(x = rdouble(), mean(x) > 0), stop = TRUE, about = "mean")
+test(forall(x = rdouble(), mean(x) > -0.2), stop = TRUE, about = "mean")
 ```
 
 ```
 Testing mean
-Using seed 420616293
+Using seed 1457646180
 FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0
+mean(x) > -0.2
 FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0
+mean(x) > -0.2
 ....
 ```
 
 ```
-Error in test(forall(x = rdouble(), mean(x) > 0), stop = TRUE, about = "mean"): to reproduce enter repro("/tmp/quickcheck/18687/tr48ff36a38193")
+Error in test(forall(x = rdouble(), mean(x) > -0.2), stop = TRUE, about = "mean"): to reproduce enter repro("/tmp/quickcheck/23790/tr5cee55466a07")
 ```
 
 This output shows that some of the default 10 runs have failed and then invites us to enter a command, `repro(<some-path>)`, that will execute the assertion in the debugger with the input data that made it fail. Another way to achieve the same is to run the test with the option `stop = FALSE` which doesn't produce an error and returns the same debugging data. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
