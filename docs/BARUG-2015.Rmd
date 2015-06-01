@@ -27,6 +27,7 @@ knit_hooks$set(output = function(x, options) {
 	hook_output(x, options)
 })
 opts_chunk$set(out.lines = 5)
+#options(width = 80)
 ```
 
 
@@ -108,11 +109,11 @@ forall(x = rcharacter(), stop(x))
 ## {.build}
 
 ```{r, results='hide'}
-test(forall(x = rinteger(), identical(x,x))) 
+test(forall(x = rinteger(), identical(x,x)), about = "identical") 
 ```
 
 ```{r, results='hide'}
-test(forall(x = rany(), identical(x,x)))
+test(forall(x = rany(), identical(x,x)), about = "identical")
 ```
 
 
