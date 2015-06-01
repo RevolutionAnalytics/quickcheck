@@ -29,9 +29,7 @@ for(x in list(matrix(c(1,2,3,4), ncol = 2), matrix(c(5:10), ncol = 3)))
   test_that(
     "transpose  test",
     expect_true(
-### <b>
       all(sapply(1:nrow(x), function(i) all(x[i,] == t(x)[,i])))))
-### </b>
 rm(x)
 ```
 
@@ -45,21 +43,22 @@ library(quickcheck)
 test(
   forall(
     x = rmatrix(),
-### <b>
     any(dim(x) == c(0,0)) ||
-      all(sapply(1:nrow(x), function(i) all(x[i,] == t(x)[,i])))))
-### </b>
+      all(sapply(1:nrow(x), function(i) all(x[i,] == t(x)[,i])))),
+  about = "t")
 ```
 
 
 ```
-Using seed 477281578
+Testing t
+Using seed 388073751
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
      ] == t(x)[, i]))) 
 
-Creating /tmp/quickcheck/99444. Use qc.options(tmpdir = <alternate-path>) to change location.
+Creating /tmp/quickcheck/24302.
+ Use qc.options(work.dir = <alternate-path>) to change location.
 ```
 
 # Advantages
@@ -73,11 +72,13 @@ test(
     x = rmatrix(),
     any(dim(x) == c(0,0)) ||
       all(sapply(1:nrow(x), function(i) all(x[i,] == t(x)[,i])))),
+  about = "t",
   sample.size = 100)
 ```
 
 ```
-Using seed 477281578
+Testing t
+Using seed 556822377
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
@@ -112,11 +113,13 @@ forall(x = rcharacter(), stop(x))
 
 ```r
 test(
-  forall(x = rcharacter(), expect("error", stop(x))))
+  forall(x = rcharacter(), expect("error", stop(x))),
+  about = "stop")
 ```
 
 ```
-Using seed 770024200
+Testing stop
+Using seed 1383265062
 Pass  
  function (x = rcharacter())  
  expect("error", stop(x)) 
@@ -128,50 +131,41 @@ Pass
 
 
 ```r
-test(forall(x = rdouble(), mean(x) > 0), stop = TRUE)
+test(forall(x = rdouble(), mean(x) > -0.2), stop = TRUE, about = "mean")
 ```
 
 ```
-Using seed 494012268
+Testing mean
+Using seed 1457646180
 FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0
+mean(x) > -0.2
 FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0
+mean(x) > -0.2
 ```
 
 ```
-Error: to reproduce enter repro("/tmp/quickcheck/99444/tr18474854051b")
+Error in test(forall(x = rdouble(), mean(x) > -0.2), stop = TRUE, about = "mean"): 
+to reproduce enter repro("/tmp/quickcheck/24302/tr5eee45370237")
 ```
 
 ## {.build}
 
 
 ```r
-test.out = test(forall(x = rdouble(), mean(x) > 0), stop = FALSE)
+test.out = test(forall(x = rdouble(), mean(x) > -0.2), stop = FALSE, about = "mean")
 ```
 
 ```
-Using seed 494012268
+Testing mean
+Using seed 1457646180
 FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0
+mean(x) > -0.2
 FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0
-FAIL: assertion:
-function (x = rdouble()) 
-mean(x) > 0
+mean(x) > -0.2
 ```
 
 ## {.build}
@@ -183,10 +177,10 @@ repro(test.out)
 
 ```
 debugging in: (function (x = rdouble()) 
-mean(x) > 0)(x = c(95.4220841095448, 160.246710415966, -45.794324713949, 
-25.3869065691574, 23.7946291303444, -64.6528676719553, 17.2532503680657, 
--12.4640292985689, 203.772824804286, -52.1154926680255, 92.4381620907306, 
--53.8018711197192, -40.6044884240434, 5.53494104755664, -96.4591445419219, 
+mean(x) > -0.2)(x = c(-6.65729066543014, -14.3899169752211, 31.9287715279062, 
+-89.7578411993386, -168.372562610363, -121.325771981739))
+debug: mean(x) > -0.2
+exiting from: (function (x = rdouble()) 
 ....
 ```
 
@@ -201,11 +195,12 @@ mean(x) > 0)(x = c(95.4220841095448, 160.246710415966, -45.794324713949,
 
 
 ```r
-test(forall(x = rinteger(), identical(x,x))) 
+test(forall(x = rinteger(), identical(x,x)), about = "identical") 
 ```
 
 ```
-Using seed 1546314784
+Testing identical
+Using seed 257169588
 Pass  
  function (x = rinteger())  
  identical(x, x) 
@@ -213,11 +208,12 @@ Pass
 
 
 ```r
-test(forall(x = rany(), identical(x,x)))
+test(forall(x = rany(), identical(x,x)), about = "identical")
 ```
 
 ```
-Using seed 589672567
+Testing identical
+Using seed 430915620
 Pass  
  function (x = rany())  
  identical(x, x) 
@@ -235,11 +231,11 @@ rdouble()
 ```
 
 ```
- [1]  -32.6233  132.9799  127.2429   41.4641 -153.9950  -92.8567  -29.4720
- [8]   -0.5767  240.4653   76.3593  -79.9009 -114.7657  -28.9462  -29.9215
-[15]  -41.1511   25.2223  -89.1921   43.5683 -123.7538  -22.4268   37.7396
-[22]   13.3336   80.4190   -5.7107   50.3608  108.5769  -69.0954 -128.4599
-[29]    4.6726  -23.5707  -54.2888  -43.3310  -64.9472   72.6751  115.1912
+ [1]  -32.6233361  132.9799263  127.2429321   41.4641434 -153.9950042
+ [6]  -92.8567035  -29.4720447   -0.5767173  240.4653389   76.3593461
+[11]  -79.9009249 -114.7657009  -28.9461574  -29.9215118  -41.1510833
+[16]   25.2223448  -89.1921127   43.5683299 -123.7538422  -22.4267885
+[21]   37.7395646   13.3336361   80.4189510   -5.7106774   50.3607972
 ....
 ```
 
@@ -259,9 +255,9 @@ rdouble()
 ```
 
 ```
- [1]   -1.105  -94.065  -11.583  -81.497   24.226 -142.510   36.594
- [8]   24.841    6.529    1.916   25.734  -64.901  -11.917   66.414
-[15]  110.097
+ [1]   -1.104548  -94.064916  -11.582532  -81.496871   24.226348
+ [6] -142.509839   36.594112   24.841265    6.528818    1.915639
+[11]   25.733838  -64.901008  -11.916876   66.413570  110.096910
 ```
 
 
@@ -270,7 +266,8 @@ rdouble(elements = c(mean = 100, sd  = 20))
 ```
 
 ```
-[1]  97.64  81.76  71.25  84.06 125.08 115.44  95.61  91.50  91.62
+[1]  97.64493  81.75863  71.24828  84.05821 125.08166 115.44284  95.60969
+[8]  91.50379  91.62040
 ```
 
 ## {.build}
@@ -313,11 +310,11 @@ rdouble(elements = runif)
 ```
 
 ```
- [1] 0.93291 0.47068 0.60359 0.48499 0.10881 0.24773 0.49851 0.37287
- [9] 0.93469 0.52399 0.31714 0.27797 0.78754 0.70246 0.16503 0.06446
-[17] 0.75471 0.62041 0.16958 0.06221 0.10903 0.38172 0.16931 0.29865
-[25] 0.19221 0.25717 0.18123 0.47731 0.77074 0.02779 0.52731 0.88032
-[33] 0.37306 0.04796 0.13863 0.32149 0.15483 0.13223 0.22131 0.22638
+ [1] 0.93290983 0.47067850 0.60358807 0.48498968 0.10880632 0.24772683
+ [7] 0.49851453 0.37286671 0.93469137 0.52398608 0.31714467 0.27796603
+[13] 0.78754051 0.70246251 0.16502764 0.06445754 0.75470562 0.62041003
+[19] 0.16957677 0.06221405 0.10902927 0.38171635 0.16931091 0.29865254
+[25] 0.19220954 0.25717002 0.18123182 0.47731371 0.77073704 0.02778712
 ....
 ```
 
@@ -327,11 +324,11 @@ rdouble(elements = ~runif(size, min = -1))
 ```
 
 ```
- [1]  0.56436 -0.46424  0.52430  0.97262 -0.41279 -0.20130  0.62426
- [8] -0.84570 -0.27261 -0.11482 -0.68657  0.16441  0.94032  0.97900
-[15] -0.64710  0.08426 -0.23139  0.35233 -0.46141 -0.06150 -0.65640
-[22] -0.26162  0.45081 -0.02770 -0.87240  0.56909 -0.16336  0.96204
-[29] -0.43423  0.69576 -0.83552  0.77292 -0.05614 -0.78180 -0.33344
+ [1]  0.56436423 -0.46424374  0.52430306  0.97262318 -0.41278890
+ [6] -0.20129779  0.62426305 -0.84569666 -0.27260638 -0.11481507
+[11] -0.68657173  0.16441054  0.94032436  0.97899967 -0.64709593
+[16]  0.08426085 -0.23139222  0.35232810 -0.46141244 -0.06149812
+[21] -0.65639984 -0.26162108  0.45081055 -0.02770179 -0.87239507
 ....
 ```
 
@@ -344,7 +341,7 @@ rdouble(elements = Curry(runif, min = -1))
 ```
 
 ```
-[1] -0.9777  0.8806  0.9875
+[1] -0.9777010  0.8806174  0.9874985
 ```
 
 ## {.build}
@@ -355,7 +352,7 @@ rdouble(size = c(max = 100))
 ```
 
 ```
-[1]  81.656  -6.063 -50.138
+[1]  81.655645  -6.063478 -50.137832
 ```
 
 
@@ -365,7 +362,7 @@ rdouble(size = c(min = 0, max = 10))
 ```
 
 ```
-[1]    3.694 -106.620  -23.846  149.522  117.216 -145.771
+[1]    3.693769 -106.620017  -23.845635  149.522344  117.215855 -145.770721
 ```
 
 
@@ -375,7 +372,7 @@ rdouble(size = function(n) 10 * runif(n))
 ```
 
 ```
-[1] -125.3290   64.2241   -4.4709 -173.3218    0.2132
+[1] -125.328976   64.224131   -4.470914 -173.321841    0.213186
 ```
 
 
@@ -385,7 +382,7 @@ rdouble(size = ~10*runif(1))
 ```
 
 ```
-[1]  -19.4  157.6 -147.6
+[1]  -19.39727  157.61582 -147.55476
 ```
 
 ## {.build}
@@ -396,7 +393,7 @@ rdouble(size = constant(3))
 ```
 
 ```
-[1]  -14.46 -107.50   40.65
+[1]  -14.46082 -107.50102   40.65427
 ```
 
 ```r
@@ -404,7 +401,7 @@ rdouble(size = constant(3))
 ```
 
 ```
-[1]  222.926 -151.450   -6.171
+[1]  222.926220 -151.449701   -6.170742
 ```
 
 
@@ -414,7 +411,7 @@ rdouble(size = ~3)
 ```
 
 ```
-[1] -14.73 154.16 -98.19
+[1] -14.72708 154.15931 -98.18557
 ```
 
 <!--
@@ -426,7 +423,7 @@ rinteger(elements = ~0, size = 100)
 ```
 
 ```
-Warning: recycling random numbers
+Warning in rdata(elements, size): recycling random numbers
 ```
 
 ```
@@ -489,7 +486,8 @@ test(forall(x = rdouble(), is.reciprocal.self.inverse(x)))
 ```
 
 ```
-Using seed 1509604841
+Testing is.reciprocal.self.inverse
+Using seed 1218381074
 Pass  
  function (x = rdouble())  
  is.reciprocal.self.inverse(x) 
@@ -503,7 +501,8 @@ test(forall(x = rsample(c(0, -Inf, Inf)), is.reciprocal.self.inverse(x)))
 ```
 
 ```
-Using seed 590705710
+Testing is.reciprocal.self.inverse
+Using seed 1421030040
 Pass  
  function (x = rsample(c(0, -Inf, Inf)))  
  is.reciprocal.self.inverse(x) 
@@ -514,25 +513,27 @@ Pass
 
 ```r
 rdoublex =
-	function(elements = c(mean = 100), size = c(max = 10)) {
-		data = rdouble(elements, size)
-		sample(
-			c(data, c(0, -Inf, Inf)),
-			size = length(data),
-			replace = FALSE)}
-rdoublex()
+  function(elements = c(mean = 0, sd = 1), size = c(min = 0, max = 100)) {
+    data = rdouble(elements, size)
+    sample(
+      c(data, c(0, -Inf, Inf)),
+      size = length(data),
+      replace = FALSE)}
+rdoublex(size = ~10)
 ```
 
 ```
-[1] 147.902    -Inf 149.221     Inf  19.504  -8.808
+ [1]         Inf -0.12589279 -0.41486412        -Inf -0.13377222
+ [6]  0.06936754 -0.53545759 -1.06867910 -1.14770851  1.54599703
 ```
 
 ```r
-rdoublex()
+rdoublex(size = ~10)
 ```
 
 ```
-[1] 162.9   Inf 103.0 143.6 130.1 104.6  -Inf 268.0
+ [1]  0.3887475  0.9186447 -0.8863064 -2.0320849        Inf -1.3586576
+ [7] -0.8698331       -Inf  0.0000000 -1.8034260
 ```
 
 ## {.build}
@@ -543,7 +544,8 @@ test(forall(x = rdoublex(), is.reciprocal.self.inverse(x)))
 ```
 
 ```
-Using seed 1300498190
+Testing is.reciprocal.self.inverse
+Using seed 890091164
 Pass  
  function (x = rdoublex())  
  is.reciprocal.self.inverse(x) 
