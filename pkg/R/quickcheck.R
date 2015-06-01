@@ -292,12 +292,12 @@ test =
         coverage(test.report$coverage)}}
     work.dir = file.path(default(work.dir), "quickcheck", Sys.getpid())
     if(!file.exists(work.dir))
-      message("Creating ", work.dir, ". Use qc.options(work.dir = <alternate-path>) to change location.")
+      message("Creating ", work.dir, ".\n Use qc.options(work.dir = <alternate-path>) to change location.")
     dir.create(work.dir, recursive = TRUE, showWarnings = FALSE)
     tf = tempfile(tmpdir = work.dir, pattern = "tr")
     saveRDS(test.report, file = tf)
     if (stop && any(!test.report$pass)) {
-      stop("to reproduce enter repro(\"", tf, "\")")}
+      stop("\nto reproduce enter repro(\"", tf, "\")")}
     invisible(test.report)}
 
 test.set = function(...) {
