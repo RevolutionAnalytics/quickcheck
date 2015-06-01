@@ -38,9 +38,9 @@ test(
 ## @knitr end
 if(FALSE)
 ## @knitr output
-test(forall(x = rdouble(), mean(x) > 0), stop = TRUE, about = "mean")
+test(forall(x = rdouble(), mean(x) > -0.2), stop = TRUE, about = "mean")
 ##  @knitr return-value
-test.out = test(forall(x = rdouble(), mean(x) > 0), stop = FALSE, about = "mean")
+test.out = test(forall(x = rdouble(), mean(x) > -0.2), stop = FALSE, about = "mean")
 ## @knitr end
 if(FALSE)
 ## @knitr repro
