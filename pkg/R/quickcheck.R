@@ -139,8 +139,8 @@ function(expr, ...) {
 formals(expect) = c(list(what = names(assert.funs)), formals(expect))
 
 is.formula =
-  function(x)
-    class(x) == "formula"
+  function(x) {
+    class(x) == "formula"}
 
 eval.args =
   function(args, envir) {
@@ -152,12 +152,12 @@ eval.args =
     as.list(args)}
 
 check.covr =
-  function()
+  function() {
     if(!requireNamespace("covr"))
       stop(
         "Need to install covr to use this feature
          library(devtools)
-         install_github(\"jimhester/covr@c70153f80461ca054771055309b02fd2a810750d\")")
+         install_github(\"jimhester/covr@c70153f80461ca054771055309b02fd2a810750d\")")}
 
 tested.functions =
   function(assertion) {
@@ -372,7 +372,8 @@ forall =
 coverage =
   function(x = "pkg/", ...) {
     check.covr()
-    UseMethod(generic = "coverage", object = x)}
+    UseMethod(generic = "coverage", object = x)
+    NULL}
 
 coverage.character =
   function(x = "pkg/", ... ) {
