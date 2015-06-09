@@ -51,13 +51,13 @@ test(
 
 ```
 Testing t
-Using seed 847571757
+Using seed 734758519
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
      ] == t(x)[, i]))) 
 
-Creating /tmp/quickcheck/32296.
+Creating /tmp/quickcheck/37643.
  Use qc.options(work.dir = <alternate-path>) to change location.
 ```
 
@@ -78,7 +78,7 @@ test(
 
 ```
 Testing t
-Using seed 1024519023
+Using seed 1193381102
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
@@ -147,7 +147,7 @@ mean(x) > -0.2
 
 ```
 Error in test(forall(x = rdouble(), mean(x) > -0.2), stop = TRUE, about = "mean"): 
-to reproduce enter repro("/tmp/quickcheck/32296/tr7e285951d940")
+to reproduce enter repro("/tmp/quickcheck/37643/tr930b404c9047")
 ```
 
 ## {.build}
