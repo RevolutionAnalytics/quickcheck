@@ -58,13 +58,13 @@ test(
 
 ```
 Testing t
-Using seed 1259503250
+Using seed 63789058
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
      ] == t(x)[, i]))) 
 
-Creating /tmp/quickcheck/23790. Use qc.options(work.dir = <alternate-path>) to change location.
+Creating /tmp/quickcheck/1517.
 ....
 ```
 
@@ -91,7 +91,7 @@ test(
 
 ```
 Testing t
-Using seed 1509435391
+Using seed 568993531
 Pass  
  function (x = rmatrix())  
  any(dim(x) == c(0, 0)) || all(sapply(1:nrow(x), function(i) all(x[i,  
@@ -154,25 +154,26 @@ mean(x) > -0.2
 ```
 
 ```
-Error in test(forall(x = rdouble(), mean(x) > -0.2), stop = TRUE, about = "mean"): to reproduce enter repro("/tmp/quickcheck/23790/tr5cee55466a07")
+Error in test(forall(x = rdouble(), mean(x) > -0.2), stop = TRUE, about = "mean"): 
+to reproduce enter repro("/tmp/quickcheck/1517/tr5ed1a26b2f0")
 ```
 
 This output shows that some of the default 10 runs have failed and then invites us to enter a command, `repro(<some-path>)`, that will execute the assertion in the debugger with the input data that made it fail. Another way to achieve the same is to run the test with the option `stop = FALSE` which doesn't produce an error and returns the same debugging data. This is convenient for interactive sessions, but less so when running `R CMD check`. In fact, the default for the `stop` argument is `FALSE` for interactive sessions and `TRUE` otherwise, which should work for most people.
 
 
 ```r
-test.out = test(forall(x = rdouble(), mean(x) > 0), stop = FALSE, about = "mean")
+test.out = test(forall(x = rdouble(), mean(x) > -0.2), stop = FALSE, about = "mean")
 ```
 
 ```
 Testing mean
-Using seed 420616293
+Using seed 1457646180
 FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0
+mean(x) > -0.2
 FAIL: assertion:
 function (x = rdouble()) 
-mean(x) > 0
+mean(x) > -0.2
 ....
 ```
 
@@ -185,14 +186,12 @@ repro(test.out)
 
 ```
 debugging in: (function (x = rdouble()) 
-mean(x) > 0)(x = c(10.5458043647435, -138.624953856954, 49.5664878632335, 
--66.9953355464049, -38.8970215857726, -136.86988586223, -86.5668871131464, 
--13.5894142393942, -189.819518324129, -62.6379943337981, -75.9198540914486, 
--128.548593676381, -68.2659777135941, 41.3580570802318, 27.2987557256821, 
--76.0310627702327, 26.6203565939801, -69.1400147516596, 63.345593663904, 
--114.574436578846, 37.1978171467256, -54.7356639428537, 50.3751301526856, 
--25.5469414286095, -25.2534376063315, 61.5801458064715, -47.2352268183056, 
-....
+mean(x) > -0.2)(x = c(-6.65729066543014, -14.3899169752211, 31.9287715279062, 
+-89.7578411993386, -168.372562610363, -121.325771981739))
+debug: mean(x) > -0.2
+exiting from: (function (x = rdouble()) 
+mean(x) > -0.2)(x = c(-6.65729066543014, -14.3899169752211, 31.9287715279062, 
+-89.7578411993386, -168.372562610363, -121.325771981739))
 ```
 
 ```
