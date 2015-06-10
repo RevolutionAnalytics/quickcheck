@@ -164,20 +164,20 @@ as.RNG.list =
           n.char = rinteger(unname(x[c("nchar.min", "nchar.max")]), ~n.unique)
           # create the strings
           strings =
-            sapply(
-              split(
-                sample(
-                  x = x$alphabet,
-                  size = sum(n.char),
-                  replace = TRUE),
-                rep(1:length(n.char), n.char)),
-              paste,
-              collapse = "")
-          if(min(n.char) == 0)
-            strings = c(strings, "")
-          # resample n time
-          sample(strings, n, replace = TRUE)
-        },
+            unname(
+              sapply(
+                split(
+                  sample(
+                    x = x$alphabet,
+                    size = sum(n.char),
+                    replace = TRUE),
+                  rep(1:length(n.char), n.char)),
+                paste,
+                collapse = ""))
+              if(min(n.char) == 0)
+                strings = c(strings, "")
+              # resample n time
+              sample(strings, n, replace = TRUE)},
       factor = Curry(sample, x = 1:x$nlevels, replace = TRUE),
       raw = Curry(sample, x = as.raw(x$min:x$max), replace = TRUE ),
       Date =
