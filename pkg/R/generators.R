@@ -333,7 +333,7 @@ rdata.frame =
       columns = replicate(ncol, rdata(elements, size = nrow), simplify = FALSE)
       if(length(columns) > 0)
         names(columns) = paste("col", 1:ncol)
-      do.call(data.frame, columns)})
+      do.call(data.frame, c(columns, list(stringsAsFactors = FALSE)))})
 
 rfunction =
   as.RDG(
